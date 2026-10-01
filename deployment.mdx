@@ -1,14 +1,14 @@
 ---
-title: "Deploy Responder on Your Own Infrastructure"
+title: "Deploy Responder: Self-Host on Your Infrastructure"
 sidebarTitle: "Deployment"
-description: "Self-host Responder as two Node.js services backed by Postgres. Deploy on any platform that supports containers or Node.js."
+description: "Self-host Responder as two Node.js services backed by Postgres. Deploy on any platform that supports containers or Node.js runtimes."
 ---
 
 Self-host Responder on any infrastructure that supports Node.js or containers. You run two long-running services — the **control plane** and the **worker** — backed by a single Postgres database. Both services ship with Dockerfiles you can use as starting points, and the application has no dependency on a specific cloud provider.
 
 ## Architecture
 
-```
+```text
 Browser / alert providers
         │  HTTPS
         ▼
@@ -51,7 +51,7 @@ Both services must share the same `DATABASE_URL`, `CREDENTIAL_ENCRYPTION_KEY`, a
   <Step title="Serve the dashboard and route API traffic">
     Serve the compiled static assets (`apps/control-plane/dist`) at your public origin and proxy all `/api/*` requests to the control-plane service. Both the dashboard and the API must share the same origin so browser authentication, OAuth callbacks, and provider webhooks all resolve to a stable URL.
 
-    ```
+    ```text
     https://your-domain.com/          → static assets (React app)
     https://your-domain.com/api/*     → control-plane service
     ```
@@ -71,7 +71,7 @@ Both services must share the same `DATABASE_URL`, `CREDENTIAL_ENCRYPTION_KEY`, a
   </Step>
 
   <Step title="Apply database migrations">
-    Run every migration in the `drizzle/` directory against your Postgres database before starting a new release. Migrations are ordered and must be applied in sequence.
+    Run all database migrations against your Postgres database before starting a new release. Migrations are ordered and must be applied in sequence.
 
     ```bash
     pnpm db:migrate
@@ -103,9 +103,11 @@ Inject these values through your deployment's secret environment. Never commit t
 | `CREDENTIAL_ENCRYPTION_KEY` | Both | Base64-encoded 32-byte key used to encrypt stored integration credentials. **Must be identical on both services.** |
 | `DAYTONA_API_KEY` | Both | Required to store workspace secrets in Daytona's vault and to run investigation sandboxes |
 | `OPENAI_API_KEY` | Worker | Required to run investigations |
+| `AI_GATEWAY_API_KEY` | Both | Optional. Enables initial triage reactions and funds automation runs that use Responder's included usage instead of your own model key |
+| `OPENAI_AGENT_MODEL` | Worker | Optional. Overrides the default investigation model |
 | `BETTER_AUTH_SECRET` | Control plane | Secret used to sign authentication sessions |
 | `RESPONDER_PUBLIC_URL` | Control plane | Stable HTTPS origin for webhooks and OAuth callbacks |
-| `INTERNAL_INGEST_TOKEN` | Both | Shared bearer token that authenticates internal requests from the control plane to the worker |
+| `INTERNAL_INGEST_TOKEN` | Both | Shared secret that authenticates requests from the control plane to the worker |
 
 <Note>
   The full list of available configuration options — including optional analytics, error monitoring, and first-party OAuth application credentials — is documented in [`.env.example`](https://github.com/superloglabs/responder-oss/blob/main/.env.example) in the repository.

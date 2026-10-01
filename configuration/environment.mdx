@@ -1,5 +1,5 @@
 ---
-title: "Environment Variables Reference for Responder"
+title: "Environment Variables Reference for Self-Hosting Responder"
 sidebarTitle: "Environment"
 description: "Reference for all environment variables that configure Responder's control plane and worker, including database, auth, AI, and integration secrets."
 ---
@@ -19,11 +19,15 @@ These variables must be set before Responder will start correctly. The encryptio
 <ParamField path="DATABASE_URL" type="string" required>
   PostgreSQL connection string for the shared application database.
 
-  ```
+  ```text
   postgresql://user:pass@host:5432/responder
   ```
 
   Both the control plane and the worker connect to this database. Use a connection pooler (e.g. PgBouncer) for high-traffic deployments and set `DATABASE_POOL_SIZE` to match your pooler's limits.
+</ParamField>
+
+<ParamField path="DATABASE_POOL_SIZE" type="number" default="5">
+  Optional. Maximum number of database connections per process. Defaults to `5`. Increase this value when using a connection pooler such as PgBouncer, and set it to match your pooler's per-client connection limit.
 </ParamField>
 
 <ParamField path="CREDENTIAL_ENCRYPTION_KEY" type="string" required>
@@ -97,7 +101,7 @@ Responder uses Better Auth for session management. OAuth providers are optional 
 <ParamField path="AUTH_GOOGLE_CLIENT_ID" type="string">
   Google OAuth 2.0 client ID for Google login. Create an OAuth app in Google Cloud Console and set the authorized redirect URI to:
 
-  ```
+  ```text
   https://responder.example.com/api/auth/callback/google
   ```
 </ParamField>
@@ -109,7 +113,7 @@ Responder uses Better Auth for session management. OAuth providers are optional 
 <ParamField path="AUTH_GITHUB_CLIENT_ID" type="string">
   GitHub OAuth app client ID for GitHub login. Set the authorization callback URL to:
 
-  ```
+  ```text
   https://responder.example.com/api/auth/callback/github
   ```
 </ParamField>
@@ -130,6 +134,10 @@ Responder sends workspace invitation emails through Resend. If you do not config
 
 <ParamField path="RESPONDER_FROM_EMAIL" type="string" default="Responder <no-reply@superlog.sh>">
   Sender address and display name for outgoing invitation emails. Use a domain you control and have verified with Resend.
+</ParamField>
+
+<ParamField path="RESPONDER_REPLY_TO_EMAIL" type="string">
+  Optional. Reply-to address added to outgoing invitation emails. When set, replies from recipients are delivered to this address instead of the sender address. Leave unset to omit a reply-to header.
 </ParamField>
 
 ---
@@ -226,7 +234,7 @@ AWS support requires a stable broker IAM role that Responder assumes to access c
 <ParamField path="AWS_INTEGRATION_PRINCIPAL_ARN" type="string">
   ARN of the stable broker IAM role that Responder assumes in order to call `sts:AssumeRole` on customer `ResponderInvestigationRole` roles. Required for AWS context to work on self-hosted deployments. The broker must allow `sts:AssumeRole` only on roles named `ResponderInvestigationRole`.
 
-  ```
+  ```text
   arn:aws:iam::123456789012:role/ResponderBrokerRole
   ```
 </ParamField>

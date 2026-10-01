@@ -1,10 +1,45 @@
 ---
 title: "Observability and Productivity Tool Integrations"
 sidebarTitle: "Observability Tools"
-description: "Connect PostHog, Grafana, Axiom, Upstash, Langfuse, Supabase, Vercel, ClickStack, Linear, and Discord to enrich Responder investigations."
+description: "Connect Dash0, PostHog, Grafana, Axiom, Upstash, Langfuse, Supabase, Vercel, ClickStack, Linear, and Discord to enrich Responder investigations."
 ---
 
 Responder connects to your existing observability stack so every investigation has the right data close at hand. Add any of the tools below from **Settings → Integrations** — each one becomes available as context on the Agent configuration screen, as a trigger source, or as an issue-management destination. All credentials are encrypted at rest and kept outside the investigation sandbox.
+
+<Accordion title="Dash0">
+
+Responder connects to Dash0 via OAuth and queries your organization's observability telemetry during investigations. Dash0 also acts as a direct trigger source — when Dash0 fires an `alert.ongoing` notification, Responder starts an investigation automatically. Resolved, superseded, and closed notifications are acknowledged without starting investigations.
+
+**Connecting Dash0**
+
+<Steps>
+  <Step title="Find your Dash0 MCP endpoint">
+    In Dash0, go to **Organization settings → Endpoints → MCP** and copy the organization MCP endpoint URL.
+  </Step>
+  <Step title="Open Settings → Integrations → Dash0">
+    Enter the MCP endpoint URL and click **Connect**. Responder dynamically registers an OAuth client and redirects you through the Dash0 consent screen. The OAuth callback is:
+
+    ```text
+    <public>/api/integrations/dash0/callback
+    ```
+
+    No deployment-level Dash0 client ID, secret, or static auth token is required. Each Dash0 organization is a separate integration account.
+  </Step>
+  <Step title="Configure the webhook notification channel">
+    After OAuth completes, Responder generates a webhook URL and Authorization header. Copy both values into a Dash0 **Webhook** notification channel under **Organization settings → Notification Channels**.
+
+    Assign that channel directly to your check rules, or route alerts to it by labels.
+  </Step>
+  <Step title="Add Dash0 as Agent context">
+    On the Agent configuration screen, select your Dash0 connection under **Context** so investigations can query your Dash0 telemetry directly.
+  </Step>
+</Steps>
+
+<Note>
+Responder exposes only MCP tools explicitly annotated as read-only and blocks Agent0 delegation tools, so investigations query Dash0 telemetry directly without consuming Agent0 investigation credits.
+</Note>
+
+</Accordion>
 
 <Accordion title="PostHog">
 

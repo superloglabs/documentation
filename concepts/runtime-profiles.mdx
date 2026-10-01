@@ -1,7 +1,7 @@
 ---
-title: "Runtime Profiles: Control Investigation Behavior"
+title: "Runtime Profiles: Customizing Investigation Behavior"
 sidebarTitle: "Runtime Profiles"
-description: "Runtime profiles define the system prompt and guidance that governs how Responder's AI investigates incidents, including remediation policy and output format."
+description: "Runtime profiles define the system prompt and guidance that governs how Responder investigates incidents, including remediation policy and output format."
 ---
 
 A runtime profile is an operator-managed configuration that controls the AI's behavior during every investigation. It sets the system-level instructions — what the model is allowed to do, how it should gather evidence, how it should format its report, and what kinds of remediations it should produce. You can think of it as the global rulebook that sits beneath the per-Agent instructions you write yourself.
@@ -22,15 +22,7 @@ The `system_prompt` field sets the top-level instructions passed to the model at
 
 ### Prompt parts
 
-`prompt_parts` is a modular JSON object that stores guidance for specific situations. Each key covers a distinct aspect of investigation behavior — a particular integration, an investigation mode, a permission boundary, or a reporting requirement. Rather than embedding all possible instructions into a single monolithic prompt, Responder uses this modular design to keep prompts focused and relevant.
-
-```json
-{
-  "datadog": "Use the connected Datadog tools to inspect matching logs and surrounding service activity before concluding.",
-  "codeRemediations": "For every new issue, submit one or more concrete remediation options...",
-  "scanPermissions": "This is an observation-only scan. Do not modify files or source systems..."
-}
-```
+`prompt_parts` is a modular JSON object that stores guidance for specific situations. Each section covers a distinct aspect of investigation behavior — a particular integration, an investigation mode, a permission boundary, or a reporting requirement. Rather than embedding all possible instructions into a single monolithic prompt, Responder uses this modular design to keep prompts focused and relevant to each specific investigation context.
 
 ---
 
@@ -43,10 +35,10 @@ When a worker starts an investigation, it does not send every prompt part to the
     The worker inspects the Agent's connected context sources, attached repositories, secrets, PR mode, and trigger type to determine which sections are relevant.
   </Step>
   <Step title="Worker selects applicable sections">
-    Only the sections that match the current configuration are included. For example, the `datadog` section is included only when a Datadog account is connected; the `codePermissions` section is included only when PR mode is enabled.
+    Only the sections that match the current configuration are included. For example, integration-specific guidance is included only when that integration is connected, and remediation guidance is included only when PR mode is enabled.
   </Step>
   <Step title="Worker renders context placeholders">
-    Template placeholders like `{{value1}}` in each selected section are replaced with live values — connected account names, repository details, secret environment variable names, and so on.
+    Placeholders in each selected section are replaced with live values — connected account names, repository details, secret environment variable names, and so on.
   </Step>
   <Step title="Assembled instructions are recorded in the trace">
     The final assembled prompt is stored in the investigation trace. Operators can inspect the raw trace to see exactly what instructions the model received. The tenant-facing trace view omits the initial composed runtime instructions.
@@ -75,7 +67,7 @@ Out of the box, Responder's default runtime profile instructs the model to prefe
 An `external_action` remediation — a human-readable prompt for manual intervention — is reserved for situations where the fix is genuinely impossible in code. When proposing an external action, the model explains why code cannot resolve the problem and includes a self-contained handoff prompt.
 
 <Tip>
-  You can adjust this policy by customizing the `remediationChoice` and `codeRemediations` prompt parts in your runtime profile. For example, you might instruct the model to always propose external actions for database schema changes, or to prefer external actions in certain services.
+  You can adjust this policy by customizing the remediation-related sections in your runtime profile. For example, you might instruct the model to always propose external actions for database schema changes, or to prefer external actions in certain services.
 </Tip>
 
 ---

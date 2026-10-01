@@ -1,7 +1,7 @@
 ---
-title: "Auto-Fix Issues with Responder Pull Requests"
+title: "Auto-Fix Incidents with Responder Pull Request Remediation"
 sidebarTitle: "Remediation"
-description: "Configure Responder to automatically generate pull requests that fix identified issues, and learn how to review and approve them."
+description: "Configure Responder to automatically generate pull requests that fix identified issues, and learn how to review, approve, and iterate on them with the bot."
 ---
 
 Responder doesn't stop at diagnosing a problem — it can also prepare and open the pull request that fixes it. After identifying an issue during an investigation, Responder analyses the relevant code, assembles a complete git diff, writes a PR title and body, and either opens the PR automatically or queues it for your approval depending on how the Agent is configured. This guide explains the remediation types, the PR mode options, and what to expect when you collaborate on a Responder-generated PR.
@@ -12,10 +12,10 @@ When Responder finishes an investigation it produces one or more remediation opt
 
 <CardGroup cols={2}>
   <Card title="Code Change" icon="code">
-    A complete unified git diff targeting one or more connected repositories, paired with an agent-authored PR title and Markdown body. One code-change remediation produces one pull request per repository.
+    A complete unified git diff targeting one or more connected repositories, paired with an agent-authored PR title and Markdown body. One code-change remediation can include changes across up to 20 repositories, and each repository may appear only once — changes to the same repository are combined into a single diff. One pull request is opened per repository.
   </Card>
   <Card title="External Action" icon="arrow-up-right-from-square">
-    When the fix requires intervention outside of your codebase — for example, updating a feature flag, rotating a secret in a third-party service, or modifying infrastructure configuration — Responder provides a self-contained prompt you can hand to another agent or follow yourself.
+    When the fix requires intervention outside of your codebase — for example, updating a feature flag, rotating a secret in a third-party service, or modifying infrastructure configuration — Responder provides a self-contained prompt (the `agentPrompt` field) you can hand to another agent or follow yourself.
   </Card>
 </CardGroup>
 
@@ -55,7 +55,7 @@ If no repository is selected on the Agent, the PR mode is automatically set to `
   </Step>
 
   <Step title="Review the remediation">
-    Expand the issue you want to fix and select a remediation. Click **View diff** to inspect the proposed code change before committing to it. The diff includes the full unified patch — `diff --git`, `---/+++` headers, and hunk context — so you can evaluate the change the same way you would review any pull request.
+    Expand the issue you want to fix and select a remediation. Click **View diff** to inspect the proposed code change before committing to it. The diff is a complete unified git diff — it includes `diff --git` header lines, `---`/`+++` file headers, and `@@` hunk markers — so you can evaluate the change the same way you would review any pull request.
   </Step>
 
   <Step title="Open the pull request">
@@ -65,14 +65,14 @@ If no repository is selected on the Agent, the PR mode is automatically set to `
 
 ## Review follow-ups on Responder PRs
 
-After Responder opens a pull request, you and your team can leave inline review comments on the diff as you normally would. Responder monitors unresolved comment threads on its own PRs and acts on them:
+After Responder opens a pull request, the Responder bot may leave its own review comments on the diff as part of the investigation follow-up process. Responder monitors unresolved comment threads that it created on its own PRs and acts on them:
 
-1. Responder reads all unresolved review comment threads on the PR.
+1. Responder reads all unresolved review comment threads it posted on the PR.
 2. It pushes a follow-up commit to address the feedback.
 3. It marks the threads as resolved.
 
 <Note>
-  Responder only processes review comments left on PRs it opened. Comments left by humans are handled automatically — Responder reads the comment content and acts on it. If you want to block Responder from acting on a comment, resolve the thread yourself before Responder picks it up.
+  Responder only processes review comments that it posted itself. Comments left by human reviewers are not picked up by the bot — only the Responder bot's own comment threads drive follow-up commits.
 </Note>
 
-This cycle repeats for each new round of unresolved comments, making it straightforward to iterate on a fix without switching contexts.
+This cycle repeats for each new round of unresolved bot comments, making it straightforward to iterate on a fix without switching contexts.

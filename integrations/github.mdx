@@ -55,9 +55,17 @@ Set the PR mode on each agent's configuration:
   </Step>
 </Steps>
 
-## GitHub App permissions
+## Operator reference
 
-The GitHub App your operator configured requests the following permissions:
+Your Responder operator configures the GitHub App at the platform level. The app must be created as a **public GitHub App** with the following settings:
+
+| Setting | Value |
+|---|---|
+| OAuth redirect URI | `<public>/api/integrations/github/callback` |
+| Webhook URL | `<public>/api/webhooks/github` |
+| Webhook events | Pull request, Pull request review comment |
+
+**Repository permissions:**
 
 | Permission | Access level |
 |---|---|
@@ -68,6 +76,14 @@ The GitHub App your operator configured requests the following permissions:
 | Checks | Read |
 | Commit statuses | Read |
 | Issues | Read |
+
+**Account permission:**
+
+| Permission | Access level |
+|---|---|
+| Email addresses | Read |
+
+The environment must include `GITHUB_APP_ID`, `GITHUB_APP_SLUG`, `GITHUB_APP_PRIVATE_KEY`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, and `GITHUB_WEBHOOK_SECRET`.
 
 <Note>
   The GitHub App's private key never enters the investigation sandbox. Responder generates a short-lived installation token at query time and materializes only the repositories you've selected on the agent — your other repositories remain inaccessible to the investigation.

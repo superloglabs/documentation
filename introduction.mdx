@@ -1,5 +1,5 @@
 ---
-title: "Responder: Self-Hosted AI Incident Investigation"
+title: "Responder: Self-Hosted AI Incident Investigation Tool"
 sidebarTitle: "Introduction"
 description: "Responder is a self-hostable AI platform that investigates production alerts from Sentry, Datadog, Slack, and more — automatically."
 ---
@@ -10,7 +10,7 @@ Responder cuts through the noise of production incidents by automatically invest
 
 When an alert arrives, Responder's worker picks up the job, spins up an isolated sandbox, and runs a versioned investigation agent against your connected data sources. Within minutes you get a structured report in your dashboard, a filed issue, a Slack update, and optionally a draft PR — all without a human touching a keyboard.
 
-```
+```text
 Alert fires → Responder agent investigates → Report + Issue + optional PR
 ```
 
@@ -29,7 +29,7 @@ Responder watches the sources your team already uses:
 
 **Context sources**
 
-Once an investigation starts, the agent draws on more than 15 integrated tools to build a complete picture: GitHub (code and pull requests), Sentry, Datadog, Dash0, PostHog, Grafana, Axiom, AWS, Google Cloud, Upstash, Langfuse, Supabase, Vercel, ClickStack, Linear, and any custom MCP server you connect.
+Once an investigation starts, the agent draws on more than 15 integrated tools to build a complete picture: GitHub (code and pull requests), Sentry, Datadog, Dash0, PostHog, Grafana, Axiom, AWS, Google Cloud, Upstash, Langfuse, Supabase, Vercel, ClickStack, Linear, Discord, and any custom MCP server you connect.
 
 **Investigation outputs**
 
@@ -48,9 +48,9 @@ Responder runs as two cooperating services that share a single Postgres database
 
 **Control plane** — The dashboard and API you interact with directly. It handles authentication, workspace configuration, integration setup, webhook ingestion, and job scheduling. The React UI is served from the same origin as the API.
 
-**Worker** — A background service that claims investigation jobs from the queue, resolves the pinned agent and runtime profile, and runs the investigation inside an isolated Daytona sandbox. The worker communicates with model providers and connected context sources, then persists the resulting trace and report back to the database.
+**Worker** — A background service that claims investigation jobs from the queue, resolves the pinned agent and runtime profile, and runs the investigation inside an isolated sandbox. The worker communicates with model providers and connected context sources, then persists the resulting trace and report back to the database.
 
-```
+```text
 Browser → control-plane (dashboard + API)
                 │
                 └── enqueues jobs → worker → sandbox + model + providers
@@ -58,7 +58,7 @@ Browser → control-plane (dashboard + API)
                     Postgres (shared)
 ```
 
-Both services read from the same database, use the same encryption key for stored credentials, and share an internal bearer token. You can deploy them on any infrastructure that runs Node.js or containers.
+Both services share the same database and credential encryption key. You can deploy them on any infrastructure that runs Node.js or containers.
 
 ## Next steps
 

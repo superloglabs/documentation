@@ -1,7 +1,7 @@
 ---
 title: "Create and Configure a Responder Investigation Agent"
 sidebarTitle: "Create an Agent"
-description: "Step-by-step guide to creating an Agent that automatically investigates alerts from Sentry, Datadog, Dash0, or a Slack channel."
+description: "Step-by-step guide to creating an Agent that automatically investigates alerts from Sentry, Datadog, Dash0, or a Slack channel and posts findings to Slack."
 ---
 
 An Agent is a standing configuration that watches a trigger source — a Sentry project, a Datadog monitor, a Dash0 alert policy, or a Slack channel — and launches an AI investigation every time an event fires. Each investigation produces a structured report with severity ratings, root cause analysis, a timeline of events, evidence links, and optional pull request remediation. This guide walks you through creating and configuring your first Agent.
@@ -63,10 +63,10 @@ An Agent is a standing configuration that watches a trigger source — a Sentry 
 
     **Slack channels** — select specific channels the Agent can search for related messages and historical context.
 
-    **GitHub repositories** — select repositories for code inspection. The Agent reads file contents and commit history to trace root causes back to specific changes. Repositories are also required if you plan to enable pull request remediation.
+    **GitHub repositories** — select repositories for code inspection. The Agent reads file contents and commit history to trace root causes back to specific changes. Repositories are also required if you plan to enable pull request remediation. You can select up to 100 repositories per Agent.
 
     <Tip>
-      Add every integration relevant to the service you're monitoring. Responder correlates signals across sources, so more context generally produces more accurate root cause analysis.
+      Add every integration relevant to the service you're monitoring. Responder correlates signals across sources, so more context generally produces more accurate root cause analysis. You can enable up to 20 integration accounts as context sources per Agent.
     </Tip>
   </Step>
 

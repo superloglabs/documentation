@@ -1,5 +1,5 @@
 ---
-title: "How Investigations Work in Responder"
+title: "Investigations: How Responder Analyzes Your Incidents"
 sidebarTitle: "Investigations"
 description: "Investigations are AI-driven analysis runs that produce structured reports — severity, root cause, timeline, evidence, and optional code fixes."
 ---
@@ -60,7 +60,7 @@ A report can contain up to 20 issues. Each issue includes:
     An ordered sequence of events (up to 30 entries) that explains how the incident unfolded. Each entry has a title and a one-sentence description.
   </Card>
   <Card title="Evidence" icon="link">
-    Linked sources — Sentry, Datadog, GitHub, Slack, AWS, GCP, Grafana, PostHog, and more — each with a title, detail, optional URL, and optional file and line reference.
+    Linked sources — including alerts, Sentry, Datadog, Dash0, GitHub, Slack, AWS, GCP, Grafana, PostHog, Axiom, ClickStack, Upstash, Langfuse, Supabase, Vercel, and others — each with a title, detail text, optional URL, and optional file and line reference.
   </Card>
   <Card title="Remediations" icon="wrench">
     One or more concrete remediation options, each of type `code_change` (a full unified git diff plus ready-to-publish PR title and body) or `external_action` (a self-contained prompt for a human or downstream agent to act on).
