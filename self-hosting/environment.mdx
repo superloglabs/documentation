@@ -1,16 +1,16 @@
 ---
-title: "Environment Variables Reference for Self-Hosting Responder"
-sidebarTitle: "Environment"
-description: "Reference for all environment variables that configure Responder's control plane and worker, including database, auth, AI, and integration secrets."
+title: "Environment variables"
+sidebarTitle: "Environment variables"
+description: "Environment variables for the Superlog control plane and worker: database, sign-in, sandboxes, models, integrations, and billing."
 ---
 
-Responder's control plane and worker are configured entirely through environment variables. Both services share a PostgreSQL database and must agree on a small set of shared secrets — most notably the encryption key and internal token. Inject all secrets through your deployment platform's secret store rather than committing them to source control. The sections below cover every variable a self-hosting operator needs to set, grouped by concern.
+The control plane and worker are configured through environment variables. Both services share a Postgres database and must use the same encryption key and internal token. Inject secrets through your platform's secret store. The repository's [`.env.example`](https://github.com/superloglabs/responder-oss/blob/main/.env.example) lists every option.
 
 ---
 
 ## Core / Required
 
-These variables must be set before Responder will start correctly. The encryption key and internal token are shared across both services.
+Set these before starting either service. The encryption key and internal token are shared across both services.
 
 <Warning>
   `CREDENTIAL_ENCRYPTION_KEY` and `INTERNAL_INGEST_TOKEN` must be **identical** on both the control plane and the worker. If they differ, the worker cannot decrypt integration credentials and authenticated internal requests will fail.
@@ -54,30 +54,42 @@ These variables must be set before Responder will start correctly. The encryptio
   Secret used by Better Auth to sign and verify session tokens. Use a long, random string. Changing this value invalidates all active sessions.
 </ParamField>
 
-<ParamField path="RESPONDER_PUBLIC_URL" type="string" required>
-  Stable public HTTPS origin of your Responder deployment, for example `https://responder.example.com`. Responder uses this value to construct OAuth redirect URIs, webhook URLs, and invitation links. It must be reachable by external providers.
+<ParamField path="RESPONDER_PUBLIC_URL" type="string">
+  Optional. Stable public HTTPS origin for integration OAuth callbacks and webhooks, for example `https://superlog.example.com`. Defaults to `BETTER_AUTH_URL`. It must be reachable by external providers.
+</ParamField>
+
+<ParamField path="RESPONDER_NEW_ORGANIZATION_CAPABILITIES" type="string">
+  Comma-separated capabilities that every new workspace starts with. Set to `automations,simplified_navigation` to give new workspaces the automations product described in these docs. Applies only to workspaces created after it is set.
+</ParamField>
+
+<ParamField path="CONTROL_PLANE_URL" type="string">
+  Public app URL used in links that the worker sends, such as Slack messages.
+</ParamField>
+
+<ParamField path="SUPERUSER_EMAILS" type="string">
+  Optional. Comma-separated sign-in emails that get platform-wide support access. Leave empty unless you operate the deployment for other teams.
 </ParamField>
 
 ---
 
-## AI / Investigation
+## Sandboxes and models
 
-Responder runs investigations inside isolated Daytona sandboxes and calls model providers through the worker. At minimum, set `DAYTONA_API_KEY` and `OPENAI_API_KEY` to enable investigations.
+Runs execute in Daytona sandboxes. Set `DAYTONA_API_KEY` for any run, and `AI_GATEWAY_API_KEY` for automations on included usage.
 
 <ParamField path="DAYTONA_API_KEY" type="string" required>
-  API key for Daytona. Required for two features: storing workspace secrets in Daytona's write-only vault, and creating the isolated sandboxes in which investigations run. Without this key, no investigations can start.
-</ParamField>
-
-<ParamField path="OPENAI_API_KEY" type="string" required>
-  OpenAI API key used by the worker to run investigations. Required unless every workspace provides its own API key through Model Access settings.
+  API key for Daytona. Required to create run sandboxes and to store workspace secrets in Daytona's write-only vault.
 </ParamField>
 
 <ParamField path="AI_GATEWAY_API_KEY" type="string">
-  Enables Jev-powered initial triage reactions on incoming issues and funds automation runs that use Responder's included usage instead of an organization-supplied API key. Omit this variable to disable both features.
+  Vercel AI Gateway key that funds automation runs on included usage. Workspaces with their own API key or ChatGPT subscription do not need it. Without it, automations need a workspace key or subscription.
+</ParamField>
+
+<ParamField path="OPENAI_API_KEY" type="string">
+  OpenAI API key the worker uses for tag mode. Workspace model keys in **Settings → Models** apply to automations only.
 </ParamField>
 
 <ParamField path="OPENAI_AGENT_MODEL" type="string" default="gpt-5.6-sol">
-  Override the default investigation model. Accepts any model identifier supported by your OpenAI API key. Leave unset to use the default `gpt-5.6-sol`.
+  Overrides the tag mode model. Defaults to `gpt-5.6-sol`.
 </ParamField>
 
 <ParamField path="DAYTONA_API_URL" type="string">
@@ -92,17 +104,17 @@ Responder runs investigations inside isolated Daytona sandboxes and calls model 
 
 ## Authentication
 
-Responder uses Better Auth for session management. OAuth providers are optional but recommended so your team can sign in without managing passwords.
+Sign-in uses Better Auth. Email and password sign-in is always available. Google and GitHub sign-in are optional.
 
 <ParamField path="BETTER_AUTH_URL" type="string" required>
-  Full URL of the authentication service. In most deployments this is the same as `RESPONDER_PUBLIC_URL`, for example `https://responder.example.com`.
+  Public origin of the app, for example `https://superlog.example.com`.
 </ParamField>
 
 <ParamField path="AUTH_GOOGLE_CLIENT_ID" type="string">
   Google OAuth 2.0 client ID for Google login. Create an OAuth app in Google Cloud Console and set the authorized redirect URI to:
 
   ```text
-  https://responder.example.com/api/auth/callback/google
+  https://superlog.example.com/api/auth/callback/google
   ```
 </ParamField>
 
@@ -114,7 +126,7 @@ Responder uses Better Auth for session management. OAuth providers are optional 
   GitHub OAuth app client ID for GitHub login. Set the authorization callback URL to:
 
   ```text
-  https://responder.example.com/api/auth/callback/github
+  https://superlog.example.com/api/auth/callback/github
   ```
 </ParamField>
 
@@ -124,12 +136,12 @@ Responder uses Better Auth for session management. OAuth providers are optional 
 
 ---
 
-## Notifications
+## Invitation email
 
-Responder sends workspace invitation emails through Resend. If you do not configure Resend, invitation links are still created and can be copied manually from the Invitations screen.
+Invitation emails are sent through Resend. Without it, invitations are still created and their links can be copied from **Settings → Workspace**.
 
 <ParamField path="RESEND_API_KEY" type="string">
-  API key for [Resend](https://resend.com). When set, Responder emails workspace invitations to the invited address. When omitted, invitations are created but emails are not sent — share the link manually instead.
+  API key for [Resend](https://resend.com). When omitted, invitations are created but not emailed.
 </ParamField>
 
 <ParamField path="RESPONDER_FROM_EMAIL" type="string" default="Responder <no-reply@superlog.sh>">
@@ -144,7 +156,7 @@ Responder sends workspace invitation emails through Resend. If you do not config
 
 ## Integrations (First-Party Apps)
 
-Each first-party integration requires an OAuth app or GitHub App registered at the provider. Set `RESPONDER_PUBLIC_URL` before configuring any integration — all callback and webhook URLs are derived from it.
+These integrations need an app registered with the provider. Callback and webhook URLs use your public origin. Dash0, PostHog, Grafana, Axiom, ClickStack, Langfuse, Upstash, Supabase, Datadog, and custom MCP servers need no deployment-level configuration.
 
 ### GitHub
 
@@ -173,7 +185,8 @@ Configure a distributed Slack app with bot and user scopes as described in the i
 | `SLACK_SIGNING_SECRET` | Signing secret used to verify incoming Slack event payloads |
 
 OAuth callback: `{RESPONDER_PUBLIC_URL}/api/integrations/slack/callback`  
-Events and actions URL: `{RESPONDER_PUBLIC_URL}/api/webhooks/slack`
+Events URL: `{RESPONDER_PUBLIC_URL}/api/webhooks/slack`  
+Interactivity URL: `{RESPONDER_PUBLIC_URL}/api/webhooks/slack/actions`
 
 ### Sentry
 
@@ -229,10 +242,10 @@ Interactions endpoint: `{RESPONDER_PUBLIC_URL}/api/webhooks/discord`
 
 ## AWS Integration
 
-AWS support requires a stable broker IAM role that Responder assumes to access customer AWS accounts. The CloudFormation template variables are optional but recommended for production — they let Responder generate a short-lived presigned S3 URL instead of offering a file download.
+AWS support requires a stable broker IAM role that Superlog assumes to access customer AWS accounts. The CloudFormation template variables are optional but recommended for production — they let Superlog generate a short-lived presigned S3 URL instead of offering a file download.
 
 <ParamField path="AWS_INTEGRATION_PRINCIPAL_ARN" type="string">
-  ARN of the stable broker IAM role that Responder assumes in order to call `sts:AssumeRole` on customer `ResponderInvestigationRole` roles. Required for AWS context to work on self-hosted deployments. The broker must allow `sts:AssumeRole` only on roles named `ResponderInvestigationRole`.
+  ARN of the stable broker IAM role that Superlog assumes in order to call `sts:AssumeRole` on customer `ResponderInvestigationRole` roles. Required for AWS context to work on self-hosted deployments. The broker must allow `sts:AssumeRole` only on roles named `ResponderInvestigationRole`.
 
   ```text
   arn:aws:iam::123456789012:role/ResponderBrokerRole
@@ -240,7 +253,7 @@ AWS support requires a stable broker IAM role that Responder assumes to access c
 </ParamField>
 
 <ParamField path="AWS_INTEGRATION_TEMPLATE_BUCKET" type="string">
-  Name of the private S3 bucket that hosts the CloudFormation stack template. When all three `AWS_INTEGRATION_TEMPLATE_*` values are set, Responder generates a presigned URL for CloudFormation Quick Create instead of offering a file download.
+  Name of the private S3 bucket that hosts the CloudFormation stack template. When all three `AWS_INTEGRATION_TEMPLATE_*` values are set, Superlog generates a presigned URL for CloudFormation Quick Create instead of offering a file download.
 </ParamField>
 
 <ParamField path="AWS_INTEGRATION_TEMPLATE_KEY" type="string">
@@ -255,7 +268,7 @@ AWS support requires a stable broker IAM role that Responder assumes to access c
 
 ## Google Cloud Integration
 
-Google Cloud setup uses a one-time OAuth flow to provision customer-owned Workload Identity Federation resources. Responder does not store a long-lived token — the setup token is used and revoked during the background setup job.
+Google Cloud setup uses a one-time OAuth flow to provision customer-owned Workload Identity Federation resources. Superlog does not store a long-lived token — the setup token is used and revoked during the background setup job.
 
 <ParamField path="GCP_OAUTH_CLIENT_ID" type="string">
   Client ID of the Google OAuth web client used during Google Cloud project setup. The Google Cloud project that owns this client must have the Cloud Resource Manager, Service Usage, and IAM APIs enabled.
@@ -266,7 +279,7 @@ Google Cloud setup uses a one-time OAuth flow to provision customer-owned Worklo
 </ParamField>
 
 <Note>
-  The Google Cloud integration also requires `AWS_INTEGRATION_PRINCIPAL_ARN`. Responder uses the same AWS broker role to federate a short-lived Google Cloud identity via Workload Identity Federation. Self-hosted deployments must run on AWS with permission to assume that role.
+  The Google Cloud integration also requires `AWS_INTEGRATION_PRINCIPAL_ARN`. Superlog uses the same AWS broker role to federate a short-lived Google Cloud identity via Workload Identity Federation. Self-hosted deployments must run on AWS with permission to assume that role.
 </Note>
 
 OAuth callback: `{RESPONDER_PUBLIC_URL}/api/integrations/gcp/callback`
@@ -275,12 +288,23 @@ OAuth callback: `{RESPONDER_PUBLIC_URL}/api/integrations/gcp/callback`
 
 ## Billing (Optional)
 
-Billing tracks monthly investigation credits and usage allowances per organization. Enable it only if you want usage metering — Responder runs without it.
+Billing meters each workspace's monthly usage allowance through [Autumn](https://useautumn.com). Without it, usage is not metered or limited.
 
 <ParamField path="BILLING_ENABLED" type="string" default="false">
-  Set to `true` to enable Autumn-powered usage metering. When enabled, investigations, pull request reviews, and remediation runs draw from each organization's monthly allowance. Configure this on **both** the control plane and the worker.
+  Set to `true` to meter usage. Automations and tag mode draw on each workspace's monthly allowance. Configure it on both services.
 </ParamField>
 
 <ParamField path="AUTUMN_SECRET_KEY" type="string">
   Secret key for the [Autumn](https://useautumn.com) billing service. Required when `BILLING_ENABLED=true`. Configure this on both the control plane and the worker.
 </ParamField>
+
+---
+
+## Monitoring and analytics (optional)
+
+| Variable | Purpose |
+|---|---|
+| `SENTRY_DSN`, `VITE_SENTRY_DSN` | Error monitoring for the services and the browser app. |
+| `SENTRY_ENVIRONMENT`, `SENTRY_RELEASE`, `SENTRY_TRACES_SAMPLE_RATE` | Server error monitoring settings. `VITE_`-prefixed versions apply to the browser. |
+| `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` | Build-time source map upload. Never expose the auth token through a `VITE_` variable. |
+| `POSTHOG_PROJECT_TOKEN`, `POSTHOG_HOST` | Product analytics from the services. `VITE_`-prefixed versions apply to the browser. |

@@ -1,0 +1,55 @@
+---
+title: "Tag mode"
+description: "Mention Superlog in Slack to ask questions about your code, logs, and infrastructure, and get an answer in the thread."
+---
+
+Tag mode lets anyone in your Slack workspace mention Superlog and get an answer in the thread. Use it for questions like "why is checkout slow since this morning?" or "did yesterday's deploy change how retries work?". Superlog looks at your connected integrations and repositories and replies with what it found, the evidence, and a suggested next step.
+
+Tag mode is read-only. It does not open pull requests, create tickets, or change anything in your tools. For work that should act, use an [automation](/automations/overview).
+
+## Turn on tag mode
+
+<Steps>
+  <Step title="Connect Slack">
+    Tag mode needs a Slack connection. Add Slack from **Integrations** if it is not connected.
+  </Step>
+  <Step title="Open tag mode">
+    Click **Tag mode** in the sidebar and turn on **Slack tag mode**.
+  </Step>
+  <Step title="Choose what it can see">
+    Under **Connected integrations**, turn each integration on or off. For GitHub, click configure and select the repositories it may read. For Vercel, select the projects. Use **Add integration** to connect more tools.
+  </Step>
+  <Step title="Add secrets (optional)">
+    Under **Workspace secrets**, click **Choose secrets** to let tag mode call your own APIs. See [Workspace secrets](/settings/workspace-secrets).
+  </Step>
+  <Step title="Adjust the prompt (optional)">
+    Under **Prompt**, edit the instructions tag mode follows for every question.
+  </Step>
+</Steps>
+
+Changes save automatically.
+
+## Ask a question
+
+Mention the Superlog app in a channel it can read and write your question in the same message. Superlog adds an 👀 reaction, posts an "Investigating…" card in the thread, and then replies with its answer.
+
+Mention Superlog again in the same thread to ask a follow-up. It continues the same conversation with the context it already gathered for up to 24 hours.
+
+## What tag mode can use
+
+Tag mode can read from every integration you turn on for it:
+
+| Category | Integrations |
+|---|---|
+| Code and deployment | GitHub (read-only), Vercel |
+| Observability | Sentry, Datadog, Dash0, PostHog, Grafana, Axiom, ClickStack, Langfuse |
+| Cloud and data | AWS, Google Cloud, Upstash, Supabase, custom MCP servers |
+| Workflow | Linear (read-only) |
+
+Tag mode can also edit code and run commands inside its sandbox to test an idea. Nothing in the sandbox is published.
+
+## Tag mode and automations
+
+Slack automations with an **App mentioned** trigger run alongside tag mode. If you want a mention to do something specific, such as fix a bug and open a pull request, create an automation for it. See [Triggers](/automations/triggers#slack).
+
+Tag mode questions use your plan's usage allowance. See [Billing](/settings/billing).

@@ -1,130 +1,86 @@
 ---
-title: "Deploy Responder: Self-Host on Your Infrastructure"
+title: "Deploy Superlog"
 sidebarTitle: "Deployment"
-description: "Self-host Responder as two Node.js services backed by Postgres. Deploy on any platform that supports containers or Node.js runtimes."
+description: "Deploy the Superlog control plane and worker on your own infrastructure."
 ---
 
-Self-host Responder on any infrastructure that supports Node.js or containers. You run two long-running services — the **control plane** and the **worker** — backed by a single Postgres database. Both services ship with Dockerfiles you can use as starting points, and the application has no dependency on a specific cloud provider.
+You run two long-running services, the **control plane** and the **worker**, backed by one Postgres database. Both ship with Dockerfiles you can use as starting points. The application does not depend on a specific cloud provider.
 
-## Architecture
-
-```text
-Browser / alert providers
-        │  HTTPS
-        ▼
-  control plane  (dashboard + API)
-        │
-        ├── authentication & workspace config
-        ├── encrypted integration credentials
-        └── investigation job queue ──────────┐
-                                              ▼
-                                           worker
-                                     ┌───────┼───────┐
-                                     ▼       ▼       ▼
-                                  sandbox  model  providers
-                                          │
-                                       Postgres (shared)
-```
-
-The control plane serves the React dashboard and handles all inbound traffic: user authentication, webhook ingestion from alert providers, and OAuth callbacks from integrations. The worker runs entirely in the background — it claims jobs from the queue, executes investigations in isolated sandboxes, and writes results back to the database.
-
-Both services must share the same `DATABASE_URL`, `CREDENTIAL_ENCRYPTION_KEY`, and `INTERNAL_INGEST_TOKEN`. Keep these values consistent across deployments and rotations.
+Both services need the same `DATABASE_URL`, `CREDENTIAL_ENCRYPTION_KEY`, and `INTERNAL_INGEST_TOKEN`.
 
 <Warning>
-  You are responsible for TLS termination, network isolation, database backups, secret injection, observability, scaling, and rollbacks. Responder does not manage any of these concerns for self-hosted deployments.
+  You are responsible for TLS termination, network isolation, database backups, secret injection, monitoring, scaling, and rollbacks.
 </Warning>
 
-## Step-by-step deployment
+## Deploy
 
 <Steps>
   <Step title="Build the control plane">
-    The control plane lives in `apps/control-plane`. Use the included Dockerfile to build a container image, or run a standard Vite production build and serve the output yourself:
-
     ```bash
-    # Build using the included Dockerfile
-    docker build -f apps/control-plane/Dockerfile -t responder-control-plane .
+    docker build -f apps/control-plane/Dockerfile -t superlog-control-plane .
     ```
 
-    The Dockerfile is a generic building block. Adapt the networking, base image, and build arguments to match your platform.
+    The Dockerfile is a generic building block. Adapt the networking, base image, and build arguments to your platform.
   </Step>
 
-  <Step title="Serve the dashboard and route API traffic">
-    Serve the compiled static assets (`apps/control-plane/dist`) at your public origin and proxy all `/api/*` requests to the control-plane service. Both the dashboard and the API must share the same origin so browser authentication, OAuth callbacks, and provider webhooks all resolve to a stable URL.
+  <Step title="Serve the app and API from one origin">
+    Serve the built assets in `apps/control-plane/dist` at your public origin, and route `/api/*` on the same origin to the control-plane service. Sign-in, OAuth callbacks, and webhooks all depend on one stable origin.
 
     ```text
-    https://your-domain.com/          → static assets (React app)
-    https://your-domain.com/api/*     → control-plane service
+    https://superlog.example.com/        → static assets
+    https://superlog.example.com/api/*   → control-plane service
     ```
 
-    Set `RESPONDER_PUBLIC_URL` to this origin before starting the service. Webhooks and OAuth redirect URIs are derived from this value.
+    Set `BETTER_AUTH_URL` to this origin. Set `RESPONDER_PUBLIC_URL` too if integration callbacks and webhooks should use a different public origin. OAuth redirect URIs and webhook URLs are derived from it.
   </Step>
 
   <Step title="Run the worker">
-    The worker lives in `apps/worker`. Build and start it with the same database and encryption configuration as the control plane:
-
     ```bash
-    # Build using the included Dockerfile
-    docker build -f apps/worker/Dockerfile -t responder-worker .
+    docker build -f apps/worker/Dockerfile -t superlog-worker .
     ```
 
-    The worker does not serve any public traffic and does not need to be reachable from the internet. It only needs outbound access to your database, model APIs, and connected provider APIs.
+    The worker serves no public traffic. It needs outbound access to the database, Daytona, model providers, and connected integrations.
   </Step>
 
-  <Step title="Apply database migrations">
-    Run all database migrations against your Postgres database before starting a new release. Migrations are ordered and must be applied in sequence.
+  <Step title="Apply migrations">
+    Before each release starts, apply every migration in `drizzle/`:
 
     ```bash
     pnpm db:migrate
     ```
-
-    Run this step on each deployment before the new service version starts accepting traffic. Skipping migrations on upgrade will cause startup failures or data errors.
   </Step>
 
-  <Step title="Set RESPONDER_PUBLIC_URL">
-    Set `RESPONDER_PUBLIC_URL` to your stable HTTPS origin on the control-plane service. This value is used to construct OAuth redirect URIs and provider webhook URLs, so it must be reachable from the public internet and must not change between deployments.
-
-    ```bash
-    RESPONDER_PUBLIC_URL=https://your-domain.com
-    ```
-
-    <Warning>
-      Changing `RESPONDER_PUBLIC_URL` after you have connected integrations will break OAuth callbacks and stop incoming webhooks. Update the redirect URI and webhook URL in each provider's settings if you need to change this value.
-    </Warning>
+  <Step title="Turn on automations">
+    Set `RESPONDER_NEW_ORGANIZATION_CAPABILITIES=automations,simplified_navigation` on the control plane so new workspaces get the automations product. See [Self-hosting overview](/self-hosting/overview#turn-on-automations).
   </Step>
 </Steps>
 
-## Required environment variables
+<Warning>
+  Changing the public origin after integrations are connected breaks their OAuth callbacks and webhooks. Update the redirect and webhook URLs in each provider app if you change it.
+</Warning>
 
-Inject these values through your deployment's secret environment. Never commit them to source control.
+## Required configuration
 
-| Variable | Service | Description |
+| Variable | Service | Purpose |
 |---|---|---|
-| `DATABASE_URL` | Both | Postgres connection string, e.g. `postgresql://user:pass@host:5432/responder` |
-| `CREDENTIAL_ENCRYPTION_KEY` | Both | Base64-encoded 32-byte key used to encrypt stored integration credentials. **Must be identical on both services.** |
-| `DAYTONA_API_KEY` | Both | Required to store workspace secrets in Daytona's vault and to run investigation sandboxes |
-| `OPENAI_API_KEY` | Worker | Required to run investigations |
-| `AI_GATEWAY_API_KEY` | Both | Optional. Enables initial triage reactions and funds automation runs that use Responder's included usage instead of your own model key |
-| `OPENAI_AGENT_MODEL` | Worker | Optional. Overrides the default investigation model |
-| `BETTER_AUTH_SECRET` | Control plane | Secret used to sign authentication sessions |
-| `RESPONDER_PUBLIC_URL` | Control plane | Stable HTTPS origin for webhooks and OAuth callbacks |
-| `INTERNAL_INGEST_TOKEN` | Both | Shared secret that authenticates requests from the control plane to the worker |
+| `DATABASE_URL` | Both | Postgres connection string. |
+| `CREDENTIAL_ENCRYPTION_KEY` | Both | Base64-encoded 32-byte key that encrypts stored credentials. Must match on both services. |
+| `INTERNAL_INGEST_TOKEN` | Both | Shared token for internal requests. Must match on both services. |
+| `DAYTONA_API_KEY` | Both | Sandboxes for runs, and the vault for workspace secrets. |
+| `BETTER_AUTH_SECRET` | Control plane | Signs sign-in sessions. |
+| `BETTER_AUTH_URL` | Control plane | Public origin of the app. |
+| `AI_GATEWAY_API_KEY` | Both | Included usage for automations. Optional if every workspace brings its own key or subscription. |
+| `OPENAI_API_KEY` | Worker | Tag mode. |
 
-<Note>
-  The full list of available configuration options — including optional analytics, error monitoring, and first-party OAuth application credentials — is documented in [`.env.example`](https://github.com/superloglabs/responder-oss/blob/main/.env.example) in the repository.
-</Note>
-
-### Generate a credential encryption key
-
-Use any cryptographically secure random source to generate the 32-byte key:
+Generate the encryption key and internal token with:
 
 ```bash
-openssl rand -base64 32
+openssl rand -base64 32   # CREDENTIAL_ENCRYPTION_KEY
+openssl rand -hex 32      # INTERNAL_INGEST_TOKEN
 ```
 
-Store the output as `CREDENTIAL_ENCRYPTION_KEY`. Set the same value on both the control plane and the worker — mismatched keys will cause credential decryption failures at investigation time.
+See [Environment variables](/self-hosting/environment) for every option.
 
 ## After deployment
 
-Once your services are running, connect your alert sources and context providers from the **Integrations** section of the dashboard. Provider OAuth flows and webhook registration require your `RESPONDER_PUBLIC_URL` to be reachable.
-
-See the [Integrations overview](/integrations/overview) to set up Sentry, Datadog, Slack, GitHub, and the other supported providers.
+Create provider apps for the integrations you want. Each integration page lists the required callback URLs, webhooks, and permissions. Integrations whose provider app is not configured show **Unavailable** in the app.

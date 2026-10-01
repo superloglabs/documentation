@@ -1,73 +1,49 @@
 ---
-title: "Connect Slack to Responder for Alerts and Reports"
-sidebarTitle: "Slack"
-description: "Connect Slack to watch channels for alerts, deliver investigation reports as thread replies or channel posts, and run ad-hoc investigations via mentions."
+title: "Slack"
+description: "Connect Slack to start automations from messages and mentions, let agents post and reply, and use tag mode."
 ---
 
-Slack is the most flexible integration in Responder — it acts as a trigger, a reporting channel, and an investigation context source all at once. Once connected, you can point an agent at any Slack channel to watch for incoming alerts, receive structured investigation reports right where your team already works, and kick off ad-hoc investigations simply by @mentioning the bot.
+Slack is where most teams talk to Superlog. Messages and mentions start automations, agents reply in threads and post to channels, and tag mode answers questions when someone mentions Superlog.
 
-## Trigger types
+## Connect Slack
 
-Responder supports three ways to start an investigation from Slack:
+In **Integrations**, click **Add** on Slack and approve the app in your Slack workspace. To watch or post in a private channel, invite the Superlog app to that channel first.
 
-**Channel watcher** — The agent monitors a specific Slack channel for incoming alert messages. Any tool that can post to Slack (CloudWatch alarms forwarded by Amazon Q Developer, PostHog alerts, Datadog notifications, and more) can feed into a channel watcher. Responder starts a new investigation each time a recognized alert arrives.
+## Start automations from Slack
 
-**Mention** — The bot is @mentioned in a channel. Responder starts an investigation using the message content as the prompt. You can configure which channels are eligible for mention-triggered investigations on the agent.
+Add a Slack trigger to an automation and pick the channels to watch:
 
-**Thread mode** — When enabled, the bot replies to any Slack thread it is mentioned in. Thread mode is configured separately from channel-watcher and mention triggers and gives your team a conversational interface to any ongoing discussion.
+- **New message in channel** for alert channels and request channels.
+- **App mentioned** for requests addressed to Superlog.
+- **Message posted or app mentioned** for both.
 
-<Note>
-  Thread mode is a workspace-level configuration, not a per-agent setting. Enable it from **Settings → Integrations → Slack → Thread mode**.
-</Note>
+Tools that post alerts to Slack, such as Datadog, PostHog, Sentry, or AWS CloudWatch through Amazon Q Developer, can start runs this way. Recovery and resolved notifications from those tools are ignored. See [Triggers](/automations/triggers#slack).
 
-## Reporting modes
+When a Slack message starts a run, Superlog posts a progress card in the thread. People can reply in the thread to continue the run.
 
-When an investigation completes, Responder can deliver its report in three ways. You choose the mode on each agent:
+## Let agents use Slack
 
-| Mode | Behavior |
-|---|---|
-| `thread` | Replies directly in the originating Slack thread. Requires a Slack channel or mention trigger. |
-| `output_channel` | Posts a structured report to a designated output channel, regardless of where the trigger came from. |
-| `both` | Replies in the originating thread *and* posts to the output channel. |
+Add Slack as a connector to let the agent:
 
-## CloudWatch alarm forwarding
+- Search for channels, and read channels and threads.
+- Post messages and thread replies.
+- Add and remove reactions.
 
-Watched Slack channels accept CloudWatch ALARM notifications forwarded by Amazon Q Developer in chat applications. Responder starts investigations only for messages in `ALARM` state — it normalizes the alarm name, region, state, and CloudWatch link from the notification and ignores `OK` and `INSUFFICIENT_DATA` messages. Add the matching AWS account as agent context so Responder can inspect the exact alarm, metric history, affected resource, and related logs.
+Without the Slack connector, an agent started from Slack can read and reply only in its own thread. See [Connectors](/automations/connectors#slack).
 
-## Connect Slack to your workspace
+Scheduled automations can also post each finished run to Slack channels. See [Notifications](/automations/runs#notifications).
 
-<Steps>
-  <Step title="Open Integrations settings">
-    In Responder, go to **Settings → Integrations** and click **Connect** next to Slack.
-  </Step>
-  <Step title="Authorize with OAuth">
-    You are redirected to Slack's OAuth consent screen. Sign in to the Slack workspace you want to connect and click **Allow**.
-  </Step>
-  <Step title="Return to Responder">
-    Responder stores your workspace connection and displays it as an active integration account.
-  </Step>
-  <Step title="Configure an agent trigger">
-    Open an agent's configuration, select **Trigger**, and choose one of:
-    - **Slack channel** — pick the channel to watch for alerts
-    - **Slack mention** — pick the channels where @mentions should trigger investigations
-  </Step>
-  <Step title="Configure reporting">
-    Under **Reporting**, choose `thread`, `output_channel`, or `both`. For `output_channel` or `both`, select the channel where reports should be posted.
-  </Step>
-  <Step title="Save the agent">
-    Click **Save**. The agent is now active and will start investigations when the trigger condition is met.
-  </Step>
-</Steps>
+## Tag mode
 
-<Note>
-  If you want to watch a **private channel**, you must invite the Responder bot to that channel before Responder can monitor it. Open the channel in Slack, type `/invite @Responder` (or the name of your bot), and confirm.
-</Note>
+When tag mode is on, mentioning Superlog in any channel it can read starts a read-only investigation that replies in the thread. See [Tag mode](/tag-mode).
 
-## Required OAuth scopes
+## Self-hosted setup
 
-Your Responder operator configures the Slack app used by your workspace. For reference, the app requires the following bot scopes:
+Self-hosted deployments need their own distributed Slack app.
 
-```
+Bot scopes:
+
+```text
 app_mentions:read
 channels:history
 channels:join
@@ -79,19 +55,17 @@ groups:read
 reactions:write
 ```
 
-And the following user scope:
+User scope:
 
-```
+```text
 search:read
 ```
 
-## Webhook endpoints
-
-The Slack app is configured to send events and interaction payloads to:
-
-| Type | Endpoint |
+| Setting | Value |
 |---|---|
-| Events (messages, mentions) | `POST /api/webhooks/slack` |
-| Interactivity (button clicks, modals) | `POST /api/webhooks/slack/actions` |
+| OAuth redirect URL | `<public-url>/api/integrations/slack/callback` |
+| Event subscriptions URL | `<public-url>/api/webhooks/slack` |
+| Bot events | `app_mention`, `message.channels`, `message.groups` |
+| Interactivity URL | `<public-url>/api/webhooks/slack/actions` |
 
-These are set up by your operator during deployment. No action is required on your part as a user.
+Set `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`, and `SLACK_SIGNING_SECRET`. See [Environment variables](/self-hosting/environment).

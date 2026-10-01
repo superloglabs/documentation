@@ -1,100 +1,90 @@
 ---
-title: "Quickstart: Run Responder Locally in Under 5 Minutes"
-sidebarTitle: "Quick Start"
-description: "Install and run Responder locally with Docker in minutes, create your first workspace, add your API keys, and trigger your first investigation."
+title: "Run Superlog locally"
+sidebarTitle: "Local development"
+description: "Run the full Superlog stack on your machine with Docker and pnpm."
 ---
 
-Get Responder running on your machine in under five minutes. The local setup starts a full stack — Postgres, the control plane, and the worker — behind a local HTTPS address so you can explore the dashboard and create your first agent before configuring any external integrations.
+The local setup runs Postgres, the control plane, and the worker behind a local HTTPS address.
 
 ## Prerequisites
 
-Make sure you have the following installed before you begin:
+- **Node.js 24 or newer**
+- **pnpm 11**
+- **Docker**
 
-- **Node.js 24+** — [nodejs.org](https://nodejs.org)
-- **pnpm 11** — `npm install -g pnpm`
-- **Docker** — [docs.docker.com/get-docker](https://docs.docker.com/get-docker/)
-
-## Start Responder
+## Start the stack
 
 <Steps>
-  <Step title="Clone the repository and install dependencies">
-    Clone the Responder repository and run the one-command setup:
-
+  <Step title="Clone and set up">
     ```bash
     git clone https://github.com/superloglabs/responder-oss.git
     cd responder-oss
     pnpm local:setup
     ```
 
-    `local:setup` installs all dependencies, generates a gitignored `.env.local` file pre-filled with local values, starts Postgres, applies the database migrations, and creates a local example runtime profile. You only need to run this once.
+    `local:setup` installs dependencies, generates a gitignored `.env.local`, starts Postgres, applies the migrations, and creates a local example runtime profile. Run it once.
   </Step>
 
-  <Step title="Start the development stack">
-    Bring up the full stack:
+  <Step title="Configure .env.local">
+    Open `.env.local` and set:
 
+    ```bash
+    # Give new workspaces the automations product
+    RESPONDER_NEW_ORGANIZATION_CAPABILITIES=automations,simplified_navigation
+
+    # Sandboxes for runs, and the vault for workspace secrets
+    DAYTONA_API_KEY=
+
+    # Included usage for automations through Vercel AI Gateway
+    AI_GATEWAY_API_KEY=
+
+    # Tag mode
+    OPENAI_API_KEY=
+    ```
+
+    Without `AI_GATEWAY_API_KEY`, automations still run when the workspace adds its own API key or ChatGPT subscription in **Settings → Models**.
+  </Step>
+
+  <Step title="Start the stack">
     ```bash
     pnpm local:dev
     ```
 
-    The command prints the local HTTPS address for your dashboard — open it in your browser. If you have a public tunnel configured, the command also claims it for the current working directory so OAuth callbacks and webhooks resolve correctly.
+    The command prints the local HTTPS address. Restart the stack after changing `.env.local`.
   </Step>
 
   <Step title="Create an account and workspace">
-    Open the dashboard URL printed in your terminal. Create an account using the sign-up form, then follow the prompt to create your first **workspace**.
-
-    <Note>
-      The UI and authentication flow work without any provider credentials. You can browse the dashboard, view demo data, and configure agents right away.
-    </Note>
-  </Step>
-
-  <Step title="Add your API keys">
-    Two keys unlock the core investigation features. Open `.env.local` in the project root and fill in:
-
-    ```bash
-    # Required to store workspace secrets and run investigations
-    DAYTONA_API_KEY=your_daytona_api_key
-
-    # Required to run investigations
-    OPENAI_API_KEY=your_openai_api_key
-    ```
-
-    | Key | Where to get it | Purpose |
-    |---|---|---|
-    | `DAYTONA_API_KEY` | [Daytona dashboard](https://app.daytona.io) | Stores workspace secrets in Daytona's write-only vault and runs investigation sandboxes |
-    | `OPENAI_API_KEY` | [platform.openai.com](https://platform.openai.com) | Powers the investigation agent's reasoning |
-
-    After saving `.env.local`, restart the stack so the new values take effect:
-
-    ```bash
-    # Stop the running stack (Ctrl+C or in a second terminal)
-    pnpm local:down
-
-    # Start it again
-    pnpm local:dev
-    ```
-
-    <Tip>
-      Provider OAuth flows and incoming webhooks (Sentry, Datadog, Slack) require a publicly reachable HTTPS origin. See the [integrations documentation](/integrations/overview) for the local tunnel workflow.
-    </Tip>
-  </Step>
-
-  <Step title="Create your first agent">
-    With the stack running and your API keys in place, you're ready to configure an investigation agent. An agent defines which alert triggers to watch, which context sources to query, and how to deliver its findings.
-
-    Follow the [Create an Agent](/guides/create-agent) guide to set one up in the dashboard.
+    Open the printed address, sign up, and create a workspace. It opens on **Automations**. Follow the [Quickstart](/quickstart) from step 2.
   </Step>
 </Steps>
 
-## Stop the stack
+The app and sign-in work without provider credentials. Integration OAuth flows and webhooks need a public HTTPS address. Set `RESPONDER_NGROK_URL` to a static ngrok domain and `local:dev` starts a tunnel to it. Run `pnpm tunnel:claim` to route the tunnel to the current checkout.
 
-When you're done, stop the stack without deleting the database:
+## Seed demo data
+
+After you create a local account, you can add a demo workspace:
+
+```bash
+pnpm --filter @responder/core exec node scripts/local-seed-demo.mjs you@example.com
+```
+
+## Stop the stack
 
 ```bash
 pnpm local:down
 ```
 
-Your Postgres data is preserved in a Docker volume and will be available the next time you run `pnpm local:dev`.
+The database is kept in a Docker volume for the next `pnpm local:dev`.
 
-<Note>
-  This quick start is designed for local exploration. When you're ready to serve Responder from your own infrastructure and expose it to real alert sources, see the [Deployment](/deployment) guide.
-</Note>
+## Validate changes
+
+Run the full suite before opening a pull request:
+
+```bash
+pnpm typecheck
+pnpm lint
+pnpm test
+pnpm build
+```
+
+See [CONTRIBUTING.md](https://github.com/superloglabs/responder-oss/blob/main/CONTRIBUTING.md).

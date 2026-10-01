@@ -1,387 +1,81 @@
 ---
-title: "Observability and Productivity Tool Integrations"
-sidebarTitle: "Observability Tools"
-description: "Connect Dash0, PostHog, Grafana, Axiom, Upstash, Langfuse, Supabase, Vercel, ClickStack, Linear, and Discord to enrich Responder investigations."
+title: "More integrations"
+description: "Connect Dash0, PostHog, Grafana, Axiom, ClickStack, Langfuse, Upstash, Supabase, and Vercel as read-only context for tag mode."
 ---
 
-Responder connects to your existing observability stack so every investigation has the right data close at hand. Add any of the tools below from **Settings → Integrations** — each one becomes available as context on the Agent configuration screen, as a trigger source, or as an issue-management destination. All credentials are encrypted at rest and kept outside the investigation sandbox.
+These integrations give [tag mode](/tag-mode) read access to your telemetry, data, and deployments. Connect them from **Integrations** with **Add**, then turn them on in **Tag mode**.
 
-<Accordion title="Dash0">
+Automations cannot use these integrations as connectors. To reach one of these tools from an automation, connect it as a [custom MCP server](/integrations/custom-mcp) or call its API with a [workspace secret](/settings/workspace-secrets). Tools that post alerts to Slack can start automations through a Slack trigger.
 
-Responder connects to Dash0 via OAuth and queries your organization's observability telemetry during investigations. Dash0 also acts as a direct trigger source — when Dash0 fires an `alert.ongoing` notification, Responder starts an investigation automatically. Resolved, superseded, and closed notifications are acknowledged without starting investigations.
-
-**Connecting Dash0**
+## Dash0
 
 <Steps>
-  <Step title="Find your Dash0 MCP endpoint">
-    In Dash0, go to **Organization settings → Endpoints → MCP** and copy the organization MCP endpoint URL.
+  <Step title="Copy the MCP endpoint">
+    In Dash0, open **Organization settings → Endpoints → MCP** and copy the organization MCP endpoint URL.
   </Step>
-  <Step title="Open Settings → Integrations → Dash0">
-    Enter the MCP endpoint URL and click **Connect**. Responder dynamically registers an OAuth client and redirects you through the Dash0 consent screen. The OAuth callback is:
-
-    ```text
-    <public>/api/integrations/dash0/callback
-    ```
-
-    No deployment-level Dash0 client ID, secret, or static auth token is required. Each Dash0 organization is a separate integration account.
-  </Step>
-  <Step title="Configure the webhook notification channel">
-    After OAuth completes, Responder generates a webhook URL and Authorization header. Copy both values into a Dash0 **Webhook** notification channel under **Organization settings → Notification Channels**.
-
-    Assign that channel directly to your check rules, or route alerts to it by labels.
-  </Step>
-  <Step title="Add Dash0 as Agent context">
-    On the Agent configuration screen, select your Dash0 connection under **Context** so investigations can query your Dash0 telemetry directly.
+  <Step title="Connect">
+    In Superlog, click **Add** on Dash0, paste the **MCP endpoint URL**, and approve access in Dash0.
   </Step>
 </Steps>
 
-<Note>
-Responder exposes only MCP tools explicitly annotated as read-only and blocks Agent0 delegation tools, so investigations query Dash0 telemetry directly without consuming Agent0 investigation credits.
-</Note>
+Superlog exposes only Dash0 tools marked read-only, and blocks Agent0 delegation, so it does not use your Agent0 credits.
 
-</Accordion>
+## PostHog
 
-<Accordion title="PostHog">
+Click **Add** on PostHog and approve access. Superlog reads analytics, error tracking, session replays, dashboards, and logs through PostHog's MCP server, limited to read-only tools.
 
-Responder connects to PostHog's hosted MCP server and queries analytics, error tracking, session replays, dashboards, and logs during investigations. Only read-only tools are exposed — dashboard mutation, insight creation, and replay deletion are never available to the agent.
+To act on PostHog alerts, send them to a Slack channel and add a Slack trigger on that channel. Resolved and recovered notifications are ignored.
 
-**Connecting PostHog**
+## Grafana
 
-<Steps>
-  <Step title="Open Settings → Integrations → PostHog">
-    Click **Connect** to begin the OAuth flow.
-  </Step>
-  <Step title="Authorize in PostHog">
-    Responder dynamically registers an OAuth client against PostHog's hosted MCP endpoint — no PostHog client ID or API key is required at the deployment level. You are redirected to PostHog to grant access.
-  </Step>
-  <Step title="Return to Responder">
-    After authorization, Responder receives the project-scoped token at:
-
-    ```
-    <public>/api/integrations/posthog/callback
-    ```
+| Mode | Setup |
+|---|---|
+| **Grafana Cloud** | Enter your **Stack URL**, for example `https://acme.grafana.net`, and approve access. Superlog requests only read and query scopes. |
+| **Self-hosted Grafana** | Enter the **Grafana URL** and a **Service account token** for a service account with the Viewer role. The URL must be public HTTPS. |
 
-    The token is refreshed automatically outside the investigation sandbox.
-  </Step>
-</Steps>
+Superlog reads dashboards, data sources, Prometheus, Loki, Tempo, Pyroscope, and alerts. Write, admin, and provisioning tools are disabled.
 
-**Routing PostHog alerts to Responder**
+## Axiom
 
-PostHog does not send webhooks directly to Responder. Instead, configure a **Slack** notification destination in PostHog and point it at a Slack channel that Responder watches:
+Click **Add** on Axiom and approve access. Superlog reads logs, traces, metrics, dashboards, and monitor history. Mutation tools are blocked.
 
-1. In PostHog, create a Slack notification destination for each alert you want Responder to investigate.
-2. In Responder, add that Slack channel as a watched channel on the relevant Agent.
+Axiom's hosted MCP server routes query results through US infrastructure. Check Axiom's data routing and query cost settings before connecting sensitive or large datasets.
 
-Responder recognizes messages from the PostHog Slack app, queues the configured agent, and marks the trigger as PostHog-originated. Resolved, recovered, auto-disabled, and errored lifecycle messages are acknowledged without starting investigations, so your channel stays quiet on non-actionable events.
-
-<Note>
-The connected PostHog project is read-only investigation context. Alert delivery goes through Slack and does not require a separate public webhook or shared secret on your Responder deployment.
-</Note>
-
-</Accordion>
+## ClickStack
 
-<Accordion title="Grafana">
+Click **Add** on **ClickStack / HyperDX** and choose a mode:
 
-Responder queries Grafana dashboards, datasources, Prometheus, Loki, Tempo, Pyroscope, alerts, and more as investigation context. Alerts still reach Responder through a watched Slack channel — add Grafana as Agent context so the agent can correlate the alert with live telemetry.
+| Mode | Setup |
+|---|---|
+| **ClickStack Cloud** | Enter the **MCP URL** and **ClickHouse service ID**, then approve access with ClickHouse Cloud. |
+| **Self-hosted** | Enter the public HTTPS **MCP URL** and a **Personal API Access Key**. |
 
-**Connection modes**
+## Langfuse
 
-<CardGroup cols={2}>
-  <Card title="Grafana Cloud" icon="cloud">
-    Uses Grafana's hosted MCP server. Enter your stack URL (e.g. `https://acme.grafana.net`) and Responder handles OAuth automatically.
-  </Card>
-  <Card title="Self-Hosted Grafana" icon="server">
-    Uses the open-source `mcp-grafana` server run as a child process by the Responder worker. Provide a service account token and your Grafana URL.
-  </Card>
-</CardGroup>
+In Langfuse, open **Project Settings → API Keys** and copy the public and secret keys. In Superlog, click **Add** on Langfuse, choose the deployment (Cloud EU, US, Japan, HIPAA US, or Self-hosted), and paste the **Project public key** and **Project secret key**.
 
-**Grafana Cloud setup**
+Each key pair belongs to one Langfuse project. Connect each project separately. Superlog reads traces, observations, scores, metrics, prompts, and alerts through an allowlist of read-only tools.
 
-<Steps>
-  <Step title="Open Settings → Integrations → Grafana">
-    Select **Grafana Cloud** and enter your stack URL.
-  </Step>
-  <Step title="Authorize via OAuth">
-    Responder dynamically registers an OAuth client — no deployment-level client ID, secret, or API key is required. You are redirected to Grafana to grant `grafana:read` and `grafana:query` scopes. The OAuth callback is:
+## Upstash
 
-    ```
-    <public>/api/integrations/grafana/callback
-    ```
-  </Step>
-  <Step title="Add Grafana as Agent context">
-    On the Agent configuration screen, select your Grafana Cloud connection under **Context**.
-  </Step>
-</Steps>
+In the Upstash console, create a developer API key for Superlog. In Superlog, click **Add** on Upstash and enter the **Account email** and **Developer API key**.
 
-**Self-hosted Grafana setup**
+Superlog reads Redis, Vector, Search, QStash, and Workflow resources. Write operations are blocked, and Redis commands are checked against a read-only allowlist.
 
-<Steps>
-  <Step title="Create a Grafana service account">
-    In Grafana, go to **Administration → Service Accounts → Add service account**. Assign the **Viewer** role.
-  </Step>
-  <Step title="Generate a service account token">
-    Open the service account and click **Add service account token**. Copy the token.
-  </Step>
-  <Step title="Enter the URL and token in Responder">
-    Open **Settings → Integrations → Grafana**, select **Self-hosted**, and enter your Grafana URL and the token. The URL must use public HTTPS.
-  </Step>
-</Steps>
+## Supabase
 
-<Note>
-In both modes Responder exposes only read-only tools. Write tools, raw API access, SQL, rendering, snapshot, plugin, admin, and provisioning categories are disabled.
-</Note>
+Click **Add** on Supabase, then **Continue with Supabase** and approve access. Choose a project, then an access level:
 
-</Accordion>
-
-<Accordion title="Axiom">
+| Access level | What it allows |
+|---|---|
+| **Logs only** | Project logs. No database access. |
+| **Logs and read-only data** | Adds SQL queries and schema inspection. Supabase enforces read-only mode. |
+| **Full database SQL access** | SQL that can change data or schema. Use only for development or test projects. |
 
-Responder connects to Axiom's hosted MCP server and queries logs, traces, metrics, dashboards, and monitor history during investigations. Dashboard, monitor, and notifier mutation tools are blocked. Axiom acts as investigation context rather than an alert source — use a watched Slack channel to deliver alerts, then add Axiom as Agent context so the agent can query relevant telemetry.
-
-**Connecting Axiom**
-
-<Steps>
-  <Step title="Open Settings → Integrations → Axiom">
-    Click **Connect** to start the OAuth flow.
-  </Step>
-  <Step title="Authorize in Axiom's browser flow">
-    Responder stores the OAuth session encrypted and refreshes it outside the investigation sandbox — no Axiom API key configuration is required.
-  </Step>
-  <Step title="Add Axiom as Agent context">
-    On the Agent configuration screen, select your Axiom connection under **Context**.
-  </Step>
-</Steps>
-
-<Warning>
-Axiom's hosted MCP endpoint routes query results through US infrastructure. Review Axiom's data-routing and query-cost controls before enabling this integration for sensitive or high-volume datasets.
-</Warning>
-
-</Accordion>
-
-<Accordion title="Upstash">
-
-Responder connects to Upstash and exposes read-only inspection of Redis, Vector, Search, QStash, and team resources during investigations. Mutation tools are removed, Redis commands are validated against a read-only allowlist, and credential-shaped fields are redacted from provider output.
-
-**Connecting Upstash**
-
-<Steps>
-  <Step title="Create a dedicated Upstash API key">
-    In the [Upstash console](https://console.upstash.com), navigate to **Account → API Keys** and create a new developer API key specifically for Responder.
-  </Step>
-  <Step title="Open Settings → Integrations → Upstash">
-    Enter your Upstash account email and the API key. Upstash's developer API requires both the email and the key for authentication.
-  </Step>
-  <Step title="Add Upstash as Agent context">
-    On the Agent configuration screen, select your Upstash connection under **Context**.
-  </Step>
-</Steps>
-
-<Tip>
-Rotate or revoke the Upstash API key at any time from the Upstash console without affecting other integrations. No deployment-level environment variables are required.
-</Tip>
-
-During investigations Responder provides two read-only layers: CLI-level commands that list and inspect Redis, Vector, Search, QStash, and team resources; and a filtered MCP process that covers Redis inspection plus QStash and Workflow logs, schedules, and dead-letter queues.
-
-</Accordion>
-
-<Accordion title="Langfuse">
-
-Responder connects to Langfuse's Streamable HTTP MCP endpoint and queries observations, scores, metrics, prompts, and alerts during investigations. New upstream tools are unavailable until reviewed — only the explicit read-only allowlist is exposed.
-
-**Connecting Langfuse**
-
-<Steps>
-  <Step title="Locate your Langfuse project API keys">
-    In Langfuse, open **Project Settings → API Keys** and copy the **Public Key** and **Secret Key** for the project you want to connect.
-  </Step>
-  <Step title="Open Settings → Integrations → Langfuse">
-    Enter the public key, secret key, and select your Langfuse Cloud region — or enter the origin URL of your self-hosted Langfuse v4 deployment.
-  </Step>
-  <Step title="Add Langfuse as Agent context">
-    On the Agent configuration screen, select one or more Langfuse project connections under **Context**.
-  </Step>
-</Steps>
-
-<Note>
-Each API key pair belongs to one Langfuse project. You can connect multiple projects independently and assign any combination to an Agent. No deployment-level environment variables are required.
-</Note>
-
-</Accordion>
-
-<Accordion title="Supabase">
-
-Responder connects to Supabase via OAuth and queries project logs and, optionally, database data during investigations. You choose an access level at connection time, and the level determines which tools are available to the agent.
-
-**Access levels**
-
-<CardGroup cols={3}>
-  <Card title="Logs Only" icon="file-lines">
-    Exposes debugging logs and log retrieval tools. No database access.
-  </Card>
-  <Card title="Logs and Read-Only Data" icon="magnifying-glass">
-    Adds SQL queries and schema inspection. Supabase enforces `read_only=true` at the MCP boundary.
-  </Card>
-  <Card title="Full Database SQL Access" icon="database">
-    Exposes the same database tools without the read-only parameter — `execute_sql` can change data or schema. Use only for development or test projects.
-  </Card>
-</CardGroup>
-
-**Connecting Supabase**
+Each project and access level is a separate connection. Supabase administration and platform configuration tools stay blocked at every level.
 
-<Steps>
-  <Step title="Open Settings → Integrations → Supabase">
-    Choose your desired access level, then click **Connect**.
-  </Step>
-  <Step title="Authorize in Supabase OAuth">
-    Authorize the Responder OAuth client for your organization. The OAuth callback is:
-
-    ```
-    <public>/api/integrations/supabase/callback
-    ```
-
-    No project ID, deployment-level client ID, service-role key, or database password is required — Responder dynamically registers the OAuth client against Supabase's hosted MCP server.
-  </Step>
-  <Step title="Select a project">
-    If your organization has a single project, Responder selects it automatically. If you have multiple projects, choose from the project picker.
-  </Step>
-  <Step title="Add Supabase as Agent context">
-    On the Agent configuration screen, select one or more Supabase connections under **Context**. Each project and access-level combination is stored as a separate integration account.
-  </Step>
-</Steps>
-
-<Warning>
-Full database SQL access is production write access — `execute_sql` can perform DDL. Grant it only to agents whose investigation workflow explicitly requires it. Supabase recommends using development or test projects; for production, prefer **Logs Only** or **Logs and Read-Only Data**.
-</Warning>
-
-</Accordion>
-
-<Accordion title="Vercel">
-
-Responder inspects Vercel projects, deployments, deployment checks, domains, and logs during investigations. The integration requires read access only — no write, environment variable, token, secret, credential, or API-key scopes are granted.
-
-**Connecting Vercel**
-
-<Steps>
-  <Step title="Open Settings → Integrations → Vercel">
-    Click **Connect**. Responder redirects you to Vercel to install the configured integration for your deployment.
-  </Step>
-  <Step title="Authorize the Vercel integration">
-    Grant read access to Projects, Deployments, Deployment Checks, Domains, Teams, Logs, and Security. Do not enable write access or any secret scopes. The OAuth callback is:
-
-    ```
-    <public>/api/integrations/vercel/callback
-    ```
-  </Step>
-  <Step title="Add Vercel as Agent context">
-    On the Agent configuration screen, select your Vercel connection under **Context**.
-  </Step>
-</Steps>
-
-<Note>
-The Vercel integration is configured once at the deployment level by a self-hosting operator (`VERCEL_INTEGRATION_SLUG`, `VERCEL_CLIENT_ID`, `VERCEL_CLIENT_SECRET`). End-users connect their own Vercel accounts through the OAuth flow above.
-</Note>
-
-</Accordion>
-
-<Accordion title="ClickStack">
-
-Responder connects to ClickStack (ClickHouse) and queries your data during investigations. Choose the connection mode that matches your ClickStack deployment.
-
-**Connection modes**
-
-**ClickStack Cloud**
-
-<Steps>
-  <Step title="Locate your ClickStack service ID">
-    In the ClickStack Cloud console, open your service and find the service ID shown in the generated MCP configuration block.
-  </Step>
-  <Step title="Open Settings → Integrations → ClickStack">
-    Select **ClickStack Cloud**, enter the service ID, and save.
-  </Step>
-</Steps>
-
-**Self-Hosted ClickStack**
-
-<Steps>
-  <Step title="Obtain your MCP endpoint URL and Personal API Access Key">
-    In your self-hosted ClickStack instance, generate a Personal API Access Key and note the public HTTPS MCP URL.
-  </Step>
-  <Step title="Open Settings → Integrations → ClickStack">
-    Select **Self-hosted**, enter the public HTTPS MCP URL and your Personal API Access Key, then save.
-  </Step>
-</Steps>
-
-<Note>
-Self-hosted ClickStack requires a public HTTPS URL. Loopback HTTP is accepted only during local development.
-</Note>
-
-</Accordion>
-
-<Accordion title="Linear">
-
-Responder integrates with Linear to automatically create tickets for issues found during investigations. You enable this per Agent and customize the ticket template with Markdown and templating variables.
-
-**Connecting Linear**
-
-<Steps>
-  <Step title="Open Settings → Integrations → Linear">
-    Click **Connect** and authorize Responder via Linear OAuth. The OAuth callback is:
-
-    ```
-    <public>/api/integrations/linear/callback
-    ```
-  </Step>
-  <Step title="Enable ticket creation on an Agent">
-    In the Agent settings, turn on **Create Linear tickets for issues**.
-  </Step>
-  <Step title="Customize the ticket template (optional)">
-    Edit the Markdown description template. The following variables are available:
-
-    | Variable | Description |
-    |---|---|
-    | `{{issue_id}}` | Responder issue identifier |
-    | `{{issue_url}}` | Link to the issue in Responder |
-    | `{{title}}` | Issue title |
-    | `{{description}}` | Issue description |
-    | `{{severity}}` | Detected severity |
-    | `{{evidence}}` | Evidence summary |
-    | `{{remediation}}` | Suggested remediation |
-  </Step>
-</Steps>
-
-<Note>
-Responder creates a ticket only on the **first occurrence** of an issue. Recurrences are tracked on the existing ticket — no duplicate Linear tickets are created.
-</Note>
-
-You can also add your connected Linear workspace as Agent context so the agent can read teams, projects, and existing issues during investigations. All read operations use Linear's read-only MCP endpoint; the only write path is the controlled `create_linear_ticket` tool.
-
-</Accordion>
-
-<Accordion title="Discord">
-
-Responder installs into your Discord server, syncs text and announcement channels, and registers a `/automate` slash command. Use the command to trigger automations directly from Discord.
-
-**Connecting Discord**
-
-<Steps>
-  <Step title="Open Settings → Integrations → Discord">
-    Click **Connect** and authorize Responder via Discord OAuth. The OAuth callback is:
-
-    ```
-    <public>/api/integrations/discord/callback
-    ```
-
-    Responder installs into one Discord server and registers a guild-scoped `/automate` command.
-  </Step>
-  <Step title="Configure watched channels on an Agent">
-    On the Agent configuration screen, select the Discord channels you want the agent to watch under **Triggers**.
-  </Step>
-  <Step title="Use the /automate command">
-    In any watched Discord channel, run `/automate` to start every matching enabled automation. Pass the optional `context` argument to add extra information to the trigger payload.
-  </Step>
-</Steps>
-
-<Note>
-Interaction signatures are verified before the guild and channel are matched, and retries are deduplicated by interaction ID, so duplicate runs from Discord retries are safe.
-</Note>
-
-</Accordion>
+## Vercel
+
+Click **Add** on Vercel and install the Superlog integration with read access to projects, deployments, deployment checks, domains, teams, logs, and security. Superlog does not request write access or access to environment variables, tokens, or secrets.
+
+In **Tag mode**, configure Vercel to choose which projects tag mode may read.

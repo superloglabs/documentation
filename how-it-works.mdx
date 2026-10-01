@@ -1,0 +1,60 @@
+---
+title: "How Superlog works"
+sidebarTitle: "How it works"
+description: "The parts of a Superlog automation: triggers, instructions, repositories, connectors, models, harnesses, and runs."
+---
+
+An automation is a task you hand to a coding agent, plus the rules for when it runs and what it can use. Superlog runs each task in a fresh sandbox with your repositories checked out.
+
+```text
+Trigger fires → sandbox starts → repositories are checked out → agent works → pull request, Slack message, or Linear issue
+```
+
+## The parts of an automation
+
+| Part | What it is |
+|---|---|
+| **Triggers** | What starts a run: a Slack message or mention, a new or regressed Sentry issue, a Discord `/automate` command, or a schedule. An automation can have up to 10 triggers. Any of them starts a run. |
+| **Agent instructions** | What the agent should do, in plain language. Up to 50,000 characters. |
+| **Repositories** | The GitHub repositories checked out into the sandbox. At least one is required. The first is the agent's working directory. |
+| **Connectors** | The tools the agent can use during a run: GitHub, Slack, Sentry, Datadog, Linear, custom MCP servers, and workspace secrets. |
+| **Model and harness** | The model that does the work and the agent harness that runs it: Codex, Claude Agent SDK, or OpenCode. |
+| **Notifications** | For scheduled automations, the Slack channels that receive each finished run. |
+
+## What happens during a run
+
+<Steps>
+  <Step title="A trigger fires">
+    A Slack message arrives in a watched channel, Sentry reports a new issue, someone runs `/automate` in Discord, or the schedule comes due. You can also start a run with **Run now** or **Test**.
+  </Step>
+  <Step title="Superlog starts a sandbox">
+    Each run gets its own sandbox. Superlog checks out your repositories into it. Provider credentials stay outside the sandbox.
+  </Step>
+  <Step title="The agent works">
+    The agent reads the trigger event, follows your instructions, and uses the selected connectors. It can read and edit code, run commands, query Sentry and Datadog, and read Slack and Linear.
+  </Step>
+  <Step title="The agent acts">
+    Depending on its connectors, the agent opens a pull request, replies in Slack, or creates a Linear issue. These write actions run without a human approval step, so choose connectors with that in mind.
+  </Step>
+  <Step title="You review the run">
+    The run page shows the agent's messages, the tools it used, and anything it created. Send a follow-up to continue the same run in the same sandbox.
+  </Step>
+</Steps>
+
+## Where inference comes from
+
+For each run, Superlog uses the first available source:
+
+1. Your ChatGPT subscription, when the automation uses the Codex harness.
+2. Your newest API key for the model's provider.
+3. The usage included in your plan.
+
+Runs on your own key or subscription are billed by your provider. See [Models and harnesses](/automations/models) and [Billing](/settings/billing).
+
+## Tag mode
+
+Tag mode is separate from automations. When someone mentions Superlog in Slack, it answers in the thread using your connected integrations and repositories. It can read from more integrations than automations can, including AWS, Google Cloud, Grafana, and PostHog. See [Tag mode](/tag-mode).
+
+## Workspaces
+
+Everything in Superlog belongs to a workspace: automations, integrations, secrets, runs, and members. Data and credentials are never shared across workspaces. See [Workspace and members](/settings/workspace).

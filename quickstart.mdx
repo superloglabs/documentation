@@ -1,0 +1,59 @@
+---
+title: "Quickstart"
+description: "Create a Superlog account, connect GitHub, and run your first automation."
+---
+
+This guide takes you from sign-up to a finished automation run on the hosted service.
+
+<Steps>
+  <Step title="Create an account and workspace">
+    Go to [superlog.sh](https://superlog.sh/app?signup=1) and click **Get started**. Sign up with Google, GitHub, or an email and password.
+
+    Then create a workspace. Your automations, integrations, and members belong to the workspace. You become its admin.
+  </Step>
+
+  <Step title="Pick a template">
+    Open **Automations**. Under **Start from a template**, pick one that matches a task your team does by hand, for example **Triage new Sentry issues** or **Answer support questions**.
+
+    The template fills in the trigger, instructions, and connectors. You can also click **Create automation** to start blank.
+  </Step>
+
+  <Step title="Connect the trigger">
+    Each automation needs at least one trigger. If the trigger's tool is not connected yet, its card shows **Connect**. Click it, approve access in the pop-up window, and then choose the Slack channels, Sentry projects, or Discord channels to watch.
+
+    Templates with a **Schedule** trigger need no connection. Set the frequency and time instead.
+  </Step>
+
+  <Step title="Add a repository">
+    Under **Repositories**, click **Add GitHub** and install the GitHub App on the repositories you want Superlog to use. Then click **Add repository** and pick at least one. The first repository is the agent's working directory.
+  </Step>
+
+  <Step title="Choose a model">
+    In the **Agent instructions** toolbar, click **Choose model** and pick a provider and model. Superlog picks a compatible harness for you.
+
+    Runs use the usage included in your plan unless you add your own API key or ChatGPT subscription in **Settings → Models**. See [Models and harnesses](/automations/models).
+  </Step>
+
+  <Step title="Save and run">
+    Click **Save**. The automation is active and runs the next time its trigger fires.
+
+    To see it work right away, click **Run now**, or click **Test** and describe an event for the agent to handle. Open the run to follow the agent's work live.
+  </Step>
+</Steps>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Connectors" icon="plug" href="/automations/connectors">
+    Give the agent access to Slack, Sentry, Datadog, Linear, and your own MCP servers.
+  </Card>
+  <Card title="Runs" icon="play" href="/automations/runs">
+    Follow a run, send follow-ups, and post results to Slack.
+  </Card>
+  <Card title="Tag mode" icon="at" href="/tag-mode">
+    Mention Superlog in Slack to ask questions about your code and infrastructure.
+  </Card>
+  <Card title="Invite your team" icon="users" href="/settings/workspace">
+    Add teammates to your workspace.
+  </Card>
+</CardGroup>

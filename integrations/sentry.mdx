@@ -1,51 +1,44 @@
 ---
-title: "Connect Sentry to Trigger Automatic Investigations"
-sidebarTitle: "Sentry"
-description: "Connect Sentry to automatically start a Responder investigation whenever an issue is created or unresolved in your selected projects."
+title: "Sentry"
+description: "Connect Sentry to start automations on new issues and regressions, and let agents read issues, events, and traces."
 ---
 
-Sentry is a trigger source for Responder. When you connect your Sentry account and select projects on an agent, Responder starts a new investigation every time Sentry fires an `issue.created` or `issue.unresolved` event for those projects. Your team gets an investigation report without anyone having to manually kick off a query.
+Sentry starts automations when errors appear and gives agents the issue details they need to find the cause.
 
-## How it works
+## Connect Sentry
 
-After you connect Sentry, Responder synchronizes the list of Sentry projects visible to your account. You then choose one or more of those projects on an agent's trigger configuration. From that point forward, any new issue or re-opened issue in those projects automatically starts an investigation with the Sentry issue's title, stack trace, and metadata as context.
+In **Integrations**, click **Add** on Sentry and approve the Superlog app for your Sentry organization. Superlog syncs the projects your account can see.
 
-Responder validates each incoming webhook signature before starting an investigation — events from unrecognized sources are rejected.
+The Sentry card shows whether the connection works and how many projects it found. If a check fails, select the card to reconnect.
 
-## Connect Sentry to your workspace
+## Start automations from Sentry
 
-<Steps>
-  <Step title="Open Integrations settings">
-    In Responder, go to **Settings → Integrations** and click **Connect** next to Sentry.
-  </Step>
-  <Step title="Authorize with OAuth">
-    You are redirected to Sentry's OAuth consent screen. Sign in and authorize Responder to access your Sentry organization.
-  </Step>
-  <Step title="Project sync">
-    Responder synchronizes the Sentry projects visible to your account and displays them in the integration account details.
-  </Step>
-  <Step title="Configure an agent trigger">
-    Open an agent's configuration, select **Trigger → Sentry issue**, choose your connected Sentry account, and select at least one project to watch.
-  </Step>
-  <Step title="Save the agent">
-    Click **Save**. The agent is now active and will start an investigation each time Sentry fires `issue.created` or `issue.unresolved` for your selected projects.
-  </Step>
-</Steps>
+Add a Sentry trigger and pick up to 100 projects:
 
-<Note>
-  Webhook signatures are validated on every incoming Sentry event. If you ever rotate the secret on your Sentry app, contact your Responder operator to update the deployment configuration — events will be rejected until the secrets match.
-</Note>
+- **New issue** when Sentry creates an issue.
+- **Issue regression** when a resolved issue comes back.
+- **New issue or regression** for both.
 
-## Operator reference
+The run is titled with the Sentry short ID and issue title. See [Triggers](/automations/triggers#sentry).
 
-Your Responder operator configures the Sentry integration at the platform level. The Sentry app must be created as a **public integration** with the following settings:
+The **Triage new Sentry issues** and **Fix regressions** templates are a good starting point. See [Templates](/automations/templates#bug-triage).
+
+## Let agents read Sentry
+
+Add Sentry as a connector so the agent can look up issues, events, traces, and projects through Sentry's MCP server. This is useful for automations triggered from Slack or a schedule, such as matching a support report to a known error.
+
+Tag mode can read Sentry when you turn it on for tag mode.
+
+## Self-hosted setup
+
+Self-hosted deployments need their own public Sentry integration.
 
 | Setting | Value |
 |---|---|
-| Redirect URL | `<public>/api/integrations/sentry/callback` |
-| Webhook URL | `<public>/api/webhooks/sentry` |
+| Redirect URL | `<public-url>/api/integrations/sentry/callback` |
+| Webhook URL | `<public-url>/api/webhooks/sentry` |
 | Resource subscriptions | `issue.created`, `issue.unresolved` |
-| Permissions | Organization: read · Project: read · Event: read |
+| Permissions | Organization: Read, Project: Read, Event: Read |
 | Verify install | Enabled |
 
-The environment must include `SENTRY_APP_SLUG`, `SENTRY_CLIENT_ID`, and `SENTRY_CLIENT_SECRET`.
+Set `SENTRY_APP_SLUG`, `SENTRY_CLIENT_ID`, and `SENTRY_CLIENT_SECRET`. Superlog checks every webhook signature against the client secret. See [Environment variables](/self-hosting/environment).

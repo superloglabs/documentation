@@ -1,0 +1,63 @@
+---
+title: "Runs"
+description: "Follow an automation run live, send follow-ups, stop runs, and post results to Slack."
+---
+
+A run is one execution of an automation. Each run has its own sandbox, transcript, and result.
+
+## Run history
+
+Open an automation to see its **Run history** tab. Each row shows the run's title and source (Slack, Sentry, Discord, Schedule, or Manual), when it started, how long it took, and its result. The result is the pull request it opened, the first line of the agent's final message, or the failure reason.
+
+| Status | Meaning |
+|---|---|
+| **Queued** | Waiting for a worker. |
+| **Running** | The agent is working in its sandbox. |
+| **Completed** | The agent finished. |
+| **Failed** | The run stopped with an error, such as hitting its time limit or the usage allowance. |
+| **Cancelled** | Someone stopped the run. |
+
+## Follow a run
+
+Click a run to open it. The page shows the trigger event with a link back to the source, followed by the agent's messages as it works. Tool calls are grouped, for example "Ran 4 tools" with a summary of the files read, commands run, and services queried. Expand a group to see each call.
+
+Pull requests, Linear issues, and Slack messages the agent creates appear as cards in the transcript.
+
+## Send a follow-up
+
+When a run finishes, type in the box at the bottom of the run page to continue it. The agent picks up in the same sandbox with the same files and context. This works for completed, failed, and cancelled runs. The automation must be active.
+
+For Slack-triggered runs, replying in the Slack thread does the same thing.
+
+The sandbox is kept for 24 hours after the last turn so follow-ups can resume it. Runs on a ChatGPT subscription start a new sandbox for each turn.
+
+## Stop a run
+
+Click **Stop** on the run page, or the **×** next to an active run in the run history.
+
+## Slack progress card
+
+When a Slack message starts a run, Superlog posts a card in that thread. The card shows the agent's latest steps while it works, then **Automation complete** or **Automation stopped**, with a **View run** link.
+
+## Notifications
+
+Scheduled automations can post each finished run to Slack.
+
+<Steps>
+  <Step title="Add a notification">
+    In the automation's settings, under **Notifications**, click **Add notification**, then **Post to Slack**.
+  </Step>
+  <Step title="Pick channels">
+    Choose up to 10 channels.
+  </Step>
+</Steps>
+
+The agent can post to these channels during the run. Channels it did not post to receive its final message with a **View run** link. If the run fails, every channel gets the failure message.
+
+Notifications are available only for automations with a schedule trigger. Event-triggered automations report through their connectors, for example by replying in the Slack thread or posting with the Slack connector.
+
+## Sandboxes and limits
+
+Each run gets a fresh sandbox with your repositories checked out. The agent is told it is running unattended and that the trigger event is untrusted input.
+
+A run can last up to 30 minutes. When your usage allowance is used up, a turn that has already started finishes, and new runs fail with a usage-limit message until the allowance resets or you upgrade. See [Billing](/settings/billing).

@@ -1,0 +1,60 @@
+---
+title: "Self-hosting Superlog"
+sidebarTitle: "Overview"
+description: "Run the open-source Superlog application on your own infrastructure."
+---
+
+Superlog's application is open source under the Apache License 2.0. The repository is [superloglabs/responder-oss](https://github.com/superloglabs/responder-oss), where the project is named Responder. It contains the web app, API, worker, shared domain code, and database migrations. The hosted service at [superlog.sh](https://superlog.sh) runs the same code.
+
+## Architecture
+
+Superlog runs as two long-running Node.js services that share one Postgres database.
+
+```text
+Browser / providers
+        │ HTTPS
+        ▼
+  control plane (web app + API)
+        │
+        ├── authentication and workspace configuration
+        ├── encrypted integration credentials
+        └── durable jobs ─────────────┐
+                                      ▼
+                                   worker
+                             ┌────────┼────────┐
+                             ▼        ▼        ▼
+                          sandbox   model   providers
+```
+
+- **Control plane.** Serves the React app and the API. Handles sign-in, workspaces, integration setup, webhooks, and job scheduling.
+- **Worker.** Claims jobs from Postgres, starts sandboxes, runs agents, and stores transcripts and results. It needs no inbound traffic.
+- **Sandboxes.** Runs execute in [Daytona](https://daytona.io) sandboxes. Workspace secrets are stored in Daytona's write-only vault.
+
+## Turn on automations
+
+New workspaces get the automations product only when the deployment enables it. Set this on the control plane:
+
+```bash
+RESPONDER_NEW_ORGANIZATION_CAPABILITIES=automations,simplified_navigation
+```
+
+This applies to workspaces created after you set it. With it, new workspaces open on **Automations** and the sidebar matches these docs: **Automations**, **Integrations**, **Tag mode**, and **Settings**.
+
+Automations that use included usage, rather than a workspace's own API key or ChatGPT subscription, run through Vercel AI Gateway. Set `AI_GATEWAY_API_KEY` to enable them.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Local development" icon="laptop-code" href="/self-hosting/local-development">
+    Run the full stack on your machine.
+  </Card>
+  <Card title="Deployment" icon="server" href="/self-hosting/deployment">
+    Deploy the control plane and worker.
+  </Card>
+  <Card title="Environment variables" icon="sliders" href="/self-hosting/environment">
+    Configure the database, sandboxes, models, and integrations.
+  </Card>
+  <Card title="Integrations" icon="plug" href="/integrations/overview">
+    Each integration page lists the provider app settings for self-hosted deployments.
+  </Card>
+</CardGroup>

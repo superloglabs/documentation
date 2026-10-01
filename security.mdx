@@ -1,0 +1,51 @@
+---
+title: "Security"
+description: "How Superlog protects credentials, isolates runs, and limits what agents can access."
+---
+
+Superlog gives agents useful access to your tools without handing them your keys. This page summarizes the controls. For more detail, read the [security whitepaper](https://superlog.sh/security).
+
+## Credentials stay outside the sandbox
+
+Agents run in sandboxes that do not hold your provider credentials.
+
+| Credential | How agents use it |
+|---|---|
+| GitHub | Superlog copies repositories into the sandbox and opens pull requests on the agent's behalf. The sandbox has no GitHub token. |
+| Integrations | Superlog calls Slack, Sentry, Datadog, Linear, and MCP servers for the agent through a broker outside the sandbox. |
+| Model API keys | Model requests go through a broker that holds the key. Keys never enter the sandbox. |
+| ChatGPT subscription | Each run gets a copy of the login with placeholder tokens. The real access token is substituted at the network boundary, only for requests to ChatGPT. |
+| Workspace secrets | The sandbox gets a placeholder. The real value is substituted at the network boundary, only for allowed hosts. |
+
+## Encryption
+
+- Integration tokens and API keys are encrypted with AES-256-GCM before storage, with a fresh random nonce for each encryption.
+- Database storage and application logs use managed encryption keys with rotation enabled.
+- Public traffic and database connections require TLS.
+
+## Short-lived cloud access
+
+- AWS uses temporary credentials from an IAM role in your account. An explicit deny blocks secrets, SSM parameters, and KMS decryption.
+- Google Cloud uses Workload Identity Federation. No service account key is created or stored.
+- The roles you create define the access boundary.
+
+## Isolated runs
+
+- Every automation, integration, secret, run, and member belongs to one workspace. Queries and API routes enforce that ownership.
+- Each run gets its own sandbox. Sandboxes are never shared across workspaces.
+- Each run keeps the exact automation configuration it started with.
+
+## Limited tools
+
+- Most built-in integrations expose only read-only tools. Write actions are limited to opening pull requests, posting to Slack, and creating Linear issues.
+- Datadog and custom MCP servers pass their tools through. Scope the credentials you give them.
+- Custom MCP servers must use HTTPS and resolve to public addresses. Authorization is never forwarded across origins.
+- Agents treat trigger events as untrusted input.
+
+## Webhooks
+
+Slack, GitHub, Sentry, and Discord webhooks are verified against their signatures before Superlog acts on them. Retries are deduplicated.
+
+## Report a vulnerability
+
+See [SECURITY.md](https://github.com/superloglabs/responder-oss/blob/main/SECURITY.md) for how to report a vulnerability privately.

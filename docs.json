@@ -1,6 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "name": "Superlog",
+  "description": "Automate routine engineering tasks. Choose your model and harness, bring your tokens and subscriptions.",
   "theme": "luma",
   "colors": {
     "primary": "#8c8c8c",
@@ -10,12 +11,24 @@
   "favicon": "https://media.brand.dev/795f746d-3a5f-4fb9-ac75-cc1f5a0ebd65.svg",
   "logo": {
     "light": "https://media.brand.dev/36844916-a1f8-41f4-9fb4-2853fb1ecd17.svg",
-    "dark": "https://media.brand.dev/36844916-a1f8-41f4-9fb4-2853fb1ecd17.svg"
+    "dark": "https://media.brand.dev/36844916-a1f8-41f4-9fb4-2853fb1ecd17.svg",
+    "href": "https://superlog.sh"
   },
   "navbar": {
+    "links": [
+      {
+        "label": "GitHub",
+        "href": "https://github.com/superloglabs/responder-oss"
+      },
+      {
+        "label": "Book a demo",
+        "href": "https://cal.com/superlog/yc"
+      }
+    ],
     "primary": {
-      "type": "github",
-      "href": "https://github.com/superloglabs/responder-oss"
+      "type": "button",
+      "label": "Get started",
+      "href": "https://superlog.sh/app?signup=1"
     }
   },
   "navigation": {
@@ -24,55 +37,89 @@
         "tab": "Documentation",
         "groups": [
           {
-            "group": "Get Started",
+            "group": "Get started",
             "pages": [
-              "introduction",
+              "index",
               "quickstart",
-              "deployment"
+              "how-it-works"
             ]
           },
           {
-            "group": "Core Concepts",
+            "group": "Automations",
             "pages": [
-              "concepts/agents",
-              "concepts/investigations",
-              "concepts/issues",
-              "concepts/runtime-profiles"
+              "automations/overview",
+              "automations/templates",
+              "automations/triggers",
+              "automations/connectors",
+              "automations/models",
+              "automations/runs"
+            ]
+          },
+          {
+            "group": "Tag mode",
+            "pages": [
+              "tag-mode"
             ]
           },
           {
             "group": "Integrations",
             "pages": [
               "integrations/overview",
+              "integrations/github",
               "integrations/slack",
               "integrations/sentry",
               "integrations/datadog",
-              "integrations/github",
-              "integrations/observability",
+              "integrations/linear",
+              "integrations/discord",
+              "integrations/custom-mcp",
               "integrations/cloud",
-              "integrations/custom-mcp"
+              "integrations/more"
             ]
           },
           {
-            "group": "Guides",
+            "group": "Settings",
             "pages": [
-              "guides/create-agent",
-              "guides/investigate-alert",
-              "guides/remediation",
-              "guides/workspace-secrets",
-              "guides/automations"
+              "settings/workspace",
+              "settings/billing",
+              "settings/workspace-secrets",
+              "security"
             ]
           },
           {
-            "group": "Configuration",
+            "group": "Self-hosting",
             "pages": [
-              "configuration/environment",
-              "configuration/model-access",
-              "configuration/workspace"
+              "self-hosting/overview",
+              "self-hosting/local-development",
+              "self-hosting/deployment",
+              "self-hosting/environment"
             ]
           }
         ]
       }
     ]
+  },
+  "redirects": [
+    { "source": "/introduction", "destination": "/how-it-works" },
+    { "source": "/deployment", "destination": "/self-hosting/deployment" },
+    { "source": "/concepts/agents", "destination": "/automations/overview" },
+    { "source": "/concepts/investigations", "destination": "/automations/runs" },
+    { "source": "/concepts/issues", "destination": "/automations/overview" },
+    { "source": "/concepts/runtime-profiles", "destination": "/self-hosting/overview" },
+    { "source": "/guides/create-agent", "destination": "/automations/overview" },
+    { "source": "/guides/investigate-alert", "destination": "/automations/runs" },
+    { "source": "/guides/remediation", "destination": "/integrations/github" },
+    { "source": "/guides/automations", "destination": "/automations/overview" },
+    { "source": "/guides/workspace-secrets", "destination": "/settings/workspace-secrets" },
+    { "source": "/integrations/observability", "destination": "/integrations/more" },
+    { "source": "/configuration/environment", "destination": "/self-hosting/environment" },
+    { "source": "/configuration/model-access", "destination": "/automations/models" },
+    { "source": "/configuration/workspace", "destination": "/settings/workspace" }
+  ],
+  "footer": {
+    "socials": {
+      "github": "https://github.com/superloglabs/responder-oss",
+      "x": "https://x.com/superlogYC",
+      "discord": "https://discord.gg/wJ56aRh8hx"
+    }
   }
 }

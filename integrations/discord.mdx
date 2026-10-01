@@ -1,0 +1,42 @@
+---
+title: "Discord"
+description: "Connect Discord to start automations with the /automate command."
+---
+
+Discord lets people in your server start automations with a slash command. The **Answer community questions** template uses it.
+
+## Connect Discord
+
+In **Integrations**, click **Add** on Discord and authorize the Superlog app for one Discord server. Superlog syncs the server's text and announcement channels and registers the `/automate` command.
+
+If a new channel is missing from the trigger, reconnect Discord to refresh the channel list.
+
+## Start automations from Discord
+
+<Steps>
+  <Step title="Add a Discord trigger">
+    In the automation editor, click **Add trigger**, choose **Automation command in channel**, and pick the channels.
+  </Step>
+  <Step title="Run the command">
+    In one of those channels, run `/automate`. Add the optional `context` option to pass text to the agent.
+  </Step>
+</Steps>
+
+```text
+/automate context: How do I rotate an API key?
+```
+
+`/automate` starts every active automation that watches the channel. Discord shows a private reply: **Automation started.**, or a message that no automation is configured for the channel.
+
+The agent's result is not posted back to Discord. Give the automation another way to report, such as a Slack connector or a GitHub repository for pull requests.
+
+## Self-hosted setup
+
+Create a Discord application with a bot. Enable **Requires OAuth2 Code Grant** and grant the **View Channels** permission.
+
+| Setting | Value |
+|---|---|
+| OAuth redirect | `<public-url>/api/integrations/discord/callback` |
+| Interactions endpoint | `<public-url>/api/webhooks/discord` |
+
+Set `DISCORD_APPLICATION_ID`, `DISCORD_BOT_TOKEN`, `DISCORD_CLIENT_SECRET`, and `DISCORD_PUBLIC_KEY`. See [Environment variables](/self-hosting/environment).
