@@ -1,0 +1,116 @@
+{
+  "projectType": "saas",
+  "projectName": "Responder",
+  "projectDescription": "Self-hostable AI incident-investigation platform that monitors Slack, Sentry, Datadog, and other observability tools to automatically investigate production alerts, produce structured reports, and propose code remediations.",
+  "theme": "luma",
+  "primaryColor": "#8c8c8c",
+  "lightColor": "#232323",
+  "darkColor": "#e1e1e1",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "deployment"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/agents",
+              "concepts/investigations",
+              "concepts/issues",
+              "concepts/runtime-profiles"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "integrations/overview",
+              "integrations/slack",
+              "integrations/sentry",
+              "integrations/datadog",
+              "integrations/github",
+              "integrations/observability",
+              "integrations/cloud",
+              "integrations/custom-mcp"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/create-agent",
+              "guides/investigate-alert",
+              "guides/remediation",
+              "guides/workspace-secrets",
+              "guides/automations"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/environment",
+              "configuration/model-access",
+              "configuration/workspace"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Automatic incident investigation triggered by Sentry issues, Datadog monitors, Dash0 alerts, and Slack channel messages",
+    "AI-powered structured investigation reports with severity classification (SEV-1/2/3), root cause analysis, timeline, and evidence",
+    "Automated code remediation with pull request generation against connected GitHub repositories",
+    "Deep integration context from Slack, Sentry, Datadog, Dash0, PostHog, Grafana, Axiom, Upstash, Langfuse, Supabase, Vercel, AWS, Google Cloud, ClickStack, and custom MCP servers",
+    "Linear ticket creation from investigation issues with customizable Markdown templates",
+    "Workspace secrets vault for injecting API credentials into investigation sandboxes",
+    "Versioned immutable agent configurations with pinned runtime profiles for reproducible reruns",
+    "Multi-workspace, multi-tenant architecture with encrypted per-organization credential storage",
+    "Automations for running recurring or event-driven investigation workflows",
+    "Slack thread mode for ad-hoc investigations directly from a Slack conversation"
+  ],
+  "publicApiSurface": [
+    "POST /api/agents — create an investigation agent",
+    "GET /api/agents — list agents",
+    "GET /api/agents/:agentId — get agent detail",
+    "PUT /api/agents/:agentId — update agent configuration",
+    "PATCH /api/agents/:agentId — enable or disable agent",
+    "GET /api/agents/:agentId/investigations/:investigationId — get investigation with trace",
+    "POST /api/agents/:agentId/investigations/:investigationId/retry — rerun a finished investigation",
+    "POST /api/agents/secrets — create a workspace secret",
+    "GET /api/agents/options — list agent configuration options (channels, repos, etc.)",
+    "POST /api/agents/options/refresh/slack — refresh Slack channel list",
+    "POST /api/agents/options/refresh/github — refresh GitHub repository list",
+    "GET /api/agents/thread-mode — get Slack thread mode configuration",
+    "PUT /api/agents/thread-mode — save Slack thread mode configuration",
+    "POST /api/webhooks/slack — Slack events webhook",
+    "POST /api/webhooks/slack/actions — Slack interactivity webhook",
+    "POST /api/webhooks/sentry — Sentry issue webhook",
+    "POST /api/webhooks/github — GitHub pull request webhook",
+    "POST /api/webhooks/dash0 — Dash0 alert webhook",
+    "POST /api/webhooks/discord — Discord interactions endpoint",
+    "GET /api/integrations/slack/callback — Slack OAuth callback",
+    "GET /api/integrations/sentry/callback — Sentry OAuth callback",
+    "GET /api/integrations/github/callback — GitHub App OAuth callback",
+    "GET /api/integrations/linear/callback — Linear OAuth callback",
+    "GET /api/integrations/dash0/callback — Dash0 OAuth callback",
+    "GET /api/integrations/posthog/callback — PostHog OAuth callback",
+    "GET /api/integrations/grafana/callback — Grafana OAuth callback",
+    "GET /api/integrations/gcp/callback — Google Cloud OAuth callback",
+    "GET /api/integrations/supabase/callback — Supabase OAuth callback",
+    "GET /api/integrations/custom_mcp/callback — Custom MCP OAuth callback",
+    "GET /api/integrations/vercel/callback — Vercel integration callback",
+    "AgentConfiguration schema (trigger, reporting, model, instructions, prMode, contextAccountIds, repositoryIds, secretIds)",
+    "Agent triggers: sentry_issue, datadog_monitor, dash0_alert, slack_channel, slack_mention",
+    "Agent reporting modes: thread, output_channel, both",
+    "PR modes: disabled, manual, always",
+    "Investigation report schema (headline, summary, issues with SEV-1/2/3 severity, evidence, timeline, remediations)",
+    "Remediation types: code_change (with git diff + PR content), external_action (human-readable prompt)"
+  ]
+}

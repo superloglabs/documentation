@@ -1,0 +1,123 @@
+---
+title: "Configure AI Models for Responder Investigations"
+sidebarTitle: "Model Access"
+description: "Add API keys for OpenAI, Anthropic, Google Gemini, xAI, Mistral, and DeepSeek, or connect a ChatGPT subscription to run investigations."
+---
+
+Responder runs every investigation and automation against a model provider you control. By default, inference is billed through Responder's included usage. Once you connect your own API key or a ChatGPT subscription in **Settings → Model Access**, Responder uses your credentials instead — giving you direct visibility into usage and costs at the provider level. You can connect multiple providers, and each Agent has its own model selection.
+
+---
+
+## How model access works
+
+When an automation run starts, Responder resolves the inference source in this order:
+
+1. **ChatGPT subscription** — used first if the automation uses the Codex harness and a subscription is connected to the workspace.
+2. **Newest active API key for the chosen provider** — used for all other provider runs.
+3. **Responder's included usage** — billed against your monthly allowance if neither of the above is available.
+
+<Note>
+  Catalog visibility in Model Access doesn't guarantee inference quota at the provider — the provider is authoritative at run time. If the provider rejects the key or doesn't list the model when the run starts, the run fails. There is no automatic fallback to Responder inference.
+</Note>
+
+If you configure multiple API keys for the same provider, Responder always picks the most recently added active key.
+
+---
+
+## Supported providers
+
+<CardGroup cols={2}>
+  <Card title="OpenAI" icon="robot">
+    Any model from your API key's catalog, including GPT-5 series. ChatGPT subscription unlocks the Codex harness.
+  </Card>
+  <Card title="Anthropic" icon="robot">
+    Claude models available on your Anthropic API key.
+  </Card>
+  <Card title="Google Gemini" icon="robot">
+    Gemini models available on your Google AI API key.
+  </Card>
+  <Card title="xAI" icon="robot">
+    Grok models available on your xAI API key.
+  </Card>
+  <Card title="Mistral" icon="robot">
+    Mistral models available on your Mistral API key.
+  </Card>
+  <Card title="DeepSeek" icon="robot">
+    DeepSeek models available on your DeepSeek API key.
+  </Card>
+</CardGroup>
+
+The model picker in each Agent's settings lists all models available across your connected providers. There is no hard-coded model list — Responder fetches the live catalog from each provider when you open the picker or add a new key.
+
+---
+
+## Add an API key
+
+<Steps>
+  <Step title="Open Model Access settings">
+    In the Responder dashboard, go to **Settings → Model Access**.
+  </Step>
+  <Step title="Select a provider">
+    In the **Add an API key** form, choose your provider from the dropdown — OpenAI, Anthropic, Google Gemini, xAI, Mistral, or DeepSeek.
+  </Step>
+  <Step title="Give the key a label">
+    Enter a label to identify this key (for example, `Production OpenAI` or `Team Anthropic`). Labels are visible in the key list; key values are not.
+  </Step>
+  <Step title="Paste your API key">
+    Paste the API key into the key field. Responder validates it against the provider's model catalog immediately on save. If the provider doesn't accept the key, the save fails with an error — fix the key and try again.
+  </Step>
+  <Step title="Confirm the key is active">
+    After saving, the key appears in the **API keys** list with an **Active** badge. If the badge shows **Invalid**, the provider rejected the key — replace it using the Replace button.
+  </Step>
+</Steps>
+
+<Tip>
+  API keys are encrypted before storage and never appear in the UI after you save them. Only the last four characters are shown for identification. If you need to rotate a key, use the **Replace** button on the key row — you don't need to remove and re-add it.
+</Tip>
+
+---
+
+## Connect a ChatGPT subscription
+
+Connecting a ChatGPT subscription lets automations that use the Codex harness run directly on your plan. Responder uses the [official Codex app server](https://developers.openai.com/codex/app-server/) to authenticate — it does not store your password or proxy subscription inference through its own servers. Usage counts against your ChatGPT plan's Codex limits.
+
+<Note>
+  The ChatGPT subscription is available only for automations that use the **Codex harness**. API-key runs for OpenAI models use your OpenAI API key, not the subscription.
+</Note>
+
+<Steps>
+  <Step title="Open Model Access settings">
+    Go to **Settings → Model Access** in the Responder dashboard.
+  </Step>
+  <Step title="Start the connection">
+    Click **Connect ChatGPT** under the **ChatGPT subscription** section.
+  </Step>
+  <Step title="Complete the device code flow">
+    Responder displays a verification URL and a short code. Open the URL in your browser, enter the code, and sign in with your ChatGPT account. You can do this on any device.
+  </Step>
+  <Step title="Wait for confirmation">
+    Once login completes, the page updates automatically. You'll see the subscription listed with an **Active** badge.
+  </Step>
+</Steps>
+
+After connecting, all automations in the workspace that use the Codex harness will run on this subscription. Only one subscription can be active per workspace at a time.
+
+---
+
+## Per-agent model selection
+
+Each Agent selects its own model independently. Open an Agent's settings and choose a provider and model from the model picker. The picker lists only models from providers you've configured in Model Access — if a provider doesn't appear, add an API key for it first.
+
+Changing an Agent's model takes effect on the next run. Already-queued investigations use the model that was active when they were created.
+
+---
+
+## Replace or remove a key
+
+To rotate an API key without changing any Agent configurations:
+
+1. Find the key in **Settings → Model Access → API keys**.
+2. Click **Replace** on the key row.
+3. Paste the new key value and click **Save**.
+
+To remove a key entirely, click **Remove** on the key row. Automations that relied on that key will fall back to Responder's included usage until you add a replacement.

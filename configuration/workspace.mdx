@@ -1,0 +1,116 @@
+---
+title: "Workspace Settings and Team Management"
+sidebarTitle: "Workspace"
+description: "Manage your Responder workspace: rename it, invite team members, manage integrations, and configure organization-wide settings."
+---
+
+A workspace is the top-level container for your Responder environment. Every agent, investigation, issue, integration, and team member belongs to exactly one workspace. All data is fully isolated per workspace — different organizations' credentials, jobs, and investigation results never mix.
+
+<Note>
+  Workspace isolation is enforced at the database level. Every query is scoped to the owning organization, and all integration credentials are encrypted before storage. No tenant data is ever accessible from another workspace.
+</Note>
+
+---
+
+## Workspace basics
+
+Your workspace has a **name** (shown in the UI) and a **slug** (used in URLs). Both are set when the workspace is created and can be updated by an admin from **Settings → Workspace**.
+
+The workspace overview shows the number of current members and the workspace slug at a glance. The first letter of the workspace name appears as the workspace mark in the top-left corner of the dashboard.
+
+---
+
+## Team management
+
+Workspace membership controls who can view and interact with agents, investigations, issues, and integrations. Every member has one of two roles:
+
+| Role | Capabilities |
+|---|---|
+| **Admin** | Invite and remove members, change member roles, manage integrations, configure workspace settings |
+| **Member** | Access agents, investigations, issues, and integrations — no administrative actions |
+
+### Invite a teammate
+
+<Steps>
+  <Step title="Open Workspace settings">
+    Go to **Settings → Workspace** in the Responder dashboard. You must be an admin to invite members.
+  </Step>
+  <Step title="Enter the invitee's email address">
+    In the **Invite a teammate** form, type the email address of the person you want to invite.
+  </Step>
+  <Step title="Choose a role">
+    Select **Member** or **Admin** from the role dropdown. You can change this after the person joins.
+  </Step>
+  <Step title="Send the invitation">
+    Click **Invite**. If Resend is configured, Responder emails an invitation link to the address. The invitation link also appears directly on the page so you can copy and share it manually.
+  </Step>
+</Steps>
+
+<Tip>
+  If your deployment does not have Resend configured, invitation emails are not sent — but the invitation link is still created and copyable from the Invitations screen. Share the link directly with your teammate.
+</Tip>
+
+### Pending invitations
+
+Admins can see all pending invitations in the **Pending invitations** section of Workspace settings. Each invitation shows the invitee's email, expiry date, and assigned role. From this list you can:
+
+- **Copy link** — copy the secure invitation URL to share it another way.
+- **Cancel** — revoke the invitation before it's accepted.
+
+### Change a member's role
+
+Admins can change any member's role directly from the **Members** list. Select the new role from the dropdown next to the member's name. The change takes effect immediately.
+
+### Remove a member
+
+To remove someone from the workspace, click **Remove** next to their name in the Members list. They immediately lose access to all workspace resources. Their investigation history and issues remain in the workspace.
+
+---
+
+## Integrations
+
+All provider integrations — Slack, GitHub, Sentry, Linear, Vercel, Discord, AWS, Google Cloud, and others — are managed from **Settings → Integrations**.
+
+Each connected provider appears as a tile showing its current connection status. From this screen you can:
+
+- **Connect** a new provider by following the guided OAuth or configuration flow.
+- **Reconnect** an existing integration if the connection has expired or its credentials changed.
+- **Remove** an integration to disconnect the provider from your workspace.
+
+<Warning>
+  Removing an integration immediately stops Responder from receiving events from that provider and removes the integration from any agents that use it. Existing investigations are not affected, but future triggers from that provider will not fire.
+</Warning>
+
+Integration credentials are encrypted at rest using `CREDENTIAL_ENCRYPTION_KEY` and are never exposed through the UI. Only the last few characters of a credential are shown for identification.
+
+---
+
+## Billing
+
+<Accordion title="View billing and usage (if billing is enabled)">
+
+If your operator has enabled billing, the **Billing** section of Settings shows your organization's monthly usage and remaining allowance.
+
+- **Monthly allowance** — the total dollar budget for the current billing period. Charges are split between model usage and sandbox time.
+- **Model usage** — cost of inference calls made during investigations, pull request reviews, and automation runs.
+- **Sandbox time** — cost of the isolated Daytona workspaces used for running investigations.
+
+Each investigation, PR review, and remediation run draws from the allowance when it starts. Work that is already running finishes and is charged even if it pushes past the allowance limit. Operator-initiated replays are not charged.
+
+Responder checks the remaining allowance before each new run starts. If the allowance is exhausted, new runs are blocked until the next billing period.
+
+</Accordion>
+
+---
+
+## Scans
+
+The **Scans** section (visible if enabled in your workspace navigation) shows results from automated observation-only scan runs. Scans are periodic checks that look for potential issues across your connected context — they do not start a full investigation or take any action. Use scan results to spot recurring patterns or anomalies before they become incidents.
+
+---
+
+## Suggestions
+
+The **Suggestions** section surfaces aggregated improvement recommendations derived from completed investigation patterns across your workspace. Suggestions are generated automatically as your agents investigate and resolve issues over time — they are not manually created.
+
+Review suggestions periodically to identify systemic problems, agent configuration improvements, or infrastructure changes that could reduce future incident frequency.

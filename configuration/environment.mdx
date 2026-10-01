@@ -1,0 +1,278 @@
+---
+title: "Environment Variables Reference for Responder"
+sidebarTitle: "Environment"
+description: "Reference for all environment variables that configure Responder's control plane and worker, including database, auth, AI, and integration secrets."
+---
+
+Responder's control plane and worker are configured entirely through environment variables. Both services share a PostgreSQL database and must agree on a small set of shared secrets — most notably the encryption key and internal token. Inject all secrets through your deployment platform's secret store rather than committing them to source control. The sections below cover every variable a self-hosting operator needs to set, grouped by concern.
+
+---
+
+## Core / Required
+
+These variables must be set before Responder will start correctly. The encryption key and internal token are shared across both services.
+
+<Warning>
+  `CREDENTIAL_ENCRYPTION_KEY` and `INTERNAL_INGEST_TOKEN` must be **identical** on both the control plane and the worker. If they differ, the worker cannot decrypt integration credentials and authenticated internal requests will fail.
+</Warning>
+
+<ParamField path="DATABASE_URL" type="string" required>
+  PostgreSQL connection string for the shared application database.
+
+  ```
+  postgresql://user:pass@host:5432/responder
+  ```
+
+  Both the control plane and the worker connect to this database. Use a connection pooler (e.g. PgBouncer) for high-traffic deployments and set `DATABASE_POOL_SIZE` to match your pooler's limits.
+</ParamField>
+
+<ParamField path="CREDENTIAL_ENCRYPTION_KEY" type="string" required>
+  Base64-encoded 32-byte key used to encrypt all tenant integration credentials before they are stored in the database. Generate a secure value with:
+
+  ```bash
+  openssl rand -base64 32
+  ```
+
+  Set the same value on **both** the control plane and the worker. Rotating this key requires re-encrypting all stored credentials.
+</ParamField>
+
+<ParamField path="INTERNAL_INGEST_TOKEN" type="string" required>
+  Shared bearer token that the worker presents when making authenticated internal requests to the control plane. Generate a random value:
+
+  ```bash
+  openssl rand -hex 32
+  ```
+
+  Set the same value on both services.
+</ParamField>
+
+<ParamField path="BETTER_AUTH_SECRET" type="string" required>
+  Secret used by Better Auth to sign and verify session tokens. Use a long, random string. Changing this value invalidates all active sessions.
+</ParamField>
+
+<ParamField path="RESPONDER_PUBLIC_URL" type="string" required>
+  Stable public HTTPS origin of your Responder deployment, for example `https://responder.example.com`. Responder uses this value to construct OAuth redirect URIs, webhook URLs, and invitation links. It must be reachable by external providers.
+</ParamField>
+
+---
+
+## AI / Investigation
+
+Responder runs investigations inside isolated Daytona sandboxes and calls model providers through the worker. At minimum, set `DAYTONA_API_KEY` and `OPENAI_API_KEY` to enable investigations.
+
+<ParamField path="DAYTONA_API_KEY" type="string" required>
+  API key for Daytona. Required for two features: storing workspace secrets in Daytona's write-only vault, and creating the isolated sandboxes in which investigations run. Without this key, no investigations can start.
+</ParamField>
+
+<ParamField path="OPENAI_API_KEY" type="string" required>
+  OpenAI API key used by the worker to run investigations. Required unless every workspace provides its own API key through Model Access settings.
+</ParamField>
+
+<ParamField path="AI_GATEWAY_API_KEY" type="string">
+  Enables Jev-powered initial triage reactions on incoming issues and funds automation runs that use Responder's included usage instead of an organization-supplied API key. Omit this variable to disable both features.
+</ParamField>
+
+<ParamField path="OPENAI_AGENT_MODEL" type="string" default="gpt-5.6-sol">
+  Override the default investigation model. Accepts any model identifier supported by your OpenAI API key. Leave unset to use the default `gpt-5.6-sol`.
+</ParamField>
+
+<ParamField path="DAYTONA_API_URL" type="string">
+  Optional. Override the Daytona API endpoint. Leave unset to use the Daytona default.
+</ParamField>
+
+<ParamField path="DAYTONA_TARGET" type="string">
+  Optional. Specify a Daytona target environment. Leave unset to use the Daytona default.
+</ParamField>
+
+---
+
+## Authentication
+
+Responder uses Better Auth for session management. OAuth providers are optional but recommended so your team can sign in without managing passwords.
+
+<ParamField path="BETTER_AUTH_URL" type="string" required>
+  Full URL of the authentication service. In most deployments this is the same as `RESPONDER_PUBLIC_URL`, for example `https://responder.example.com`.
+</ParamField>
+
+<ParamField path="AUTH_GOOGLE_CLIENT_ID" type="string">
+  Google OAuth 2.0 client ID for Google login. Create an OAuth app in Google Cloud Console and set the authorized redirect URI to:
+
+  ```
+  https://responder.example.com/api/auth/callback/google
+  ```
+</ParamField>
+
+<ParamField path="AUTH_GOOGLE_CLIENT_SECRET" type="string">
+  Google OAuth 2.0 client secret paired with `AUTH_GOOGLE_CLIENT_ID`.
+</ParamField>
+
+<ParamField path="AUTH_GITHUB_CLIENT_ID" type="string">
+  GitHub OAuth app client ID for GitHub login. Set the authorization callback URL to:
+
+  ```
+  https://responder.example.com/api/auth/callback/github
+  ```
+</ParamField>
+
+<ParamField path="AUTH_GITHUB_CLIENT_SECRET" type="string">
+  GitHub OAuth app client secret paired with `AUTH_GITHUB_CLIENT_ID`.
+</ParamField>
+
+---
+
+## Notifications
+
+Responder sends workspace invitation emails through Resend. If you do not configure Resend, invitation links are still created and can be copied manually from the Invitations screen.
+
+<ParamField path="RESEND_API_KEY" type="string">
+  API key for [Resend](https://resend.com). When set, Responder emails workspace invitations to the invited address. When omitted, invitations are created but emails are not sent — share the link manually instead.
+</ParamField>
+
+<ParamField path="RESPONDER_FROM_EMAIL" type="string" default="Responder <no-reply@superlog.sh>">
+  Sender address and display name for outgoing invitation emails. Use a domain you control and have verified with Resend.
+</ParamField>
+
+---
+
+## Integrations (First-Party Apps)
+
+Each first-party integration requires an OAuth app or GitHub App registered at the provider. Set `RESPONDER_PUBLIC_URL` before configuring any integration — all callback and webhook URLs are derived from it.
+
+### GitHub
+
+Create a public GitHub App and configure it as described in the integrations guide. The private key value should be the full PEM string (newlines escaped as `\n` or using a multi-line secret).
+
+| Variable | Description |
+|---|---|
+| `GITHUB_APP_ID` | Numeric GitHub App ID shown on the app's settings page |
+| `GITHUB_APP_SLUG` | URL slug of the GitHub App |
+| `GITHUB_APP_PRIVATE_KEY` | PEM-encoded private key for the GitHub App |
+| `GITHUB_CLIENT_ID` | OAuth client ID (for user authorization during installation) |
+| `GITHUB_CLIENT_SECRET` | OAuth client secret paired with `GITHUB_CLIENT_ID` |
+| `GITHUB_WEBHOOK_SECRET` | Secret used to verify `X-Hub-Signature-256` on incoming webhooks |
+
+OAuth callback: `{RESPONDER_PUBLIC_URL}/api/integrations/github/callback`  
+Webhook URL: `{RESPONDER_PUBLIC_URL}/api/webhooks/github`
+
+### Slack
+
+Configure a distributed Slack app with bot and user scopes as described in the integrations guide.
+
+| Variable | Description |
+|---|---|
+| `SLACK_CLIENT_ID` | Slack app client ID |
+| `SLACK_CLIENT_SECRET` | Slack app client secret |
+| `SLACK_SIGNING_SECRET` | Signing secret used to verify incoming Slack event payloads |
+
+OAuth callback: `{RESPONDER_PUBLIC_URL}/api/integrations/slack/callback`  
+Events and actions URL: `{RESPONDER_PUBLIC_URL}/api/webhooks/slack`
+
+### Sentry
+
+Create a public Sentry integration with `issue.created` and `issue.unresolved` subscriptions.
+
+| Variable | Description |
+|---|---|
+| `SENTRY_APP_SLUG` | Sentry integration slug |
+| `SENTRY_CLIENT_ID` | Sentry integration client ID |
+| `SENTRY_CLIENT_SECRET` | Sentry integration client secret |
+
+Redirect URL: `{RESPONDER_PUBLIC_URL}/api/integrations/sentry/callback`  
+Webhook URL: `{RESPONDER_PUBLIC_URL}/api/webhooks/sentry`
+
+### Linear
+
+Create a Linear OAuth app with `read` and `write` scopes.
+
+| Variable | Description |
+|---|---|
+| `LINEAR_CLIENT_ID` | Linear OAuth app client ID |
+| `LINEAR_CLIENT_SECRET` | Linear OAuth app client secret |
+
+OAuth callback: `{RESPONDER_PUBLIC_URL}/api/integrations/linear/callback`
+
+### Vercel
+
+Create a Vercel Integration with read-only scopes (no write, no secret/token access).
+
+| Variable | Description |
+|---|---|
+| `VERCEL_INTEGRATION_SLUG` | Slug of your Vercel Integration |
+| `VERCEL_CLIENT_ID` | Vercel integration client ID |
+| `VERCEL_CLIENT_SECRET` | Vercel integration client secret |
+
+Redirect URL: `{RESPONDER_PUBLIC_URL}/api/integrations/vercel/callback`
+
+### Discord
+
+Create a Discord application with a bot, enable **Requires OAuth2 Code Grant**, and grant View Channels permission.
+
+| Variable | Description |
+|---|---|
+| `DISCORD_APPLICATION_ID` | Discord application ID |
+| `DISCORD_BOT_TOKEN` | Bot token for the Discord application |
+| `DISCORD_CLIENT_SECRET` | OAuth2 client secret |
+| `DISCORD_PUBLIC_KEY` | Public key for verifying interaction signatures |
+
+OAuth callback: `{RESPONDER_PUBLIC_URL}/api/integrations/discord/callback`  
+Interactions endpoint: `{RESPONDER_PUBLIC_URL}/api/webhooks/discord`
+
+---
+
+## AWS Integration
+
+AWS support requires a stable broker IAM role that Responder assumes to access customer AWS accounts. The CloudFormation template variables are optional but recommended for production — they let Responder generate a short-lived presigned S3 URL instead of offering a file download.
+
+<ParamField path="AWS_INTEGRATION_PRINCIPAL_ARN" type="string">
+  ARN of the stable broker IAM role that Responder assumes in order to call `sts:AssumeRole` on customer `ResponderInvestigationRole` roles. Required for AWS context to work on self-hosted deployments. The broker must allow `sts:AssumeRole` only on roles named `ResponderInvestigationRole`.
+
+  ```
+  arn:aws:iam::123456789012:role/ResponderBrokerRole
+  ```
+</ParamField>
+
+<ParamField path="AWS_INTEGRATION_TEMPLATE_BUCKET" type="string">
+  Name of the private S3 bucket that hosts the CloudFormation stack template. When all three `AWS_INTEGRATION_TEMPLATE_*` values are set, Responder generates a presigned URL for CloudFormation Quick Create instead of offering a file download.
+</ParamField>
+
+<ParamField path="AWS_INTEGRATION_TEMPLATE_KEY" type="string">
+  S3 object key of the CloudFormation template within `AWS_INTEGRATION_TEMPLATE_BUCKET`.
+</ParamField>
+
+<ParamField path="AWS_INTEGRATION_TEMPLATE_REGION" type="string">
+  AWS region of `AWS_INTEGRATION_TEMPLATE_BUCKET`, used to construct the presigned URL.
+</ParamField>
+
+---
+
+## Google Cloud Integration
+
+Google Cloud setup uses a one-time OAuth flow to provision customer-owned Workload Identity Federation resources. Responder does not store a long-lived token — the setup token is used and revoked during the background setup job.
+
+<ParamField path="GCP_OAUTH_CLIENT_ID" type="string">
+  Client ID of the Google OAuth web client used during Google Cloud project setup. The Google Cloud project that owns this client must have the Cloud Resource Manager, Service Usage, and IAM APIs enabled.
+</ParamField>
+
+<ParamField path="GCP_OAUTH_CLIENT_SECRET" type="string">
+  Client secret paired with `GCP_OAUTH_CLIENT_ID`.
+</ParamField>
+
+<Note>
+  The Google Cloud integration also requires `AWS_INTEGRATION_PRINCIPAL_ARN`. Responder uses the same AWS broker role to federate a short-lived Google Cloud identity via Workload Identity Federation. Self-hosted deployments must run on AWS with permission to assume that role.
+</Note>
+
+OAuth callback: `{RESPONDER_PUBLIC_URL}/api/integrations/gcp/callback`
+
+---
+
+## Billing (Optional)
+
+Billing tracks monthly investigation credits and usage allowances per organization. Enable it only if you want usage metering — Responder runs without it.
+
+<ParamField path="BILLING_ENABLED" type="string" default="false">
+  Set to `true` to enable Autumn-powered usage metering. When enabled, investigations, pull request reviews, and remediation runs draw from each organization's monthly allowance. Configure this on **both** the control plane and the worker.
+</ParamField>
+
+<ParamField path="AUTUMN_SECRET_KEY" type="string">
+  Secret key for the [Autumn](https://useautumn.com) billing service. Required when `BILLING_ENABLED=true`. Configure this on both the control plane and the worker.
+</ParamField>

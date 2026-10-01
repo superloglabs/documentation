@@ -1,0 +1,74 @@
+---
+title: "Connect GitHub for Code Inspection and Auto-Fix PRs"
+sidebarTitle: "GitHub"
+description: "Connect GitHub to let Responder inspect your repositories during investigations and automatically open pull requests to fix identified issues."
+---
+
+GitHub gives Responder two powerful capabilities: the ability to read your repository contents while investigating an incident (so it can trace errors back to specific code), and the ability to open pull requests with proposed fixes when it finds something actionable. You control how aggressively Responder creates PRs — from fully automatic to gated by your approval — using the PR mode setting on each agent.
+
+## What Responder can do with GitHub
+
+**Code inspection** — During an investigation, Responder reads the contents of repositories you've selected on the agent. It can trace an error back to a specific function, compare recent commits, and inspect related code paths to understand the root cause.
+
+**Pull request creation** — When Responder identifies a fix, it can open a pull request with the proposed change. The `prMode` setting on the agent controls when this happens.
+
+**Review comment handling** — When a reviewer bot leaves a new inline comment on a PR that Responder created, Responder reads all unresolved bot threads on that PR, pushes a follow-up commit addressing the feedback, replies to each thread, and marks them as resolved.
+
+<Note>
+  Only bot-authored review threads trigger Responder's follow-up commit flow. Human review comments are never handled automatically — Responder will not push commits in response to feedback left by a person.
+</Note>
+
+## PR modes
+
+Set the PR mode on each agent's configuration:
+
+| Mode | Behavior |
+|---|---|
+| `disabled` | Responder never creates pull requests. Code inspection still works. |
+| `manual` | Responder prepares a diff and shows it to you, but only opens the PR after you explicitly approve it. |
+| `always` | Responder automatically opens the PR as soon as it identifies a fix. |
+
+<Warning>
+  If you set `prMode` to `manual` or `always`, you must select at least one repository on the agent — Responder will not let you save an agent with remediation enabled but no repositories chosen.
+</Warning>
+
+## Connect GitHub to your workspace
+
+<Steps>
+  <Step title="Open Integrations settings">
+    In Responder, go to **Settings → Integrations** and click **Connect** next to GitHub.
+  </Step>
+  <Step title="Authorize via GitHub App">
+    You are redirected to GitHub's authorization flow. Sign in to GitHub and install the Responder GitHub App on your account or organization. Choose which repositories to grant access to during installation.
+  </Step>
+  <Step title="Return to Responder">
+    Responder confirms the installation and synchronizes the repositories you granted access to. They appear as selectable repositories in your agent configuration.
+  </Step>
+  <Step title="Select repositories on the agent">
+    Open an agent's configuration. Under **Repositories**, select the repositories you want Responder to inspect and, if using `manual` or `always` PR mode, to create pull requests in.
+  </Step>
+  <Step title="Set the PR mode">
+    Under **Remediation**, choose `disabled`, `manual`, or `always` depending on how much automation you want.
+  </Step>
+  <Step title="Save the agent">
+    Click **Save**. Responder will now inspect the selected repositories during investigations and open PRs according to the mode you chose.
+  </Step>
+</Steps>
+
+## GitHub App permissions
+
+The GitHub App your operator configured requests the following permissions:
+
+| Permission | Access level |
+|---|---|
+| Contents | Read and write |
+| Pull requests | Read and write |
+| Metadata | Read |
+| Actions | Read |
+| Checks | Read |
+| Commit statuses | Read |
+| Issues | Read |
+
+<Note>
+  The GitHub App's private key never enters the investigation sandbox. Responder generates a short-lived installation token at query time and materializes only the repositories you've selected on the agent — your other repositories remain inaccessible to the investigation.
+</Note>

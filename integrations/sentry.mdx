@@ -1,0 +1,51 @@
+---
+title: "Connect Sentry to Trigger Automatic Investigations"
+sidebarTitle: "Sentry"
+description: "Connect Sentry to automatically start a Responder investigation whenever an issue is created or unresolved in your selected projects."
+---
+
+Sentry is a trigger source for Responder. When you connect your Sentry account and select projects on an agent, Responder starts a new investigation every time Sentry fires an `issue.created` or `issue.unresolved` event for those projects. Your team gets an investigation report without anyone having to manually kick off a query.
+
+## How it works
+
+After you connect Sentry, Responder synchronizes the list of Sentry projects visible to your account. You then choose one or more of those projects on an agent's trigger configuration. From that point forward, any new issue or re-opened issue in those projects automatically starts an investigation with the Sentry issue's title, stack trace, and metadata as context.
+
+Responder validates each incoming webhook signature before starting an investigation — events from unrecognized sources are rejected.
+
+## Connect Sentry to your workspace
+
+<Steps>
+  <Step title="Open Integrations settings">
+    In Responder, go to **Settings → Integrations** and click **Connect** next to Sentry.
+  </Step>
+  <Step title="Authorize with OAuth">
+    You are redirected to Sentry's OAuth consent screen. Sign in and authorize Responder to access your Sentry organization.
+  </Step>
+  <Step title="Project sync">
+    Responder synchronizes the Sentry projects visible to your account and displays them in the integration account details.
+  </Step>
+  <Step title="Configure an agent trigger">
+    Open an agent's configuration, select **Trigger → Sentry issue**, choose your connected Sentry account, and select at least one project to watch.
+  </Step>
+  <Step title="Save the agent">
+    Click **Save**. The agent is now active and will start an investigation each time Sentry fires `issue.created` or `issue.unresolved` for your selected projects.
+  </Step>
+</Steps>
+
+<Note>
+  Webhook signatures are validated on every incoming Sentry event. If you ever rotate the secret on your Sentry app, contact your Responder operator to update the deployment configuration — events will be rejected until the secrets match.
+</Note>
+
+## Operator reference
+
+Your Responder operator configures the Sentry integration at the platform level. The Sentry app must be created as a **public integration** with the following settings:
+
+| Setting | Value |
+|---|---|
+| Redirect URL | `<public>/api/integrations/sentry/callback` |
+| Webhook URL | `<public>/api/webhooks/sentry` |
+| Resource subscriptions | `issue.created`, `issue.unresolved` |
+| Permissions | Organization: read · Project: read · Event: read |
+| Verify install | Enabled |
+
+The environment must include `SENTRY_APP_SLUG`, `SENTRY_CLIENT_ID`, and `SENTRY_CLIENT_SECRET`.

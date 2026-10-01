@@ -1,0 +1,102 @@
+---
+title: "Runtime Profiles: Control Investigation Behavior"
+sidebarTitle: "Runtime Profiles"
+description: "Runtime profiles define the system prompt and guidance that governs how Responder's AI investigates incidents, including remediation policy and output format."
+---
+
+A runtime profile is an operator-managed configuration that controls the AI's behavior during every investigation. It sets the system-level instructions — what the model is allowed to do, how it should gather evidence, how it should format its report, and what kinds of remediations it should produce. You can think of it as the global rulebook that sits beneath the per-Agent instructions you write yourself.
+
+<Note>
+  Runtime profiles are configured by the operator deploying Responder, not through the end-user dashboard. If you need to change investigation behavior that goes beyond per-Agent instructions, contact your Responder operator.
+</Note>
+
+---
+
+## Components of a runtime profile
+
+A runtime profile has two main parts.
+
+### System prompt
+
+The `system_prompt` field sets the top-level instructions passed to the model at the start of every investigation. It establishes the model's role, its general approach to investigations, and any organization-wide policies that must apply to every run.
+
+### Prompt parts
+
+`prompt_parts` is a modular JSON object that stores guidance for specific situations. Each key covers a distinct aspect of investigation behavior — a particular integration, an investigation mode, a permission boundary, or a reporting requirement. Rather than embedding all possible instructions into a single monolithic prompt, Responder uses this modular design to keep prompts focused and relevant.
+
+```json
+{
+  "datadog": "Use the connected Datadog tools to inspect matching logs and surrounding service activity before concluding.",
+  "codeRemediations": "For every new issue, submit one or more concrete remediation options...",
+  "scanPermissions": "This is an observation-only scan. Do not modify files or source systems..."
+}
+```
+
+---
+
+## How prompt parts are assembled at runtime
+
+When a worker starts an investigation, it does not send every prompt part to the model. Instead, it selects only the sections that apply to the current run:
+
+<Steps>
+  <Step title="Worker evaluates the investigation context">
+    The worker inspects the Agent's connected context sources, attached repositories, secrets, PR mode, and trigger type to determine which sections are relevant.
+  </Step>
+  <Step title="Worker selects applicable sections">
+    Only the sections that match the current configuration are included. For example, the `datadog` section is included only when a Datadog account is connected; the `codePermissions` section is included only when PR mode is enabled.
+  </Step>
+  <Step title="Worker renders context placeholders">
+    Template placeholders like `{{value1}}` in each selected section are replaced with live values — connected account names, repository details, secret environment variable names, and so on.
+  </Step>
+  <Step title="Assembled instructions are recorded in the trace">
+    The final assembled prompt is stored in the investigation trace. Operators can inspect the raw trace to see exactly what instructions the model received. The tenant-facing trace view omits the initial composed runtime instructions.
+  </Step>
+</Steps>
+
+---
+
+## Investigation modes
+
+Different investigation scenarios activate different sets of prompt sections. The worker selects the appropriate mode automatically based on what triggered the investigation.
+
+| Mode | Description | Key behavior |
+|---|---|---|
+| **Standard investigation** | Triggered by a provider alert (Sentry, Datadog, Dash0, Slack) | Full evidence gathering, issue creation, optional code remediation |
+| **Observation-only scan** | A scheduled or manual scan of connected sources | Evidence gathering only — no file modifications, no branches, no PRs, no tickets |
+| **Issue follow-up** | A follow-up triggered by Slack feedback on an existing investigation | Updates existing issue remediations only; does not create new issues or PRs |
+| **Ad-hoc Slack thread** | Triggered by a direct question in a Slack thread | Returns a direct Markdown response; never creates issues, tickets, branches, or PRs |
+
+---
+
+## Default guidance and remediation policy
+
+Out of the box, Responder's default runtime profile instructs the model to prefer code remediations. The model prepares the smallest safe change in the relevant repository, runs appropriate checks, and includes the final diff and a ready-for-review pull request in the report.
+
+An `external_action` remediation — a human-readable prompt for manual intervention — is reserved for situations where the fix is genuinely impossible in code. When proposing an external action, the model explains why code cannot resolve the problem and includes a self-contained handoff prompt.
+
+<Tip>
+  You can adjust this policy by customizing the `remediationChoice` and `codeRemediations` prompt parts in your runtime profile. For example, you might instruct the model to always propose external actions for database schema changes, or to prefer external actions in certain services.
+</Tip>
+
+---
+
+## Fallback behavior
+
+The worker supplies a set of built-in defaults for every known prompt part key. The runtime profile you configure interacts with those defaults in a predictable way:
+
+| Runtime profile value | Effect |
+|---|---|
+| Key omitted entirely | Worker uses the built-in default for that section |
+| Key set to a non-empty string | Worker uses your custom value instead of the default |
+| Key set to an empty string `""` | Worker suppresses that section entirely — it is not included in the assembled prompt |
+
+This means you can selectively override only the sections you care about and let everything else fall back to sensible defaults.
+
+---
+
+## Immutability and versioning
+
+Like Agent configurations, runtime profiles are versioned and immutable. When an investigation is created, Responder pins both the Agent version and the runtime profile version in use at that moment.
+
+Changes to a runtime profile take effect for new investigations only — they never alter the behavior of runs that are already queued, running, or completed. This makes every investigation fully reproducible: you can always look back at a finished run and know exactly what instructions governed it.
+

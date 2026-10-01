@@ -1,0 +1,78 @@
+---
+title: "Set Up Automations for Recurring Investigations"
+sidebarTitle: "Automations"
+description: "Automations run AI investigations on a schedule or in response to events, using your own AI model subscription or API keys."
+---
+
+Automations let you run AI-powered tasks on a schedule or in response to events, independently of your incident-investigation Agents. Use them for recurring work that doesn't map to a production alert — daily security scans, weekly dependency audits, periodic code quality checks, or any other workflow you want Responder to handle automatically.
+
+<Note>
+  Automations are a separate product area from incident investigation Agents. They appear in the sidebar when the feature is enabled for your organization. If you don't see **Automations** in the navigation, contact your Responder administrator.
+</Note>
+
+## How automations differ from Agents
+
+Both Agents and Automations use AI to investigate or execute tasks, but they serve different purposes:
+
+| | Agents | Automations |
+|---|--------|-------------|
+| **Triggered by** | Production alerts — Sentry issues, Datadog monitors, Dash0 alerts, Slack messages | A schedule or an event such as a Discord `/automate` command |
+| **Purpose** | Real-time incident investigation and remediation | Recurring or on-demand tasks not tied to an active incident |
+| **Reporting** | Structured investigation report posted to Slack | Configurable output destination |
+
+## Model credentials for automations
+
+Automations use your organization's configured model access settings. If you have added an API key in Model Access settings, automations use that key. If your organization uses a connected ChatGPT subscription, automations draw from that subscription. Otherwise, automations consume your organization's monthly usage allowance.
+
+## Creating an automation
+
+<Steps>
+  <Step title="Navigate to Automations">
+    Click **Automations** in the left sidebar. The Automations list shows all configured automations with their trigger, last run time, and status.
+  </Step>
+
+  <Step title="Create a new automation">
+    Click **Create automation** in the top-right corner. You can start from a blank form or choose a pre-built template from the template gallery at the bottom of the screen.
+  </Step>
+
+  <Step title="Configure the trigger">
+    Choose what starts the automation:
+
+    - **Schedule** — set a cron expression or choose from common presets (hourly, daily, weekly). The automation runs at each scheduled interval.
+    - **Event** — connect a Discord server and use the `/automate` slash command to trigger the automation on demand. Pass an optional `context` argument to the command; Responder adds this text to the trigger payload so the automation can tailor its work.
+  </Step>
+
+  <Step title="Choose a model and write instructions">
+    Select the AI model from the available options in your workspace. Write the automation's instructions — describe the task the model should perform, what sources it should check, and how it should format its output.
+  </Step>
+
+  <Step title="Configure output">
+    Choose where Responder posts the automation's results. Options vary by your connected integrations and may include a Slack channel, a Discord channel, or another destination configured in your workspace.
+  </Step>
+
+  <Step title="Enable the automation">
+    Toggle the automation to **Active** and click **Save**. The automation runs at its next scheduled time, or immediately if you use the **Run now** option from the automation's action menu.
+  </Step>
+</Steps>
+
+## Automation templates
+
+Responder ships with pre-built templates for common use cases. Browse them from the template gallery on the Automations page. Templates include a pre-written set of instructions and a suggested trigger configuration that you can use as-is or customize before saving.
+
+## Discord integration
+
+Connect a Discord server to your Responder workspace to use the `/automate` slash command. When you run `/automate` in a connected Discord server, Responder triggers the linked automation immediately.
+
+Pass context to the run with the optional `context` argument:
+
+```
+/automate Check whether the payment gateway latency spike from last night has recurred
+```
+
+The text you provide is attached to the trigger payload and made available to the automation's instructions, allowing a single automation to handle varied inputs without separate configurations.
+
+## Usage and limits
+
+Each automation run draws from your organization's monthly usage allowance. Monitor your usage from the **Settings → Usage** page. Runs that exceed your allowance are queued until the next billing period or until you add more allowance.
+
+You can pause an automation at any time from the action menu (⋯) on the Automations list. Paused automations do not run on their schedule and do not respond to `/automate` commands until you resume them.

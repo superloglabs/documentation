@@ -1,0 +1,97 @@
+---
+title: "Connect Slack to Responder for Alerts and Reports"
+sidebarTitle: "Slack"
+description: "Connect Slack to watch channels for alerts, deliver investigation reports as thread replies or channel posts, and run ad-hoc investigations via mentions."
+---
+
+Slack is the most flexible integration in Responder — it acts as a trigger, a reporting channel, and an investigation context source all at once. Once connected, you can point an agent at any Slack channel to watch for incoming alerts, receive structured investigation reports right where your team already works, and kick off ad-hoc investigations simply by @mentioning the bot.
+
+## Trigger types
+
+Responder supports three ways to start an investigation from Slack:
+
+**Channel watcher** — The agent monitors a specific Slack channel for incoming alert messages. Any tool that can post to Slack (CloudWatch alarms forwarded by Amazon Q Developer, PostHog alerts, Datadog notifications, and more) can feed into a channel watcher. Responder starts a new investigation each time a recognized alert arrives.
+
+**Mention** — The bot is @mentioned in a channel. Responder starts an investigation using the message content as the prompt. You can configure which channels are eligible for mention-triggered investigations on the agent.
+
+**Thread mode** — When enabled, the bot replies to any Slack thread it is mentioned in. Thread mode is configured separately from channel-watcher and mention triggers and gives your team a conversational interface to any ongoing discussion.
+
+<Note>
+  Thread mode is a workspace-level configuration, not a per-agent setting. Enable it from **Settings → Integrations → Slack → Thread mode**.
+</Note>
+
+## Reporting modes
+
+When an investigation completes, Responder can deliver its report in three ways. You choose the mode on each agent:
+
+| Mode | Behavior |
+|---|---|
+| `thread` | Replies directly in the originating Slack thread. Requires a Slack channel or mention trigger. |
+| `output_channel` | Posts a structured report to a designated output channel, regardless of where the trigger came from. |
+| `both` | Replies in the originating thread *and* posts to the output channel. |
+
+## CloudWatch alarm forwarding
+
+Watched Slack channels accept CloudWatch ALARM notifications forwarded by Amazon Q Developer in chat applications. Responder starts investigations only for messages in `ALARM` state — it normalizes the alarm name, region, state, and CloudWatch link from the notification and ignores `OK` and `INSUFFICIENT_DATA` messages. Add the matching AWS account as agent context so Responder can inspect the exact alarm, metric history, affected resource, and related logs.
+
+## Connect Slack to your workspace
+
+<Steps>
+  <Step title="Open Integrations settings">
+    In Responder, go to **Settings → Integrations** and click **Connect** next to Slack.
+  </Step>
+  <Step title="Authorize with OAuth">
+    You are redirected to Slack's OAuth consent screen. Sign in to the Slack workspace you want to connect and click **Allow**.
+  </Step>
+  <Step title="Return to Responder">
+    Responder stores your workspace connection and displays it as an active integration account.
+  </Step>
+  <Step title="Configure an agent trigger">
+    Open an agent's configuration, select **Trigger**, and choose one of:
+    - **Slack channel** — pick the channel to watch for alerts
+    - **Slack mention** — pick the channels where @mentions should trigger investigations
+  </Step>
+  <Step title="Configure reporting">
+    Under **Reporting**, choose `thread`, `output_channel`, or `both`. For `output_channel` or `both`, select the channel where reports should be posted.
+  </Step>
+  <Step title="Save the agent">
+    Click **Save**. The agent is now active and will start investigations when the trigger condition is met.
+  </Step>
+</Steps>
+
+<Note>
+  If you want to watch a **private channel**, you must invite the Responder bot to that channel before Responder can monitor it. Open the channel in Slack, type `/invite @Responder` (or the name of your bot), and confirm.
+</Note>
+
+## Required OAuth scopes
+
+Your Responder operator configures the Slack app used by your workspace. For reference, the app requires the following bot scopes:
+
+```
+app_mentions:read
+channels:history
+channels:join
+channels:read
+chat:write
+chat:write.public
+groups:history
+groups:read
+reactions:write
+```
+
+And the following user scope:
+
+```
+search:read
+```
+
+## Webhook endpoints
+
+The Slack app is configured to send events and interaction payloads to:
+
+| Type | Endpoint |
+|---|---|
+| Events (messages, mentions) | `POST /api/webhooks/slack` |
+| Interactivity (button clicks, modals) | `POST /api/webhooks/slack/actions` |
+
+These are set up by your operator during deployment. No action is required on your part as a user.

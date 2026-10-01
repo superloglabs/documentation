@@ -1,0 +1,79 @@
+---
+title: "Connect Custom MCP Servers to Responder Agents"
+sidebarTitle: "Custom MCP"
+description: "Add your own remote Streamable HTTP MCP servers as investigation context sources for Responder agents, with bearer token or OAuth 2.0 authentication."
+---
+
+Custom MCP servers let you connect any remote Streamable HTTP MCP server you operate to Responder. Once connected, every tool the server exposes becomes available to the agents you assign it to — giving you full control over what data and capabilities are available during investigations.
+
+## Requirements
+
+Before adding a custom MCP server, confirm it meets the following requirements:
+
+<CardGroup cols={2}>
+  <Card title="Network" icon="network-wired">
+    The server must use **HTTPS** and resolve only to **public network addresses**. Private IP ranges, loopback addresses, and link-local addresses are rejected.
+  </Card>
+  <Card title="Authentication" icon="lock">
+    The server must support either **bearer token** authentication or **OAuth 2.0** with dynamic client registration, PKCE, and authorization-server discovery.
+  </Card>
+</CardGroup>
+
+## Authentication methods
+
+**Bearer token**
+
+Provide a static bearer token that Responder sends with every request to the MCP server. Use this when your server issues API tokens or personal access keys.
+
+**OAuth 2.0**
+
+Responder connects using dynamic client registration and the standard OAuth 2.0 authorization code flow. Your MCP server must support:
+
+- Authorization-server discovery (RFC 8414 or equivalent)
+- PKCE (RFC 7636)
+- Dynamic client registration (RFC 7591)
+
+The OAuth redirect URL is:
+
+```
+<public>/api/integrations/custom_mcp/callback
+```
+
+Register this URL as an allowed redirect URI in your OAuth server's configuration.
+
+## Adding a custom MCP server
+
+<Steps>
+  <Step title="Open Settings → Integrations → Custom MCP">
+    Click **Add MCP Server**.
+  </Step>
+  <Step title="Enter the server URL">
+    Provide the full public HTTPS URL of your Streamable HTTP MCP endpoint.
+  </Step>
+  <Step title="Choose an authentication method">
+    Select **Bearer token** and paste your token, or select **OAuth 2.0** to begin the browser authorization flow.
+  </Step>
+  <Step title="Complete authorization">
+    For bearer token, Responder saves the token immediately. For OAuth 2.0, you are redirected to your authorization server to grant access. Responder stores the resulting session encrypted and refreshes it automatically.
+  </Step>
+  <Step title="Assign the server to an Agent">
+    On the Agent configuration screen, select your custom MCP server under **Context**. All tools exposed by the server are now available to the agent during investigations.
+  </Step>
+</Steps>
+
+## Tool availability
+
+After you connect a custom MCP server and assign it to an agent, all tools the server declares become available during that agent's investigations. Responder does not filter, rename, or proxy tool calls — the agent uses them exactly as the server defines them.
+
+<Note>
+Unlike built-in integrations (AWS, Grafana, Supabase, etc.), Responder does **not** apply an additional read-only filter to custom MCP servers. You are responsible for ensuring that the tools your server exposes match the access level appropriate for automated investigations. If your server exposes mutation tools, the agent may call them.
+</Note>
+
+## Security considerations
+
+Keep the following in mind when operating a custom MCP server for Responder:
+
+- **Scope tools appropriately.** Expose only the tools and data sources the agent needs. Avoid exposing mutation or administrative tools unless you explicitly intend for the agent to use them.
+- **Rotate bearer tokens regularly.** If you use bearer token authentication, treat the token as a long-lived secret. Rotate it from your server's admin interface and update the token in Responder under **Settings → Integrations → Custom MCP**.
+- **Review tool descriptions.** Responder's agent reads tool names and descriptions to decide when and how to call them. Clear, accurate descriptions lead to more reliable investigations.
+- **Monitor server logs.** Your MCP server receives all tool calls made during investigations. Use your server's logs to audit what the agent queried.

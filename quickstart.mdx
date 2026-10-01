@@ -1,47 +1,100 @@
 ---
-title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+title: "Get Started with Responder in Minutes"
+sidebarTitle: "Quick Start"
+description: "Install and run Responder locally with Docker in minutes, create your first workspace, add your API keys, and trigger your first investigation."
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
-
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
+Get Responder running on your machine in under five minutes. The local setup starts a full stack — Postgres, the control plane, and the worker — behind a local HTTPS address so you can explore the dashboard and create your first agent before configuring any external integrations.
 
 ## Prerequisites
 
-Before you begin, you must have:
+Make sure you have the following installed before you begin:
 
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
+- **Node.js 24+** — [nodejs.org](https://nodejs.org)
+- **pnpm 11** — `npm install -g pnpm`
+- **Docker** — [docs.docker.com/get-docker](https://docs.docker.com/get-docker/)
 
-## Get started
+## Start Responder
 
 <Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
+  <Step title="Clone the repository and install dependencies">
+    Clone the Responder repository and run the one-command setup:
 
     ```bash
-    npm install your-package
+    git clone https://github.com/superloglabs/responder-oss.git
+    cd responder-oss
+    pnpm local:setup
     ```
+
+    `local:setup` installs all dependencies, generates a gitignored `.env.local` file pre-filled with local values, starts Postgres, applies the database migrations, and creates a local example runtime profile. You only need to run this once.
   </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
+
+  <Step title="Start the development stack">
+    Bring up the full stack:
 
     ```bash
-    your-cli init
+    pnpm local:dev
     ```
+
+    The command prints the local HTTPS address for your dashboard — open it in your browser. If you have a public tunnel configured, the command also claims it for the current working directory so OAuth callbacks and webhooks resolve correctly.
   </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
+
+  <Step title="Create an account and workspace">
+    Open the dashboard URL printed in your terminal. Create an account using the sign-up form, then follow the prompt to create your first **workspace**.
+
+    <Note>
+      The UI and authentication flow work without any provider credentials. You can browse the dashboard, view demo data, and configure agents right away.
+    </Note>
+  </Step>
+
+  <Step title="Add your API keys">
+    Two keys unlock the core investigation features. Open `.env.local` in the project root and fill in:
 
     ```bash
-    your-cli start
+    # Required to store workspace secrets and run investigations
+    DAYTONA_API_KEY=your_daytona_api_key
+
+    # Required to run investigations
+    OPENAI_API_KEY=your_openai_api_key
     ```
+
+    | Key | Where to get it | Purpose |
+    |---|---|---|
+    | `DAYTONA_API_KEY` | [Daytona dashboard](https://app.daytona.io) | Stores workspace secrets in Daytona's write-only vault and runs investigation sandboxes |
+    | `OPENAI_API_KEY` | [platform.openai.com](https://platform.openai.com) | Powers the investigation agent's reasoning |
+
+    After saving `.env.local`, restart the stack so the new values take effect:
+
+    ```bash
+    # Stop the running stack (Ctrl+C or in a second terminal)
+    pnpm local:down
+
+    # Start it again
+    pnpm local:dev
+    ```
+
+    <Tip>
+      Provider OAuth flows and incoming webhooks (Sentry, Datadog, Slack) require a publicly reachable HTTPS origin. See the [integrations documentation](/integrations/overview) for the local tunnel workflow.
+    </Tip>
+  </Step>
+
+  <Step title="Create your first agent">
+    With the stack running and your API keys in place, you're ready to configure an investigation agent. An agent defines which alert triggers to watch, which context sources to query, and how to deliver its findings.
+
+    Follow the [Create an Agent](/guides/create-agent) guide to set one up in the dashboard.
   </Step>
 </Steps>
 
-<Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
+## Stop the stack
 
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
-</Tip>
+When you're done, stop the stack without deleting the database:
+
+```bash
+pnpm local:down
+```
+
+Your Postgres data is preserved in a Docker volume and will be available the next time you run `pnpm local:dev`.
+
+<Note>
+  This quick start is designed for local exploration. When you're ready to serve Responder from your own infrastructure and expose it to real alert sources, see the [Deployment](/deployment) guide.
+</Note>

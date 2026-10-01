@@ -1,0 +1,96 @@
+---
+title: "Integrations: Connect Your Stack to Responder"
+sidebarTitle: "Overview"
+description: "Connect Slack, Sentry, Datadog, GitHub, and 15+ other tools to give Responder the context it needs to investigate and resolve incidents."
+---
+
+Responder integrations fall into two categories: **triggers** — the events that start an investigation — and **context sources** — the tools Responder queries while an investigation is running. Most integrations act as context sources, feeding Responder the logs, metrics, code, and issue history it needs to reach a conclusion. A smaller set also serve as triggers, firing an agent the moment something goes wrong. Some integrations, like Slack and GitHub, play both roles.
+
+All credentials you connect are encrypted at rest in your workspace. Responder never shares credentials across workspaces, and each integration account is scoped to the workspace that created it.
+
+## How integrations are categorized
+
+| Integration | Role |
+|---|---|
+| Slack | Trigger · Reporting · Context |
+| Sentry | Trigger · Context |
+| Datadog | Trigger (via Slack) · Context |
+| Dash0 | Trigger · Context |
+| GitHub | Context · Remediation (PR creation) |
+| PostHog | Context (via Slack alerts) |
+| Grafana Cloud | Context |
+| Grafana Self-hosted | Context |
+| Axiom | Context |
+| Upstash | Context |
+| Langfuse | Context |
+| Supabase | Context |
+| Vercel | Context |
+| AWS | Context |
+| Google Cloud | Context |
+| ClickStack | Context |
+| Linear | Issue management |
+| Discord | Trigger · Interaction |
+| Custom MCP servers | Context |
+
+## Integration guides
+
+<CardGroup cols={3}>
+  <Card title="Slack" icon="slack" href="/integrations/slack">
+    Watch channels for alerts, receive investigation reports as thread replies, and trigger investigations via @mention.
+  </Card>
+  <Card title="Sentry" icon="bug" href="/integrations/sentry">
+    Automatically start investigations when Sentry issues are created or resurface.
+  </Card>
+  <Card title="Datadog" icon="chart-line" href="/integrations/datadog">
+    Query metrics, monitors, logs, and dashboards during investigations and trigger from Datadog alerts via Slack.
+  </Card>
+  <Card title="GitHub" icon="github" href="/integrations/github">
+    Inspect repositories during investigations and automatically open pull requests with proposed fixes.
+  </Card>
+  <Card title="Dash0" icon="bolt" href="/integrations/observability">
+    Trigger investigations from Dash0 alert rules and query observability data during investigations.
+  </Card>
+  <Card title="PostHog" icon="chart-bar" href="/integrations/observability">
+    Route PostHog alerts through a watched Slack channel and query product analytics during investigations.
+  </Card>
+  <Card title="Grafana" icon="chart-area" href="/integrations/observability">
+    Connect Grafana Cloud or a self-hosted instance as read-only context for dashboards, alerts, and data sources.
+  </Card>
+  <Card title="Axiom" icon="database" href="/integrations/observability">
+    Query logs, traces, metrics, and monitor history from Axiom during investigations.
+  </Card>
+  <Card title="Upstash" icon="server" href="/integrations/observability">
+    Inspect Redis, Vector, Search, QStash, and Workflow resources as read-only investigation context.
+  </Card>
+  <Card title="Langfuse" icon="sparkles" href="/integrations/observability">
+    Query LLM traces, scores, metrics, and prompts while investigating AI application issues.
+  </Card>
+  <Card title="Supabase" icon="table" href="/integrations/observability">
+    Connect Supabase projects for log inspection and optional read-only or full SQL access.
+  </Card>
+  <Card title="Vercel" icon="triangle" href="/integrations/observability">
+    Inspect deployments, deployment checks, logs, and project configuration during investigations.
+  </Card>
+  <Card title="AWS" icon="aws" href="/integrations/cloud">
+    Grant read-only access to your AWS account so Responder can inspect alarms, metrics, logs, and resources.
+  </Card>
+  <Card title="Google Cloud" icon="google" href="/integrations/cloud">
+    Connect a Google Cloud project for read-only access to Asset Inventory, Logging, and Monitoring.
+  </Card>
+  <Card title="Linear" icon="circle-dot" href="/integrations/observability">
+    Automatically create Linear tickets for new issues found during investigations.
+  </Card>
+  <Card title="Discord" icon="discord" href="/integrations/observability">
+    Watch Discord channels for alerts and trigger investigations using the /automate slash command.
+  </Card>
+  <Card title="ClickStack" icon="mouse-pointer-click" href="/integrations/observability">
+    Connect ClickStack Cloud or a self-hosted instance as read-only investigation context.
+  </Card>
+  <Card title="Custom MCP servers" icon="plug" href="/integrations/custom-mcp">
+    Connect any remote Streamable HTTP MCP server using a bearer token or OAuth 2.0.
+  </Card>
+</CardGroup>
+
+<Note>
+  All integration credentials are encrypted at rest and scoped to your workspace. Responder never stores your access keys or private keys inside the investigation sandbox — credentials are injected as short-lived tokens at query time.
+</Note>

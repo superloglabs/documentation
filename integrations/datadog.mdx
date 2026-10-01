@@ -1,0 +1,58 @@
+---
+title: "Connect Datadog for Monitor-Triggered Investigations"
+sidebarTitle: "Datadog"
+description: "Connect Datadog to use it as investigation context and to trigger investigations from Datadog monitor alerts forwarded through Slack."
+---
+
+Datadog serves two roles in Responder: it's a rich investigation context source — giving Responder access to your metrics, monitors, logs, and dashboards while an investigation is running — and it can also drive investigations through alerts forwarded to a watched Slack channel. No webhook configuration is required on the Datadog side; everything flows through Slack.
+
+## How Datadog fits into an investigation
+
+When an investigation starts (from any trigger), Responder can query Datadog through Datadog's MCP endpoint if you've added the Datadog integration as context on the agent. This means Responder can look at the state of related monitors, pull metric history, search logs, and inspect dashboards — all automatically, without you having to paste anything into a prompt.
+
+## Triggering investigations from Datadog alerts
+
+Datadog alerts reach Responder indirectly through a Slack channel watcher. Set up a Datadog notification channel that posts to a Slack channel, and then point a Responder agent's trigger at that same Slack channel. When a Datadog monitor fires and posts to Slack, Responder picks up the message and starts an investigation.
+
+<Tip>
+  For this flow to work, you need both a Datadog integration (for context) and a Slack integration (for the trigger) connected on the same agent.
+</Tip>
+
+## Connect Datadog to your workspace
+
+<Steps>
+  <Step title="Open Integrations settings">
+    In Responder, go to **Settings → Integrations** and click **Connect** next to Datadog.
+  </Step>
+  <Step title="Select your Datadog site">
+    Choose the Datadog site that matches your account. Datadog hosts data in multiple regions — pick the correct one to ensure Responder connects to the right endpoint.
+
+    | Site name | Domain |
+    |---|---|
+    | US1 (default) | `app.datadoghq.com` |
+    | US3 | `us3.datadoghq.com` |
+    | US5 | `us5.datadoghq.com` |
+    | EU | `app.datadoghq.eu` |
+    | AP1 | `ap1.datadoghq.com` |
+  </Step>
+  <Step title="Authorize the connection">
+    Follow the OAuth prompt to authorize Responder to access your Datadog account. Responder stores the connection encrypted in your workspace.
+  </Step>
+  <Step title="Add Datadog as agent context">
+    Open an agent's configuration and navigate to **Context**. Add your connected Datadog account so investigations can query metrics, monitors, logs, and dashboards.
+  </Step>
+  <Step title="(Optional) Configure alert triggering via Slack">
+    If you want Datadog monitor alerts to trigger investigations automatically:
+    - In Datadog, configure a notification channel that posts alerts to a Slack channel your team monitors.
+    - In Responder, set that same Slack channel as the agent's **Trigger → Slack channel**.
+
+    No webhook URL or API key is needed on the Datadog side.
+  </Step>
+  <Step title="Save the agent">
+    Click **Save**. Responder will now query Datadog during investigations and, if you configured it, start investigations from Datadog alerts arriving in Slack.
+  </Step>
+</Steps>
+
+<Note>
+  Make sure you select the correct Datadog site when connecting. Connecting to the wrong site region means Responder's MCP queries will fail to find your monitors and metrics.
+</Note>

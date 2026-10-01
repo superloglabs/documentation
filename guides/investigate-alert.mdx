@@ -1,0 +1,99 @@
+---
+title: "How to Review and Interpret Investigation Reports"
+sidebarTitle: "Review Investigations"
+description: "Learn how to read Responder investigation reports, understand severity ratings, review evidence, and navigate the investigation trace."
+---
+
+Every time a configured Agent detects a trigger event it runs an investigation and produces a structured report. The report distills raw signals from your observability stack — errors, metrics, logs, traces, Slack threads, and code history — into a prioritised list of findings with root causes, timelines, evidence links, and remediation options. This guide explains how to find investigations and make the most of what they contain.
+
+## Finding investigations
+
+You can reach an investigation from two places:
+
+- **Dashboard**: go to **Agents** in the sidebar, click the Agent that handled the alert, then open the **Run history** tab. Each row in the run history is one investigation. Click any row to open the full report.
+- **Slack notification**: if the Agent is configured to post to an output channel or reply to a thread, the Slack message includes a link that takes you directly to the investigation.
+
+## Investigation report anatomy
+
+A report is made up of a headline, a summary, and one or more issues.
+
+### Headline
+
+A single plain-text sentence that captures the most important finding. The headline appears in Slack notifications and at the top of the report.
+
+### Summary
+
+A multi-sentence narrative of the investigation. The summary describes what Responder found, what it ruled out, and the overall health picture. Read this first to orient yourself before diving into individual issues.
+
+### Issues
+
+Each distinct problem identified during the investigation is listed as a separate issue. An issue contains:
+
+**Severity badge** — one of three levels:
+
+| Badge | Meaning |
+|-------|---------|
+| `SEV-1` | Critical — full outage or widespread customer impact requiring immediate action |
+| `SEV-2` | High — significant degradation or limited customer impact |
+| `SEV-3` | Moderate — minor impact with no immediate operational urgency |
+
+**Title and description** — a short title and a detailed description of the problem.
+
+**Root cause** — a single sentence naming the specific code change, configuration drift, infrastructure event, or dependency failure that caused the issue.
+
+**Timeline** — an ordered sequence of events showing how the issue unfolded, from the first signal through to the point of detection. Each step has a title and a one-sentence description.
+
+**Evidence** — a list of linked sources that support the finding. Evidence items can reference:
+
+- Sentry errors and traces
+- Datadog metrics and monitor transitions
+- Dash0 alerts and spans
+- Grafana and PostHog data
+- GitHub file paths and specific lines
+- Slack messages
+- AWS, GCP, Vercel, Supabase, and other connected sources
+
+Each evidence item links back to the original source where possible, so you can verify the finding without leaving the report.
+
+**Remediation options** — one or more proposed fixes. See the [Remediation guide](/guides/remediation) for details on code-change and external-action remediations, and how to promote a remediation into a pull request.
+
+### Recurrences
+
+If Responder has seen this issue in a previous investigation, it marks the issue as a recurrence and links to the earlier occurrence. Use this to understand whether a problem is genuinely new or a recurring pattern that earlier fixes did not fully resolve.
+
+## Investigation trace
+
+Every investigation records a step-by-step log of the model's reasoning and every tool call it made: queries sent to Datadog, files read from GitHub, Sentry events fetched, and so on.
+
+Open the **Trace** panel from the investigation detail to see the full sequence. The trace is useful for:
+
+- Understanding why Responder reached a particular conclusion
+- Verifying that the right data sources were queried
+- Debugging a misconfigured Agent (for example, a missing integration or a repository that returned no results)
+
+<Note>
+  A small number of internal trace events — such as the raw instructions sent to the model — are hidden from the trace view to keep the log focused on observable actions.
+</Note>
+
+## Rerunning an investigation
+
+If an investigation finished but you want Responder to try again with the Agent's current configuration and the latest available data, click **Rerun** from the investigation detail page.
+
+Rerunning is useful after you:
+- Updated the Agent's instructions or context integrations
+- Added a new repository
+- Resolved the original alert and want to confirm the fix
+
+<Note>
+  Only finished investigations can be rerun. An investigation that is still in progress cannot be retried. Reruns draw from your organization's monthly usage allowance.
+</Note>
+
+## Slack delivery
+
+When an Agent is configured to post results to a Slack output channel (or reply to a thread), the message includes:
+
+- The **headline** in bold
+- The **summary**
+- The **issue list**, with each issue rendered as a bullet showing its severity, title, root cause, timeline, and recommended remediation
+
+The Slack message is formatted in Markdown. Click the link in the message to open the full report in the Responder dashboard and access evidence links, the investigation trace, and remediation actions.
