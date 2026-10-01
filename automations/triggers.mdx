@@ -1,0 +1,66 @@
+---
+title: "Triggers"
+description: "Start automation runs from Slack messages and mentions, Sentry issues, Discord commands, or a schedule."
+---
+
+A trigger decides when an automation runs. Each automation has 1 to 10 triggers, and any of them starts a run. You can also start a run by hand with **Run now** or **Test**.
+
+## Add a trigger
+
+In the automation editor, click **Add trigger** and pick an event. If the tool is not connected, the trigger card shows **Connect**. Approve access in the pop-up window and return to the editor. Your draft stays open.
+
+If your workspace has more than one connection for the tool, choose one under **Choose a workspace**. Then pick the channels or projects to watch. Use **Refresh channels** or **Refresh projects** if a new one is missing.
+
+## Slack
+
+| Event | Starts a run when |
+|---|---|
+| **New message in channel** | Someone posts a new message in a selected channel. |
+| **App mentioned** | Someone mentions the Superlog app in a selected channel. |
+| **Message posted or app mentioned** | Either of the above. |
+
+Pick up to 50 channels. To watch a private channel, invite the Superlog app to it first.
+
+Superlog ignores messages from its own app. Alerts that other tools post to Slack, such as Datadog, PostHog, Sentry, or CloudWatch notifications, start runs. Recovery and resolved notifications from those tools are ignored.
+
+While a run is active, Superlog posts a live progress card in the thread that started it. When someone replies in that thread, the reply continues the same run instead of starting a new one.
+
+## Sentry
+
+| Event | Starts a run when |
+|---|---|
+| **New issue** | Sentry creates a new issue in a selected project. |
+| **Issue regression** | A resolved issue comes back. |
+| **New issue or regression** | Either of the above. |
+
+Pick up to 100 projects. The run is titled with the Sentry short ID and issue title, and the agent receives the issue details.
+
+## Discord
+
+| Event | Starts a run when |
+|---|---|
+| **Automation command in channel** | Someone runs `/automate` in a selected channel. |
+
+The command takes an optional `context` option. Its text is passed to the agent with the trigger:
+
+```text
+/automate context: Check whether last night's payment latency spike came back
+```
+
+`/automate` starts every active automation that watches the channel. Discord replies only to the person who ran the command, with **Automation started.** or a message saying that no automation is configured for the channel. Results are not posted back to Discord. Add a Slack connector or a GitHub repository so the agent can report somewhere.
+
+## Schedule
+
+| Frequency | Options |
+|---|---|
+| **Every hour** | Runs at the top of each hour. |
+| **Every day** | Pick the time, on the hour. |
+| **Every week** | Pick the day and the time. |
+
+Schedules use the time zone shown on the trigger card, which defaults to your browser's. If a scheduled run is missed by less than an hour, it still runs. Older missed runs are skipped.
+
+Scheduled automations can post each finished run to Slack. See [Notifications](/automations/runs#notifications).
+
+## Manual runs
+
+**Run now** starts a run with no trigger event. **Test** opens a chat where your message is treated as the trigger event. Both need the automation to be active.

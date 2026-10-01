@@ -1,73 +1,52 @@
 ---
-title: "Connect GitHub for Code Inspection and Auto-Fix PRs"
-sidebarTitle: "GitHub"
-description: "Connect GitHub to let Responder inspect your repositories during investigations and automatically open pull requests to fix identified issues."
+title: "GitHub"
+description: "Install the Superlog GitHub App so automations can check out your repositories and open pull requests."
 ---
 
-GitHub gives Responder two powerful capabilities: the ability to read your repository contents while investigating an incident (so it can trace errors back to specific code), and the ability to open pull requests with proposed fixes when it finds something actionable. You control how aggressively Responder creates PRs — from fully automatic to gated by your approval — using the PR mode setting on each agent.
+GitHub gives automations their code. Every automation checks out at least one repository, and with GitHub connected the agent can read pull requests, commits, and issues, and open pull requests with its changes.
 
-## What Responder can do with GitHub
-
-**Code inspection** — During an investigation, Responder reads the contents of repositories you've selected on the agent. It can trace an error back to a specific function, compare recent commits, and inspect related code paths to understand the root cause.
-
-**Pull request creation** — When Responder identifies a fix, it can open a pull request with the proposed change. The `prMode` setting on the agent controls when this happens.
-
-**Review comment handling** — When a reviewer bot leaves a new inline comment on a PR that Responder created, Responder reads all unresolved bot threads on that PR, pushes a follow-up commit addressing the feedback, replies to each thread, and marks them as resolved.
-
-<Note>
-  Only bot-authored review threads trigger Responder's follow-up commit flow. Human review comments are never handled automatically — Responder will not push commits in response to feedback left by a person.
-</Note>
-
-## PR modes
-
-Set the PR mode on each agent's configuration:
-
-| Mode | Behavior |
-|---|---|
-| `disabled` | Responder never creates pull requests. Code inspection still works. |
-| `manual` | Responder prepares a diff and shows it to you, but only opens the PR after you explicitly approve it. |
-| `always` | Responder automatically opens the PR as soon as it identifies a fix. |
-
-<Warning>
-  If you set `prMode` to `manual` or `always`, you must select at least one repository on the agent — Responder will not let you save an agent with remediation enabled but no repositories chosen.
-</Warning>
-
-## Connect GitHub to your workspace
+## Connect GitHub
 
 <Steps>
-  <Step title="Open Integrations settings">
-    In Responder, go to **Settings → Integrations** and click **Connect** next to GitHub.
+  <Step title="Start the install">
+    In **Integrations**, click **Add** on GitHub. Or, in the automation editor, click **Add GitHub** under **Repositories**.
   </Step>
-  <Step title="Authorize via GitHub App">
-    You are redirected to GitHub's authorization flow. Sign in to GitHub and install the Responder GitHub App on your account or organization. Choose which repositories to grant access to during installation.
+  <Step title="Install the app">
+    GitHub opens the Superlog GitHub App install page. Choose the account or organization and the repositories to grant.
   </Step>
-  <Step title="Return to Responder">
-    Responder confirms the installation and synchronizes the repositories you granted access to. They appear as selectable repositories in your agent configuration.
-  </Step>
-  <Step title="Select repositories on the agent">
-    Open an agent's configuration. Under **Repositories**, select the repositories you want Responder to inspect and, if using `manual` or `always` PR mode, to create pull requests in.
-  </Step>
-  <Step title="Set the PR mode">
-    Under **Remediation**, choose `disabled`, `manual`, or `always` depending on how much automation you want.
-  </Step>
-  <Step title="Save the agent">
-    Click **Save**. Responder will now inspect the selected repositories during investigations and open PRs according to the mode you chose.
+  <Step title="Pick repositories">
+    Back in Superlog, the granted repositories appear in **Add repository**. To grant more, change the app's repository access in GitHub.
   </Step>
 </Steps>
 
-## Operator reference
+## What automations can do
 
-Your Responder operator configures the GitHub App at the platform level. The app must be created as a **public GitHub App** with the following settings:
+| Action | Details |
+|---|---|
+| Check out repositories | Up to 10 per automation, without git history. The first is the working directory. |
+| Read GitHub | Pull requests, commits, comparisons, issues, files, and users in the granted repositories. |
+| Fetch other refs | Bring another branch, tag, or pull request into the sandbox. |
+| Open a pull request | Creates a branch from the agent's changes and opens a pull request against the checked-out branch. |
+
+Pull requests open without an approval step. Use your branch protection and review rules as the gate before merge.
+
+The sandbox never holds GitHub credentials. Superlog uses a short-lived installation token outside the sandbox and copies only the automation's repositories into it.
+
+## Tag mode
+
+Tag mode can read the repositories you select for it. It does not open pull requests.
+
+## Self-hosted setup
+
+Self-hosted deployments need their own public GitHub App.
 
 | Setting | Value |
 |---|---|
-| OAuth redirect URI | `<public>/api/integrations/github/callback` |
-| Webhook URL | `<public>/api/webhooks/github` |
+| OAuth redirect URI | `<public-url>/api/integrations/github/callback` |
+| Webhook URL | `<public-url>/api/webhooks/github` |
 | Webhook events | Pull request, Pull request review comment |
 
-**Repository permissions:**
-
-| Permission | Access level |
+| Repository permission | Access |
 |---|---|
 | Contents | Read and write |
 | Pull requests | Read and write |
@@ -77,14 +56,4 @@ Your Responder operator configures the GitHub App at the platform level. The app
 | Commit statuses | Read |
 | Issues | Read |
 
-**Account permission:**
-
-| Permission | Access level |
-|---|---|
-| Email addresses | Read |
-
-The environment must include `GITHUB_APP_ID`, `GITHUB_APP_SLUG`, `GITHUB_APP_PRIVATE_KEY`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, and `GITHUB_WEBHOOK_SECRET`.
-
-<Note>
-  The GitHub App's private key never enters the investigation sandbox. Responder generates a short-lived installation token at query time and materializes only the repositories you've selected on the agent — your other repositories remain inaccessible to the investigation.
-</Note>
+Also grant the account permission **Email addresses: Read**. Set `GITHUB_APP_ID`, `GITHUB_APP_SLUG`, `GITHUB_APP_PRIVATE_KEY`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, and `GITHUB_WEBHOOK_SECRET`. See [Environment variables](/self-hosting/environment).

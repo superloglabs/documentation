@@ -1,0 +1,52 @@
+---
+title: "Connectors"
+description: "Give an automation's agent access to GitHub, Slack, Sentry, Datadog, Linear, custom MCP servers, and workspace secrets."
+---
+
+Connectors are the tools an automation's agent can use during a run. Add them under **Connectors** in the automation editor with **Add connector**.
+
+<Warning>
+  Runs use selected connectors directly. Write actions, such as opening a pull request, posting to Slack, or creating a Linear issue, run without human approval. Add only the connectors the task needs.
+</Warning>
+
+## Available connectors
+
+| Connector | What the agent can read | What the agent can do |
+|---|---|---|
+| **GitHub** | Pull requests, commits, comparisons, issues, and files in your repositories. It can also fetch other branches, tags, and pull requests. | Open a pull request with its changes. |
+| **Slack** | Channels and threads it has access to. It can search for channels. | Post messages and thread replies. Add and remove reactions. |
+| **Sentry** | Issues, events, traces, and projects through Sentry's MCP server. | — |
+| **Datadog** | Logs, metrics, monitors, and traces through Datadog's MCP server. | Any tool the Datadog MCP server exposes. |
+| **Linear** | Teams, projects, and issues through Linear's read-only MCP server. | Create issues, with assignee, labels, priority, project, state, and parent. |
+| **Custom MCP** | Every tool your server exposes. | Every tool your server exposes. |
+| **Workspace secrets** | — | Call your own APIs with a secret the agent never sees. See [Workspace secrets](/settings/workspace-secrets). |
+
+If a tool is not connected yet, the picker shows **Connect** next to it. Click **Manage** on a connector to change its connection in settings.
+
+A connection that is already used as a trigger shows **Trigger** in the picker. A Slack trigger without a Slack connector lets the agent read and reply only in the thread that started the run.
+
+## GitHub
+
+Repositories are configured in their own **Repositories** section and are required. They are checked out into the sandbox without git history. The sandbox has no GitHub credentials. Superlog fetches code and opens pull requests on the agent's behalf.
+
+When the agent opens a pull request, Superlog creates a new branch from the agent's changes and opens the pull request against the branch that was checked out. The run page shows a card with **View pull request**.
+
+## Slack
+
+The agent can post up to 40,000 characters per message, and can reply in threads. The run page notes each message it sends.
+
+## Linear
+
+The agent can read Linear and create issues. Each created issue appears on the run page with **View issue**.
+
+## Custom MCP servers
+
+Add one from the picker with **Add custom MCP server**, or from **Integrations**. Superlog passes every tool the server exposes to the agent without filtering. Expose only the tools you want the agent to use. See [Custom MCP servers](/integrations/custom-mcp).
+
+## Workspace secrets
+
+Pick up to 20 secrets under **Workspace secrets** in the connector picker. Each secret is available in the sandbox as an environment variable named after the secret. The variable holds a placeholder. Superlog replaces it with the real value only on requests to the secret's allowed hosts.
+
+## Other integrations
+
+AWS, Google Cloud, PostHog, Grafana, Axiom, Dash0, ClickStack, Langfuse, Upstash, Supabase, and Vercel are available in [Tag mode](/tag-mode). To use another tool from an automation, connect it as a [custom MCP server](/integrations/custom-mcp) or call its API with a [workspace secret](/settings/workspace-secrets).

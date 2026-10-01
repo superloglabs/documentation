@@ -1,0 +1,35 @@
+---
+title: "Linear"
+description: "Connect Linear so agents can read issues and projects and create assigned issues."
+---
+
+Linear lets agents check existing work before acting and file issues for what they find.
+
+## Connect Linear
+
+In **Integrations**, click **Add** on Linear and approve access for your Linear workspace.
+
+## Let agents use Linear
+
+Add Linear as a connector. The agent can:
+
+- Read issues, projects, teams, users, labels, and workflow states through Linear's read-only MCP server.
+- Create issues with a team, title, and Markdown description, and optionally an assignee, labels, priority, project, workflow state, and parent issue.
+
+Issue creation runs without an approval step. Each created issue appears on the run page with **View issue**. If a run retries the same request, Superlog does not create a duplicate.
+
+Use instructions to say when the agent should file an issue, which team it goes to, and who to assign it to.
+
+## Tag mode
+
+Tag mode can read Linear when you turn it on for tag mode. It does not create issues.
+
+## Self-hosted setup
+
+Create a Linear OAuth app with `read` and `write` scopes.
+
+| Setting | Value |
+|---|---|
+| OAuth callback | `<public-url>/api/integrations/linear/callback` |
+
+Set `LINEAR_CLIENT_ID` and `LINEAR_CLIENT_SECRET`. See [Environment variables](/self-hosting/environment).

@@ -1,0 +1,82 @@
+---
+title: "Models and harnesses"
+sidebarTitle: "Models and harnesses"
+description: "Choose any model and agent harness for each automation, and run on your own API keys or ChatGPT subscription."
+---
+
+Each automation picks its own model and harness. You can switch providers without rebuilding your automations, and you can run on your own API keys or your ChatGPT subscription instead of the usage included in your plan.
+
+## Choose a model
+
+In the automation editor, click **Choose model** in the **Agent instructions** toolbar. Pick a provider, then a model from its list.
+
+| Provider | Harnesses |
+|---|---|
+| OpenAI | Codex, OpenCode |
+| Anthropic | Claude Agent SDK, OpenCode |
+| Google Gemini | OpenCode |
+| xAI | OpenCode |
+| Mistral | OpenCode |
+| DeepSeek | OpenCode |
+
+Model lists are loaded from each provider's current catalog. The provider decides at run time whether a model is available to your key.
+
+## Choose a harness
+
+The harness is the agent program that runs the model in the sandbox. When you pick a model, Superlog switches to a compatible harness: Codex for OpenAI, the Claude Agent SDK (shown as **Anthropic**) for Anthropic, and OpenCode for the others. Click **Harness** to change it.
+
+| Harness | Providers |
+|---|---|
+| **Codex** | OpenAI. Required to use a ChatGPT subscription. |
+| **Anthropic** (Claude Agent SDK) | Anthropic |
+| **OpenCode** | All six providers |
+
+All harnesses run unattended, without approval prompts.
+
+## Where inference comes from
+
+Superlog picks the inference source when each run starts:
+
+1. **ChatGPT subscription**, if one is connected and the automation uses the Codex harness.
+2. **Your API key** for the model's provider. With several keys for one provider, the newest is used.
+3. **Included usage** from your plan, if neither of the above applies.
+
+If the provider rejects your key, or your key cannot use the selected model, the run fails with a message that names the problem. It does not fall back to included usage.
+
+## Add an API key
+
+<Steps>
+  <Step title="Open model settings">
+    Go to **Settings → Models**.
+  </Step>
+  <Step title="Add the key">
+    Under **Add an API key**, choose the provider, enter a label, and paste the key. Click **Add key**.
+  </Step>
+  <Step title="Check the result">
+    Superlog checks the key against the provider's model list before saving it. The key appears under **API keys** with its label, provider, last four characters, and status.
+  </Step>
+</Steps>
+
+From then on, every automation that uses that provider runs on your key, and your provider bills the model usage. Keys are encrypted and never enter the automation sandbox. Click **Replace** to rotate a key, or **Remove** to delete it. A key that an automation is using cannot be removed.
+
+## Connect a ChatGPT subscription
+
+Automations that use the Codex harness can run on a ChatGPT plan. The subscription takes priority over any OpenAI API key, and usage counts against that plan's Codex limits.
+
+<Steps>
+  <Step title="Start the sign-in">
+    Go to **Settings → Models**, click **Connect ChatGPT**, then **Connect subscription**.
+  </Step>
+  <Step title="Enter the code">
+    Superlog shows a one-time code. Click **Continue to ChatGPT**, sign in, and enter the code. If ChatGPT asks, enable device-code login in your ChatGPT security settings.
+  </Step>
+  <Step title="Finish">
+    When the sign-in completes, the subscription appears with **Codex harness only**. Every automation in the workspace can use it.
+  </Step>
+</Steps>
+
+If the subscription stops working, it shows **Reconnect**. Sign in again to restore it.
+
+<Note>
+  Superlog uses OpenAI's official Codex client for sign-in and inference. Your tokens are encrypted, and each run's sandbox holds only placeholders that are replaced at the network boundary. Anthropic subscription sign-in is not available.
+</Note>

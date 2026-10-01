@@ -1,0 +1,71 @@
+---
+title: "Create and manage automations"
+sidebarTitle: "Overview"
+description: "Create an automation, configure its triggers, instructions, repositories, and connectors, and pause, test, or run it."
+---
+
+An automation runs a coding agent on a task each time one of its triggers fires. This page covers creating, editing, and managing automations. To see how the parts fit together, read [How Superlog works](/how-it-works).
+
+## Create an automation
+
+<Steps>
+  <Step title="Start from a template or from blank">
+    Open **Automations**. Pick a card under **Start from a template**, or click **Create automation** for a blank one. See [Templates](/automations/templates).
+  </Step>
+  <Step title="Name it">
+    New automations are named "New automation". Click the pencil next to the name to rename it. Names are up to 120 characters and must be unique in the workspace.
+  </Step>
+  <Step title="Add triggers">
+    Under **Triggers**, click **Add trigger** and pick an event. Choose the connection and the channels or projects to watch. See [Triggers](/automations/triggers).
+  </Step>
+  <Step title="Write the instructions">
+    Under **Agent instructions**, describe the task. Say what the agent should look at, what a good result is, and where it should report. Instructions can be up to 50,000 characters.
+  </Step>
+  <Step title="Choose a model">
+    In the instructions toolbar, click **Choose model**. Pick a provider, then a model. Superlog selects a compatible harness, which you can change. See [Models and harnesses](/automations/models).
+  </Step>
+  <Step title="Add repositories">
+    Under **Repositories**, click **Add repository** and pick up to 10. Drag them to reorder. The first one is labeled **Main directory** and is where the agent starts.
+  </Step>
+  <Step title="Add connectors">
+    Under **Connectors**, click **Add connector** to give the agent access to Slack, Sentry, Datadog, Linear, a custom MCP server, or workspace secrets. See [Connectors](/automations/connectors).
+  </Step>
+  <Step title="Save">
+    Click **Save**. The automation is active as soon as it is saved.
+  </Step>
+</Steps>
+
+Superlog checks the automation before saving. It needs at least one trigger, a connection and at least one channel or project for each trigger, at least one repository, and a model.
+
+## Edit an automation
+
+Open an automation and select the **Settings** tab. Changes save automatically. The header shows **Saving…** and then **Saved**. If a change leaves the automation incomplete, for example by removing its last repository, Superlog waits to save until it is complete again.
+
+Edits apply to new runs. Runs already in progress keep the configuration they started with.
+
+## Run, test, and pause
+
+| Action | Where | What it does |
+|---|---|---|
+| **Run now** | Automation header, or the **⋯** menu in the list | Starts a run immediately, without a trigger event. |
+| **Test** | Automation header | Opens a chat. Your message is treated as the trigger event, so you can check how the agent handles a specific case. |
+| **Active** switch | Automation header | Turns the automation on or off. Inactive automations ignore their triggers. |
+| **Pause** / **Resume** | **⋯** menu in the list | Same as the **Active** switch. |
+
+## The automations list
+
+The **Automations** page lists every automation in the workspace with its triggers, connectors, last run, and status (**Active** or **Paused**). The **⋯** menu on each row has **View runs**, **Edit**, **Run now**, and **Pause** or **Resume**.
+
+## Limits
+
+| Setting | Limit |
+|---|---|
+| Name | 120 characters |
+| Instructions | 50,000 characters |
+| Triggers | 1 to 10 |
+| Repositories | 1 to 10 |
+| Slack or Discord channels per trigger | 50 |
+| Sentry projects per trigger | 100 |
+| Workspace secrets | 20 |
+| Notification channels | 10 |
+| Run time | 30 minutes |

@@ -1,4 +1,3 @@
-> **First-time setup**: Customize this file for your project. Prompt the user to customize this file for their project.
 > For Mintlify product knowledge (components, configuration, writing standards),
 > install the Mintlify skill: `npx skills add https://mintlify.com/docs`
 
@@ -14,13 +13,15 @@
 
 ## Terminology
 
-{/* Add product-specific terms and preferred usage */}
-{/* Example: Use "workspace" not "project", "member" not "user" */}
+- The product is **Superlog**. The open-source repository is `superloglabs/responder-oss`; use the name Responder only when referring to that repository or to identifiers in it.
+- An **automation** has **triggers**, **agent instructions**, **repositories**, **connectors**, a **model**, and a **harness**. One execution is a **run**.
+- **Tag mode** answers Slack mentions. It is separate from automations.
+- Use "workspace" for the tenant and "integration" for a connected tool.
+- Positioning follows the landing page at superlog.sh: automate routine engineering tasks; choose your model and harness; bring your own tokens and subscriptions.
 
 ## Style preferences
 
-{/* Add any project-specific style rules below */}
-
+- Plain, direct language. Short sentences. No marketing flourish.
 - Use active voice and second person ("you")
 - Keep sentences concise — one idea per sentence
 - Use sentence case for headings
@@ -29,5 +30,5 @@
 
 ## Content boundaries
 
-{/* Define what should and shouldn't be documented */}
-{/* Example: Don't document internal admin features */}
+- Document what the current code does. Check claims against `superloglabs/responder-oss` before publishing.
+- Document the automations product that hosted workspaces get. Do not document internal admin features.

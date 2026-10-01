@@ -1,100 +1,59 @@
 ---
-title: "Quickstart: Run Responder Locally in Under 5 Minutes"
-sidebarTitle: "Quick Start"
-description: "Install and run Responder locally with Docker in minutes, create your first workspace, add your API keys, and trigger your first investigation."
+title: "Quickstart"
+description: "Create a Superlog account, connect GitHub, and run your first automation."
 ---
 
-Get Responder running on your machine in under five minutes. The local setup starts a full stack — Postgres, the control plane, and the worker — behind a local HTTPS address so you can explore the dashboard and create your first agent before configuring any external integrations.
-
-## Prerequisites
-
-Make sure you have the following installed before you begin:
-
-- **Node.js 24+** — [nodejs.org](https://nodejs.org)
-- **pnpm 11** — `npm install -g pnpm`
-- **Docker** — [docs.docker.com/get-docker](https://docs.docker.com/get-docker/)
-
-## Start Responder
+This guide takes you from sign-up to a finished automation run on the hosted service.
 
 <Steps>
-  <Step title="Clone the repository and install dependencies">
-    Clone the Responder repository and run the one-command setup:
-
-    ```bash
-    git clone https://github.com/superloglabs/responder-oss.git
-    cd responder-oss
-    pnpm local:setup
-    ```
-
-    `local:setup` installs all dependencies, generates a gitignored `.env.local` file pre-filled with local values, starts Postgres, applies the database migrations, and creates a local example runtime profile. You only need to run this once.
-  </Step>
-
-  <Step title="Start the development stack">
-    Bring up the full stack:
-
-    ```bash
-    pnpm local:dev
-    ```
-
-    The command prints the local HTTPS address for your dashboard — open it in your browser. If you have a public tunnel configured, the command also claims it for the current working directory so OAuth callbacks and webhooks resolve correctly.
-  </Step>
-
   <Step title="Create an account and workspace">
-    Open the dashboard URL printed in your terminal. Create an account using the sign-up form, then follow the prompt to create your first **workspace**.
+    Go to [superlog.sh](https://superlog.sh/app?signup=1) and click **Get started**. Sign up with Google, GitHub, or an email and password.
 
-    <Note>
-      The UI and authentication flow work without any provider credentials. You can browse the dashboard, view demo data, and configure agents right away.
-    </Note>
+    Then create a workspace. Your automations, integrations, and members belong to the workspace. You become its admin.
   </Step>
 
-  <Step title="Add your API keys">
-    Two keys unlock the core investigation features. Open `.env.local` in the project root and fill in:
+  <Step title="Pick a template">
+    Open **Automations**. Under **Start from a template**, pick one that matches a task your team does by hand, for example **Triage new Sentry issues** or **Answer support questions**.
 
-    ```bash
-    # Required to store workspace secrets and run investigations
-    DAYTONA_API_KEY=your_daytona_api_key
-
-    # Required to run investigations
-    OPENAI_API_KEY=your_openai_api_key
-    ```
-
-    | Key | Where to get it | Purpose |
-    |---|---|---|
-    | `DAYTONA_API_KEY` | [Daytona dashboard](https://app.daytona.io) | Stores workspace secrets in Daytona's write-only vault and runs investigation sandboxes |
-    | `OPENAI_API_KEY` | [platform.openai.com](https://platform.openai.com) | Powers the investigation agent's reasoning |
-
-    After saving `.env.local`, restart the stack so the new values take effect:
-
-    ```bash
-    # Stop the running stack (Ctrl+C or in a second terminal)
-    pnpm local:down
-
-    # Start it again
-    pnpm local:dev
-    ```
-
-    <Tip>
-      Provider OAuth flows and incoming webhooks (Sentry, Datadog, Slack) require a publicly reachable HTTPS origin. See the [integrations documentation](/integrations/overview) for the local tunnel workflow.
-    </Tip>
+    The template fills in the trigger, instructions, and connectors. You can also click **Create automation** to start blank.
   </Step>
 
-  <Step title="Create your first agent">
-    With the stack running and your API keys in place, you're ready to configure an investigation agent. An agent defines which alert triggers to watch, which context sources to query, and how to deliver its findings.
+  <Step title="Connect the trigger">
+    Each automation needs at least one trigger. If the trigger's tool is not connected yet, its card shows **Connect**. Click it, approve access in the pop-up window, and then choose the Slack channels, Sentry projects, or Discord channels to watch.
 
-    Follow the [Create an Agent](/guides/create-agent) guide to set one up in the dashboard.
+    Templates with a **Schedule** trigger need no connection. Set the frequency and time instead.
+  </Step>
+
+  <Step title="Add a repository">
+    Under **Repositories**, click **Add GitHub** and install the GitHub App on the repositories you want Superlog to use. Then click **Add repository** and pick at least one. The first repository is the agent's working directory.
+  </Step>
+
+  <Step title="Choose a model">
+    In the **Agent instructions** toolbar, click **Choose model** and pick a provider and model. Superlog picks a compatible harness for you.
+
+    Runs use the usage included in your plan unless you add your own API key or ChatGPT subscription in **Settings → Models**. See [Models and harnesses](/automations/models).
+  </Step>
+
+  <Step title="Save and run">
+    Click **Save**. The automation is active and runs the next time its trigger fires.
+
+    To see it work right away, click **Run now**, or click **Test** and describe an event for the agent to handle. Open the run to follow the agent's work live.
   </Step>
 </Steps>
 
-## Stop the stack
+## Next steps
 
-When you're done, stop the stack without deleting the database:
-
-```bash
-pnpm local:down
-```
-
-Your Postgres data is preserved in a Docker volume and will be available the next time you run `pnpm local:dev`.
-
-<Note>
-  This quick start is designed for local exploration. When you're ready to serve Responder from your own infrastructure and expose it to real alert sources, see the [Deployment](/deployment) guide.
-</Note>
+<CardGroup cols={2}>
+  <Card title="Connectors" icon="plug" href="/automations/connectors">
+    Give the agent access to Slack, Sentry, Datadog, Linear, and your own MCP servers.
+  </Card>
+  <Card title="Runs" icon="play" href="/automations/runs">
+    Follow a run, send follow-ups, and post results to Slack.
+  </Card>
+  <Card title="Tag mode" icon="at" href="/tag-mode">
+    Mention Superlog in Slack to ask questions about your code and infrastructure.
+  </Card>
+  <Card title="Invite your team" icon="users" href="/settings/workspace">
+    Add teammates to your workspace.
+  </Card>
+</CardGroup>

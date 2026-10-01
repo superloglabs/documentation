@@ -1,73 +1,64 @@
 ---
-title: "Connect AWS and Google Cloud as Investigation Context"
-sidebarTitle: "Cloud Platforms"
-description: "Add AWS or Google Cloud as read-only context so Responder can inspect resources, logs, metrics, and infrastructure during incident investigations."
+title: "AWS and Google Cloud"
+sidebarTitle: "AWS and Google Cloud"
+description: "Give tag mode read-only access to your AWS account and Google Cloud projects with short-lived credentials."
 ---
 
-Responder supports AWS and Google Cloud as read-only investigation context. When an agent runs, it can inspect alarms, metrics, logs, infrastructure resources, and more — without ever storing long-lived credentials. Both integrations use temporary, automatically-rotated credentials scoped to read operations, with explicit denies on secrets and key material.
+Connect AWS and Google Cloud so tag mode can inspect alarms, metrics, logs, and resources when it answers questions. Both use short-lived credentials. Superlog never stores long-lived cloud keys.
+
+Automations cannot use AWS or Google Cloud as connectors. CloudWatch alarms can still start automations through Slack. See [AWS alarms in Slack](#aws-alarms-in-slack).
 
 ## AWS
 
-Responder connects to AWS using a CloudFormation-deployed IAM role and STS role assumption. No access keys are stored — Responder obtains and automatically refreshes temporary credentials through STS, keeping your AWS credentials entirely outside the investigation sandbox.
+Superlog connects to AWS with an IAM role you create from a CloudFormation template. It assumes the role through STS for each request.
 
-**What Responder can access**
+### What Superlog can read
 
-The deployed role attaches the AWS-managed `AIOpsAssistantPolicy`, which grants account-wide read access including:
+The role uses the AWS-managed `AIOpsAssistantPolicy`, which grants read access across the account, including:
 
-- CloudWatch alarm configuration and history
-- CloudWatch metrics and Logs Insights
+- CloudWatch alarms, alarm history, metrics, and Logs Insights
 - SQS queue attributes
 - Lambda configuration and event source mappings
-- General read-only AWS API calls via the sandboxed script runner
+- Other read-only AWS API calls
 
-An explicit deny prevents the role from retrieving Secrets Manager values, SSM parameters, or decrypting KMS ciphertext, regardless of what `AIOpsAssistantPolicy` allows.
+An explicit deny blocks reading Secrets Manager values and SSM parameters, and decrypting with KMS.
 
-**Setting up the AWS integration**
+### Connect AWS
 
 <Steps>
-  <Step title="Open Settings → Integrations → AWS">
-    Navigate to the AWS integration page in Responder.
+  <Step title="Open the AWS dialog">
+    In **Integrations**, click **Add** on AWS and enter your 12-digit **AWS account ID**.
   </Step>
-  <Step title="Enter your AWS account ID">
-    Provide your 12-digit AWS account ID. Responder generates a CloudFormation template that creates the `ResponderInvestigationRole` in your account, scoped to your deployment's broker ARN and a unique external ID.
+  <Step title="Create the stack">
+    Click **Create stack** to open AWS CloudFormation with the template. Review the role and policy, create the stack, and wait until its status is `CREATE_COMPLETE`.
   </Step>
-  <Step title="Deploy the CloudFormation stack">
-    Review the generated stack and deploy it in your AWS account. Responder links you to a CloudFormation Quick Create URL, or provides the template as a file download if you prefer manual upload.
-  </Step>
-  <Step title="Wait for CREATE_COMPLETE">
-    Monitor the stack in the AWS CloudFormation console. Once it reaches `CREATE_COMPLETE`, return to Responder.
-  </Step>
-  <Step title="Verify the connection in Responder">
-    Click **Verify** in Responder. Responder performs a test STS `AssumeRole` call to confirm the role is reachable and correctly configured.
+  <Step title="Verify">
+    Return to Superlog and click **Verify connection**. Superlog assumes the role to confirm it works.
   </Step>
 </Steps>
 
 <Warning>
-The `AIOpsAssistantPolicy` grants account-wide read permissions across all regions. Review the full policy in the CloudFormation template before deploying. The explicit deny on Secrets Manager, SSM parameters, and KMS decryption is enforced at the role level regardless of other policies.
+  `AIOpsAssistantPolicy` grants read access in every region of the account. Review the template before you create the stack.
 </Warning>
 
-**Routing CloudWatch alarm alerts to Responder**
+Only the commercial AWS partition is supported.
 
-AWS does not send webhooks directly to Responder. Route CloudWatch alarms through Slack using Amazon Q Developer in chat applications:
+### AWS alarms in Slack
 
-1. Configure Amazon Q Developer in chat applications to forward CloudWatch alarm notifications to a Slack channel.
-2. In Responder, add that Slack channel as a watched channel on the relevant Agent, and add your AWS account as Agent context.
+AWS does not send webhooks to Superlog. Send CloudWatch alarms to a Slack channel with Amazon Q Developer in chat applications. Then:
 
-Responder starts an investigation only for `ALARM` state notifications. `OK` and `INSUFFICIENT_DATA` notifications are acknowledged without starting investigations. AWS alarm investigations preload the CloudWatch, messaging, and serverless investigation guides automatically.
+- Add a Slack **New message in channel** trigger on that channel to start an automation, or
+- Mention Superlog in the alarm's thread to investigate it with tag mode.
 
-<Note>
-This integration currently supports the commercial AWS partition (`arn:aws`) only. GovCloud and China partitions are not supported.
-</Note>
-
----
+Superlog acts only on `ALARM` notifications. `OK` and `INSUFFICIENT_DATA` notifications are ignored.
 
 ## Google Cloud
 
-Responder connects to Google Cloud using Workload Identity Federation tied to your AWS broker role. No service account keys are stored — Responder exchanges the AWS identity for a short-lived Google token and impersonates a dedicated service account for each investigation.
+Superlog connects to Google Cloud with Workload Identity Federation in your project. It exchanges a short-lived identity for a Google token and impersonates a dedicated service account. No service account key is created.
 
-**What Responder can access**
+### What Superlog can read
 
-Setup creates a `responder-investigation` service account with the following read-only roles:
+Setup creates a `responder-investigation` service account with these roles:
 
 | Role | Access |
 |---|---|
@@ -75,45 +66,22 @@ Setup creates a `responder-investigation` service account with the following rea
 | Cloud Asset Viewer | Read Cloud Asset Inventory |
 | Logs Viewer | Query Cloud Logging |
 | Monitoring Viewer | Read Cloud Monitoring |
-| Service Usage Consumer | Check enabled API state |
+| Service Usage Consumer | Check which APIs are enabled |
 
-Responder exposes only tools that Google's managed MCP servers explicitly annotate as read-only. Customer IAM roles remain the authorization boundary.
+Superlog uses only tools that Google's managed MCP servers mark as read-only.
 
-**Setting up the Google Cloud integration**
-
-<Note>
-Google Cloud setup requires your Responder deployment to run on AWS. Responder uses the same `AWS_INTEGRATION_PRINCIPAL_ARN` broker role configured for the AWS integration. Ensure your AWS integration is set up before connecting Google Cloud.
-</Note>
+### Connect Google Cloud
 
 <Steps>
-  <Step title="Open Settings → Integrations → Google Cloud">
-    Navigate to the Google Cloud integration page in Responder and click **Connect**.
-  </Step>
   <Step title="Sign in with Google">
-    Sign in with a Google account that has permission to:
-    - Enable APIs on the target project
-    - Create service accounts and Workload Identity pools
-    - Modify project IAM bindings
-
-    Responder requests the Cloud Platform scope with online access only. The token is used solely for setup, then revoked — Responder does not store a refresh token.
+    In **Integrations**, click **Add** on Google Cloud, then **Continue with Google**. Use an account that can enable APIs, create service accounts and workload identity pools, and change project IAM.
   </Step>
-  <Step title="Select a GCP project">
-    Responder lists the projects visible to your signed-in account. Select the project you want to use as investigation context. Each project is stored as a separate integration account.
+  <Step title="Choose a project">
+    Pick the project and click **Grant read-only access**.
   </Step>
-  <Step title="Wait for setup to complete">
-    Setup runs as a background job and can take up to 15 minutes. Responder enables the required APIs, creates the `responder-investigation` service account, and configures Workload Identity Federation in your project. Track progress directly in the connection dialog — closing your browser does not interrupt setup.
-  </Step>
-  <Step title="Add Google Cloud as Agent context">
-    Once setup completes, select your Google Cloud project connection under **Context** on the Agent configuration screen.
+  <Step title="Wait for setup">
+    Setup runs in the background and can take up to 15 minutes. It enables the required APIs, creates the service account, and configures Workload Identity Federation. You can close the window. The Google Cloud card shows the progress.
   </Step>
 </Steps>
 
-The OAuth callback for Google sign-in is:
-
-```
-<public>/api/integrations/gcp/callback
-```
-
-**How credentials work during investigations**
-
-Responder assumes the AWS broker role using the connection's stable session name, exchanges the AWS identity for a short-lived Google token via Workload Identity Federation, and impersonates the `responder-investigation` service account. No service account key is ever created or stored.
+Superlog uses your Google sign-in only for setup and revokes it afterwards. To connect more projects, open **Manage** on the Google Cloud card and click **Add project**. **Remove** disconnects a project from Superlog. It does not delete the service account or IAM bindings in your project.

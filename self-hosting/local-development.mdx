@@ -1,0 +1,90 @@
+---
+title: "Run Superlog locally"
+sidebarTitle: "Local development"
+description: "Run the full Superlog stack on your machine with Docker and pnpm."
+---
+
+The local setup runs Postgres, the control plane, and the worker behind a local HTTPS address.
+
+## Prerequisites
+
+- **Node.js 24 or newer**
+- **pnpm 11**
+- **Docker**
+
+## Start the stack
+
+<Steps>
+  <Step title="Clone and set up">
+    ```bash
+    git clone https://github.com/superloglabs/responder-oss.git
+    cd responder-oss
+    pnpm local:setup
+    ```
+
+    `local:setup` installs dependencies, generates a gitignored `.env.local`, starts Postgres, applies the migrations, and creates a local example runtime profile. Run it once.
+  </Step>
+
+  <Step title="Configure .env.local">
+    Open `.env.local` and set:
+
+    ```bash
+    # Give new workspaces the automations product
+    RESPONDER_NEW_ORGANIZATION_CAPABILITIES=automations,simplified_navigation
+
+    # Sandboxes for runs, and the vault for workspace secrets
+    DAYTONA_API_KEY=
+
+    # Included usage for automations through Vercel AI Gateway
+    AI_GATEWAY_API_KEY=
+
+    # Tag mode
+    OPENAI_API_KEY=
+    ```
+
+    Without `AI_GATEWAY_API_KEY`, automations still run when the workspace adds its own API key or ChatGPT subscription in **Settings → Models**.
+  </Step>
+
+  <Step title="Start the stack">
+    ```bash
+    pnpm local:dev
+    ```
+
+    The command prints the local HTTPS address. Restart the stack after changing `.env.local`.
+  </Step>
+
+  <Step title="Create an account and workspace">
+    Open the printed address, sign up, and create a workspace. It opens on **Automations**. Follow the [Quickstart](/quickstart) from step 2.
+  </Step>
+</Steps>
+
+The app and sign-in work without provider credentials. Integration OAuth flows and webhooks need a public HTTPS address. Set `RESPONDER_NGROK_URL` to a static ngrok domain and `local:dev` starts a tunnel to it. Run `pnpm tunnel:claim` to route the tunnel to the current checkout.
+
+## Seed demo data
+
+After you create a local account, you can add a demo workspace:
+
+```bash
+pnpm --filter @responder/core exec node scripts/local-seed-demo.mjs you@example.com
+```
+
+## Stop the stack
+
+```bash
+pnpm local:down
+```
+
+The database is kept in a Docker volume for the next `pnpm local:dev`.
+
+## Validate changes
+
+Run the full suite before opening a pull request:
+
+```bash
+pnpm typecheck
+pnpm lint
+pnpm test
+pnpm build
+```
+
+See [CONTRIBUTING.md](https://github.com/superloglabs/responder-oss/blob/main/CONTRIBUTING.md).

@@ -1,58 +1,49 @@
 ---
-title: "Responder: AI-Powered Incident Investigation Platform"
+title: "Superlog: automate routine engineering tasks"
 sidebarTitle: "Home"
-description: "Responder automatically investigates production alerts from Sentry, Datadog, Slack, and more — delivering root cause analysis, evidence, and code fixes."
+description: "Superlog runs automations that triage alerts, answer support questions, and review performance and observability in your code and infrastructure. Choose your model and harness, and bring your own tokens and subscriptions."
 ---
 
-Responder is a self-hostable AI incident-investigation platform. When a production alert fires, Responder automatically queries your observability tools, identifies the root cause, and delivers a structured report — complete with severity classification, evidence, timeline, and an optional pull request to fix the problem.
+Superlog automates routine engineering work. It can triage alerts, answer support questions, and review performance and observability across your code and infrastructure. You choose the model and the agent harness, and you can run on your own API keys or your ChatGPT subscription.
+
+Each automation has a trigger, instructions, repositories, and connectors. When the trigger fires, Superlog starts a fresh sandbox, checks out your repositories, and runs a coding agent on the task. The agent can read your tools, open pull requests, post to Slack, and create Linear issues.
 
 <CardGroup cols={2}>
-  <Card title="Quick Start" icon="rocket" href="/quickstart">
-    Get Responder running and investigate your first alert in minutes.
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Sign up and run your first automation in a few minutes.
   </Card>
-  <Card title="Deployment" icon="server" href="/deployment">
-    Self-host Responder on your own infrastructure.
+  <Card title="How Superlog works" icon="diagram-project" href="/how-it-works">
+    Automations, triggers, connectors, models, and runs.
   </Card>
-  <Card title="Agents" icon="robot" href="/concepts/agents">
-    Learn how investigation agents work and how to configure them.
+  <Card title="Templates" icon="copy" href="/automations/templates">
+    Start from bug triage, support, and reliability templates.
   </Card>
   <Card title="Integrations" icon="plug" href="/integrations/overview">
-    Connect Slack, Sentry, Datadog, GitHub, and 15+ other tools.
+    Connect GitHub, Slack, Sentry, Datadog, Linear, and more.
   </Card>
 </CardGroup>
 
-## How Responder Works
-
-Responder watches your alert sources and automatically kicks off an investigation whenever something fires. Each investigation is handled by an **Agent** you configure — specifying which tools to query, which AI model to use, and how to deliver results.
-
-<Steps>
-  <Step title="Connect your tools">
-    Link Slack, Sentry, Datadog, GitHub, and any other observability or cloud services your team uses. Responder keeps credentials encrypted per workspace.
-  </Step>
-  <Step title="Create an Agent">
-    Configure an Agent with a trigger (Sentry project, Datadog monitor, Slack channel), the context sources to query during an investigation, and your preferred AI model.
-  </Step>
-  <Step title="Alerts trigger investigations">
-    When an alert fires, Responder automatically runs an investigation — querying logs, traces, metrics, and code — then produces a structured report with severity, root cause, timeline, and remediation options.
-  </Step>
-  <Step title="Review results and ship fixes">
-    View investigation reports in the dashboard or Slack. Approve an auto-generated pull request to deploy the fix, or follow the recommended remediation steps.
-  </Step>
-</Steps>
-
-## Key Features
+## What teams automate
 
 <CardGroup cols={2}>
-  <Card title="Investigations" icon="magnifying-glass" href="/concepts/investigations">
-    Structured reports with SEV-1/2/3 severity, root cause, evidence, and timeline — delivered to Slack or the dashboard.
+  <Card title="Bug triage" icon="bug" href="/automations/templates#bug-triage">
+    Rate new Sentry issues, trace them to the commit that caused them, and open a pull request when the fix is small.
   </Card>
-  <Card title="Auto-Remediation" icon="code-pull-request" href="/guides/remediation">
-    Responder can propose and open a GitHub pull request to fix the issue directly.
+  <Card title="Internal support" icon="comments" href="/automations/templates#support">
+    Answer "is this a bug?" and "can we do this?" questions in Slack from the code and docs, so engineers are not interrupted.
   </Card>
-  <Card title="Issues Tracking" icon="circle-exclamation" href="/concepts/issues">
-    Issues persist across investigations so recurrences are automatically linked to their history.
+  <Card title="Reliability checks" icon="heart-pulse" href="/automations/templates#scans">
+    Compare the last hour against the past week in Sentry and Datadog, and post to Slack only when something is out of range.
   </Card>
-  <Card title="Workspace Secrets" icon="key" href="/guides/workspace-secrets">
-    Securely inject API keys and credentials into investigation sandboxes.
+  <Card title="Observability and performance reviews" icon="gauge" href="/automations/templates#scans">
+    Find code paths with poor telemetry and slow endpoints each week, and open pull requests that fix them.
   </Card>
 </CardGroup>
+
+## Bring your own inference
+
+Every automation picks a model from OpenAI, Anthropic, Google Gemini, xAI, Mistral, or DeepSeek, and runs it in the Codex, Claude Agent SDK, or OpenCode harness. Add an API key or connect a ChatGPT subscription and runs use it. Without one, runs use the usage included in your plan. See [Models and harnesses](/automations/models).
+
+## Open source
+
+Superlog is open source under the Apache License 2.0. The code is at [superloglabs/responder-oss](https://github.com/superloglabs/responder-oss). Use the hosted service at [superlog.sh](https://superlog.sh), or [run it yourself](/self-hosting/overview).

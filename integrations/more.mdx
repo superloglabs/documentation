@@ -1,0 +1,81 @@
+---
+title: "More integrations"
+description: "Connect Dash0, PostHog, Grafana, Axiom, ClickStack, Langfuse, Upstash, Supabase, and Vercel as read-only context for tag mode."
+---
+
+These integrations give [tag mode](/tag-mode) read access to your telemetry, data, and deployments. Connect them from **Integrations** with **Add**, then turn them on in **Tag mode**.
+
+Automations cannot use these integrations as connectors. To reach one of these tools from an automation, connect it as a [custom MCP server](/integrations/custom-mcp) or call its API with a [workspace secret](/settings/workspace-secrets). Tools that post alerts to Slack can start automations through a Slack trigger.
+
+## Dash0
+
+<Steps>
+  <Step title="Copy the MCP endpoint">
+    In Dash0, open **Organization settings → Endpoints → MCP** and copy the organization MCP endpoint URL.
+  </Step>
+  <Step title="Connect">
+    In Superlog, click **Add** on Dash0, paste the **MCP endpoint URL**, and approve access in Dash0.
+  </Step>
+</Steps>
+
+Superlog exposes only Dash0 tools marked read-only, and blocks Agent0 delegation, so it does not use your Agent0 credits.
+
+## PostHog
+
+Click **Add** on PostHog and approve access. Superlog reads analytics, error tracking, session replays, dashboards, and logs through PostHog's MCP server, limited to read-only tools.
+
+To act on PostHog alerts, send them to a Slack channel and add a Slack trigger on that channel. Resolved and recovered notifications are ignored.
+
+## Grafana
+
+| Mode | Setup |
+|---|---|
+| **Grafana Cloud** | Enter your **Stack URL**, for example `https://acme.grafana.net`, and approve access. Superlog requests only read and query scopes. |
+| **Self-hosted Grafana** | Enter the **Grafana URL** and a **Service account token** for a service account with the Viewer role. The URL must be public HTTPS. |
+
+Superlog reads dashboards, data sources, Prometheus, Loki, Tempo, Pyroscope, and alerts. Write, admin, and provisioning tools are disabled.
+
+## Axiom
+
+Click **Add** on Axiom and approve access. Superlog reads logs, traces, metrics, dashboards, and monitor history. Mutation tools are blocked.
+
+Axiom's hosted MCP server routes query results through US infrastructure. Check Axiom's data routing and query cost settings before connecting sensitive or large datasets.
+
+## ClickStack
+
+Click **Add** on **ClickStack / HyperDX** and choose a mode:
+
+| Mode | Setup |
+|---|---|
+| **ClickStack Cloud** | Enter the **MCP URL** and **ClickHouse service ID**, then approve access with ClickHouse Cloud. |
+| **Self-hosted** | Enter the public HTTPS **MCP URL** and a **Personal API Access Key**. |
+
+## Langfuse
+
+In Langfuse, open **Project Settings → API Keys** and copy the public and secret keys. In Superlog, click **Add** on Langfuse, choose the deployment (Cloud EU, US, Japan, HIPAA US, or Self-hosted), and paste the **Project public key** and **Project secret key**.
+
+Each key pair belongs to one Langfuse project. Connect each project separately. Superlog reads traces, observations, scores, metrics, prompts, and alerts through an allowlist of read-only tools.
+
+## Upstash
+
+In the Upstash console, create a developer API key for Superlog. In Superlog, click **Add** on Upstash and enter the **Account email** and **Developer API key**.
+
+Superlog reads Redis, Vector, Search, QStash, and Workflow resources. Write operations are blocked, and Redis commands are checked against a read-only allowlist.
+
+## Supabase
+
+Click **Add** on Supabase, then **Continue with Supabase** and approve access. Choose a project, then an access level:
+
+| Access level | What it allows |
+|---|---|
+| **Logs only** | Project logs. No database access. |
+| **Logs and read-only data** | Adds SQL queries and schema inspection. Supabase enforces read-only mode. |
+| **Full database SQL access** | SQL that can change data or schema. Use only for development or test projects. |
+
+Each project and access level is a separate connection. Supabase administration and platform configuration tools stay blocked at every level.
+
+## Vercel
+
+Click **Add** on Vercel and install the Superlog integration with read access to projects, deployments, deployment checks, domains, teams, logs, and security. Superlog does not request write access or access to environment variables, tokens, or secrets.
+
+In **Tag mode**, configure Vercel to choose which projects tag mode may read.

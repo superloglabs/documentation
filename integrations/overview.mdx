@@ -1,96 +1,49 @@
 ---
-title: "Integrations: Connect Your Stack to Responder"
+title: "Integrations"
 sidebarTitle: "Overview"
-description: "Connect Slack, Sentry, Datadog, GitHub, and 15+ other tools to give Responder the context it needs to investigate and resolve incidents."
+description: "Connect your alerts, code, and cloud to Superlog, and see which integrations automations and tag mode can use."
 ---
 
-Responder integrations fall into two categories: **triggers** — the events that start an investigation — and **context sources** — the tools Responder queries while an investigation is running. Most integrations act as context sources, feeding Responder the logs, metrics, code, and issue history it needs to reach a conclusion. A smaller set also serve as triggers, firing an agent the moment something goes wrong. Some integrations, like Slack and GitHub, play both roles.
+Integrations connect Superlog to the tools you already use. Connect them once per workspace, then use them as automation triggers, as automation connectors, or as context for tag mode.
 
-All credentials you connect are encrypted at rest in your workspace. Responder never shares credentials across workspaces, and each integration account is scoped to the workspace that created it.
+## Connect an integration
 
-## How integrations are categorized
+Click **Integrations** in the sidebar. Find the tool under **Marketplace** and click **Add**. Depending on the tool, you approve access in the provider's sign-in page, paste an API key, or deploy a template in your cloud account. Connected tools move to **Connected integrations**, where **Manage** opens their settings.
 
-| Integration | Role |
-|---|---|
-| Slack | Trigger · Reporting · Context |
-| Sentry | Trigger · Context |
-| Datadog | Trigger (via Slack) · Context |
-| Dash0 | Trigger · Context |
-| GitHub | Context · Remediation (PR creation) |
-| PostHog | Context (via Slack alerts) |
-| Grafana Cloud | Context |
-| Grafana Self-hosted | Context |
-| Axiom | Context |
-| Upstash | Context |
-| Langfuse | Context |
-| Supabase | Context |
-| Vercel | Context |
-| AWS | Context |
-| Google Cloud | Context |
-| ClickStack | Context |
-| Linear | Issue management |
-| Discord | Trigger · Interaction |
-| Custom MCP servers | Context |
+You can also connect a tool from the automation editor. Click **Connect** on a trigger or in the connector picker. Your draft stays open while you approve access.
 
-## Integration guides
+Credentials are encrypted before storage and scoped to your workspace.
 
-<CardGroup cols={3}>
-  <Card title="Slack" icon="slack" href="/integrations/slack">
-    Watch channels for alerts, receive investigation reports as thread replies, and trigger investigations via @mention.
-  </Card>
-  <Card title="Sentry" icon="bug" href="/integrations/sentry">
-    Automatically start investigations when Sentry issues are created or resurface.
-  </Card>
-  <Card title="Datadog" icon="chart-line" href="/integrations/datadog">
-    Query metrics, monitors, logs, and dashboards during investigations and trigger from Datadog alerts via Slack.
-  </Card>
-  <Card title="GitHub" icon="github" href="/integrations/github">
-    Inspect repositories during investigations and automatically open pull requests with proposed fixes.
-  </Card>
-  <Card title="Dash0" icon="bolt" href="/integrations/observability">
-    Trigger investigations from Dash0 alert rules and query observability data during investigations.
-  </Card>
-  <Card title="PostHog" icon="chart-bar" href="/integrations/observability">
-    Route PostHog alerts through a watched Slack channel and query product analytics during investigations.
-  </Card>
-  <Card title="Grafana" icon="chart-area" href="/integrations/observability">
-    Connect Grafana Cloud or a self-hosted instance as read-only context for dashboards, alerts, and data sources.
-  </Card>
-  <Card title="Axiom" icon="database" href="/integrations/observability">
-    Query logs, traces, metrics, and monitor history from Axiom during investigations.
-  </Card>
-  <Card title="Upstash" icon="server" href="/integrations/observability">
-    Inspect Redis, Vector, Search, QStash, and Workflow resources as read-only investigation context.
-  </Card>
-  <Card title="Langfuse" icon="sparkles" href="/integrations/observability">
-    Query LLM traces, scores, metrics, and prompts while investigating AI application issues.
-  </Card>
-  <Card title="Supabase" icon="table" href="/integrations/observability">
-    Connect Supabase projects for log inspection and optional read-only or full SQL access.
-  </Card>
-  <Card title="Vercel" icon="triangle" href="/integrations/observability">
-    Inspect deployments, deployment checks, logs, and project configuration during investigations.
-  </Card>
-  <Card title="AWS" icon="aws" href="/integrations/cloud">
-    Grant read-only access to your AWS account so Responder can inspect alarms, metrics, logs, and resources.
-  </Card>
-  <Card title="Google Cloud" icon="google" href="/integrations/cloud">
-    Connect a Google Cloud project for read-only access to Asset Inventory, Logging, and Monitoring.
-  </Card>
-  <Card title="Linear" icon="circle-dot" href="/integrations/observability">
-    Automatically create Linear tickets for new issues found during investigations.
-  </Card>
-  <Card title="Discord" icon="discord" href="/integrations/observability">
-    Watch Discord channels for alerts and trigger investigations using the /automate slash command.
-  </Card>
-  <Card title="ClickStack" icon="mouse-pointer-click" href="/integrations/observability">
-    Connect ClickStack Cloud or a self-hosted instance as read-only investigation context.
-  </Card>
-  <Card title="Custom MCP servers" icon="plug" href="/integrations/custom-mcp">
-    Connect any remote Streamable HTTP MCP server using a bearer token or OAuth 2.0.
-  </Card>
-</CardGroup>
+## What each integration does
 
-<Note>
-  All integration credentials are encrypted at rest and scoped to your workspace. Responder never stores your access keys or private keys inside the investigation sandbox — credentials are injected as short-lived tokens at query time.
-</Note>
+| Integration | Automation trigger | Automation connector | Tag mode |
+|---|---|---|---|
+| [GitHub](/integrations/github) | — | Repositories, pull requests | Read-only code |
+| [Slack](/integrations/slack) | Messages and mentions | Read and post messages | Where questions are asked |
+| [Sentry](/integrations/sentry) | New issues and regressions | Read | Read |
+| [Datadog](/integrations/datadog) | Through Slack alerts | Read | Read |
+| [Linear](/integrations/linear) | — | Read, create issues | Read |
+| [Discord](/integrations/discord) | `/automate` command | — | — |
+| [Custom MCP](/integrations/custom-mcp) | — | All server tools | Read |
+| [AWS](/integrations/cloud#aws) | Through Slack alerts | — | Read |
+| [Google Cloud](/integrations/cloud#google-cloud) | — | — | Read |
+| [Dash0](/integrations/more#dash0) | — | — | Read |
+| [PostHog](/integrations/more#posthog) | Through Slack alerts | — | Read |
+| [Grafana](/integrations/more#grafana) | Through Slack alerts | — | Read |
+| [Axiom](/integrations/more#axiom) | — | — | Read |
+| [ClickStack / HyperDX](/integrations/more#clickstack) | — | — | Read |
+| [Langfuse](/integrations/more#langfuse) | — | — | Read |
+| [Upstash](/integrations/more#upstash) | — | — | Read |
+| [Supabase](/integrations/more#supabase) | — | — | Configurable |
+| [Vercel](/integrations/more#vercel) | — | — | Read |
+
+"Through Slack alerts" means the tool posts alerts to a Slack channel, and a Slack **New message in channel** trigger on that channel starts the run.
+
+## How access is limited
+
+- Most built-in integrations expose only read-only tools, plus the write actions listed above.
+- Datadog and custom MCP servers pass their tools through without filtering. Supabase allows writes only if you choose **Full database SQL access**. Scope the credentials you give them.
+- Provider credentials stay outside the agent's sandbox. Superlog calls the provider on the agent's behalf.
+- If an integration cannot be reached during a run, the agent gets a reconnect tool with the error and decides whether to retry. The run continues.
+
+See [Security](/security) for more detail.

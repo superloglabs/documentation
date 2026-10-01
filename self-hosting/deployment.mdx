@@ -1,0 +1,86 @@
+---
+title: "Deploy Superlog"
+sidebarTitle: "Deployment"
+description: "Deploy the Superlog control plane and worker on your own infrastructure."
+---
+
+You run two long-running services, the **control plane** and the **worker**, backed by one Postgres database. Both ship with Dockerfiles you can use as starting points. The application does not depend on a specific cloud provider.
+
+Both services need the same `DATABASE_URL`, `CREDENTIAL_ENCRYPTION_KEY`, and `INTERNAL_INGEST_TOKEN`.
+
+<Warning>
+  You are responsible for TLS termination, network isolation, database backups, secret injection, monitoring, scaling, and rollbacks.
+</Warning>
+
+## Deploy
+
+<Steps>
+  <Step title="Build the control plane">
+    ```bash
+    docker build -f apps/control-plane/Dockerfile -t superlog-control-plane .
+    ```
+
+    The Dockerfile is a generic building block. Adapt the networking, base image, and build arguments to your platform.
+  </Step>
+
+  <Step title="Serve the app and API from one origin">
+    Serve the built assets in `apps/control-plane/dist` at your public origin, and route `/api/*` on the same origin to the control-plane service. Sign-in, OAuth callbacks, and webhooks all depend on one stable origin.
+
+    ```text
+    https://superlog.example.com/        → static assets
+    https://superlog.example.com/api/*   → control-plane service
+    ```
+
+    Set `BETTER_AUTH_URL` to this origin. Set `RESPONDER_PUBLIC_URL` too if integration callbacks and webhooks should use a different public origin. OAuth redirect URIs and webhook URLs are derived from it.
+  </Step>
+
+  <Step title="Run the worker">
+    ```bash
+    docker build -f apps/worker/Dockerfile -t superlog-worker .
+    ```
+
+    The worker serves no public traffic. It needs outbound access to the database, Daytona, model providers, and connected integrations.
+  </Step>
+
+  <Step title="Apply migrations">
+    Before each release starts, apply every migration in `drizzle/`:
+
+    ```bash
+    pnpm db:migrate
+    ```
+  </Step>
+
+  <Step title="Turn on automations">
+    Set `RESPONDER_NEW_ORGANIZATION_CAPABILITIES=automations,simplified_navigation` on the control plane so new workspaces get the automations product. See [Self-hosting overview](/self-hosting/overview#turn-on-automations).
+  </Step>
+</Steps>
+
+<Warning>
+  Changing the public origin after integrations are connected breaks their OAuth callbacks and webhooks. Update the redirect and webhook URLs in each provider app if you change it.
+</Warning>
+
+## Required configuration
+
+| Variable | Service | Purpose |
+|---|---|---|
+| `DATABASE_URL` | Both | Postgres connection string. |
+| `CREDENTIAL_ENCRYPTION_KEY` | Both | Base64-encoded 32-byte key that encrypts stored credentials. Must match on both services. |
+| `INTERNAL_INGEST_TOKEN` | Both | Shared token for internal requests. Must match on both services. |
+| `DAYTONA_API_KEY` | Both | Sandboxes for runs, and the vault for workspace secrets. |
+| `BETTER_AUTH_SECRET` | Control plane | Signs sign-in sessions. |
+| `BETTER_AUTH_URL` | Control plane | Public origin of the app. |
+| `AI_GATEWAY_API_KEY` | Both | Included usage for automations. Optional if every workspace brings its own key or subscription. |
+| `OPENAI_API_KEY` | Worker | Tag mode. |
+
+Generate the encryption key and internal token with:
+
+```bash
+openssl rand -base64 32   # CREDENTIAL_ENCRYPTION_KEY
+openssl rand -hex 32      # INTERNAL_INGEST_TOKEN
+```
+
+See [Environment variables](/self-hosting/environment) for every option.
+
+## After deployment
+
+Create provider apps for the integrations you want. Each integration page lists the required callback URLs, webhooks, and permissions. Integrations whose provider app is not configured show **Unavailable** in the app.

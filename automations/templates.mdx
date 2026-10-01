@@ -1,0 +1,71 @@
+---
+title: "Templates and sharing"
+sidebarTitle: "Templates"
+description: "Start an automation from a built-in template for bug triage, support, or scans, and share your own automations as templates."
+---
+
+Templates fill in an automation's triggers, instructions, and connectors. You choose the channels, projects, and repositories, then save. Templates are based on workflows used by fast-moving engineering teams.
+
+## Use a template
+
+<Steps>
+  <Step title="Open the gallery">
+    Open **Automations**. The gallery is under **Start from a template**. Filter by **Suggested**, **All**, **Support**, **Bug triage**, or **Scans**.
+  </Step>
+  <Step title="Pick a template">
+    Click a card. The editor opens with the template applied. Superlog uses the first existing connection for each trigger and connector.
+  </Step>
+  <Step title="Finish the setup">
+    Connect any tools that are not connected yet, choose the channels or projects for each trigger, add a repository, and choose a model. Click **Start blank** to drop the template.
+  </Step>
+  <Step title="Review and save">
+    Read the instructions and adjust them for your team, for example the Slack channel to post in. Then click **Save**.
+  </Step>
+</Steps>
+
+Scheduled templates default to 09:00 in your browser's time zone. Weekly templates run on Mondays.
+
+## Built-in templates
+
+### Support
+
+| Template | Trigger | Connectors | What the agent does |
+|---|---|---|---|
+| **Answer support questions** | Slack: new message in channel | GitHub | Finds the answer in the repositories, docs, and code. Replies in the thread with a short answer and links. Says if it is a bug. Does not guess. |
+| **Answer community questions** | Discord: `/automate` command | GitHub | Answers outside users in a friendly way and links to public docs. Never shares private paths, credentials, or plans. |
+| **Match reports to known errors** | Slack: app mentioned | Sentry, GitHub | Finds the matching Sentry issue and replies with the issue, affected users, and status. Suggests a workaround from the code. If nothing matches, lists the details needed to reproduce. |
+
+### Bug triage
+
+| Template | Trigger | Connectors | What the agent does |
+|---|---|---|---|
+| **Triage new Sentry issues** | Sentry: new issue | GitHub, Slack | Rates severity, traces the cause to the suspected commit and owner, and posts a summary to Slack. Opens a pull request with a regression test when the fix is small. |
+| **Fix bugs reported in Slack** | Slack: new message in channel | GitHub | Reproduces the bug with a failing test, fixes it, opens a pull request, and replies with the link. If it cannot reproduce the bug, says what it tried. |
+| **Fix regressions** | Sentry: issue regression | GitHub, Datadog | Finds the earlier fix and the change that undid it, checks Datadog logs, and opens a pull request that restores the fix with a regression test. |
+
+### Scans
+
+| Template | Trigger | Connectors | What the agent does |
+|---|---|---|---|
+| **Reliability check** | Every hour | GitHub, Sentry, Datadog, Slack | Compares the past hour with the same hour over the last 7 days in Sentry and Datadog. Posts to Slack only when something is out of range. |
+| **Review observability** | Every week | GitHub, Sentry, Datadog | Finds code paths behind the past week's errors that have poor telemetry. Opens a pull request that adds logs, tags, and spans, without secrets or personal data. |
+| **Review performance** | Every week | GitHub, Datadog, Slack | Finds the slowest endpoints, jobs, and queries. Opens pull requests for safe fixes and posts a report to Slack. |
+| **Review architecture** | Every week | GitHub, Slack | Reviews the past 7 days of merges for layering problems, wrong-way dependencies, and duplicated logic. Posts findings to Slack. |
+| **Review test coverage** | Every week | GitHub, Sentry | Finds recent code and recent Sentry errors without tests and opens a pull request that adds them. |
+
+## Share an automation as a template
+
+You can share any automation as a link. Anyone with the link can see it and set up a copy in their own workspace.
+
+<Steps>
+  <Step title="Create the link">
+    Open the automation and click **Share**, then **Create link**. Click **Copy link**.
+  </Step>
+  <Step title="Update or stop sharing">
+    Later edits are not shared until you click **Update shared copy**. Click **Stop sharing** to disable the link.
+  </Step>
+</Steps>
+
+The shared page shows the automation's name, description, instructions, trigger types, connectors, and your workspace name. Channels, projects, repositories, connections, secrets, and model settings stay private. Schedules run in the recipient's time zone.
+
+When someone opens the link, they click **Use this automation**. Superlog opens a new automation with the shared setup. They connect their own tools, pick their own channels and repositories, and choose a model. Visitors without an account can sign up first and return to the setup.
