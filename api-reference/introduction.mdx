@@ -1,0 +1,102 @@
+---
+title: "Management API"
+sidebarTitle: "Introduction"
+description: "Manage automations, runs, tag mode, model access, and secrets over HTTP."
+---
+
+The management API lets scripts, CI jobs, and agents do what you do in **Settings**, **Automations**, and **Tag mode**: create and change automations, start and follow runs, change tag mode, and manage model keys and workspace secrets.
+
+The same operations are available as tools in the [Superlog MCP server](/api-reference/mcp).
+
+## Base URL
+
+```text
+https://superlog.sh/api/v1
+```
+
+A self-hosted deployment serves the API at `/api/v1` on its own origin.
+
+## Authentication
+
+Send a workspace API key as a bearer token:
+
+```bash
+curl https://superlog.sh/api/v1/workspace \
+  -H "Authorization: Bearer $SUPERLOG_API_KEY"
+```
+
+Create keys under **Settings → API keys**. See [API keys](/settings/api-keys).
+
+A key belongs to one workspace and acts as the member who created it. Changes made with the key are recorded under that member's name. The key stops working when it is revoked or when that member leaves the workspace.
+
+## Find the IDs you need
+
+Automations and tag mode refer to repositories, integrations, channels, and secrets by ID. Look them up first:
+
+- `GET /integrations` returns connected integrations, the repositories GitHub gives access to, and integration resources such as Slack channels and Sentry projects.
+- `GET /secrets` returns workspace secrets.
+
+Integrations are connected in the app. After you give the GitHub App access to a new repository or create a Slack channel, call `POST /integrations/refresh` to load it.
+
+## Create an automation
+
+```bash
+curl https://superlog.sh/api/v1/automations \
+  -H "Authorization: Bearer $SUPERLOG_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Weekly dependency review",
+    "configuration": {
+      "prompt": "Review outdated dependencies and open a pull request for safe upgrades.",
+      "repositoryIds": ["f458cf4e-7e6f-452c-8da6-3187a35c1f10"],
+      "triggers": [
+        { "kind": "schedule", "frequency": "weekly", "hour": 9, "weekday": 1, "timezone": "Europe/Paris" }
+      ]
+    }
+  }'
+```
+
+Model settings you leave out use the defaults: the Codex harness with `gpt-5.4`. See [Models and harnesses](/automations/models).
+
+## Change part of an automation
+
+`PATCH` requests change only the fields you send. In `configuration`, each field you send replaces the current value, and a list you send replaces the whole list.
+
+```bash
+curl -X PATCH https://superlog.sh/api/v1/automations/$AUTOMATION_ID \
+  -H "Authorization: Bearer $SUPERLOG_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "configuration": { "prompt": "Also check for security advisories." } }'
+```
+
+Send only `enabled` to turn an automation on or off. `PATCH /tag-mode` works the same way.
+
+## Start and follow a run
+
+`POST /automations/{automationId}/runs` starts a run and returns its `runId`. Add a `message` to start the run as a chat. Poll `GET /runs/{runId}` until `status` is `succeeded`, `failed`, or `cancelled`. `resultSummary` holds the agent's final answer, and `events` holds the transcript.
+
+Send a follow-up with `POST /runs/{runId}/messages` once the run has finished.
+
+## Errors
+
+Errors return a JSON body with a message and, when there is one, a stable `code`:
+
+```json
+{
+  "code": "invalid_request",
+  "error": "Invalid request",
+  "issues": [{ "message": "Invalid UUID", "path": ["automationId"] }]
+}
+```
+
+| Status | Meaning |
+|---|---|
+| `400` | The request is invalid. `issues` lists each invalid field. |
+| `401` | The API key is missing, revoked, or its member left the workspace. |
+| `404` | The resource is not in this workspace, or automations are not enabled for it. |
+| `409` | The request conflicts with the current state, such as a name already in use or a run that is still active. |
+| `502`, `503` | A provider or the run queue is unavailable. Try again. |
+
+## What stays in the app
+
+Connecting integrations, inviting and removing members, billing, creating API keys, and connecting a ChatGPT subscription are done in the app.

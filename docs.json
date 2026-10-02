@@ -82,6 +82,7 @@
               "settings/workspace",
               "settings/billing",
               "settings/workspace-secrets",
+              "settings/api-keys",
               "security"
             ]
           },
@@ -92,6 +93,93 @@
               "self-hosting/local-development",
               "self-hosting/deployment",
               "self-hosting/environment"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api-reference/introduction",
+              "api-reference/mcp"
+            ]
+          },
+          {
+            "group": "Workspace",
+            "openapi": "api-reference/openapi.json",
+            "pages": [
+              "GET /workspace",
+              "GET /members"
+            ]
+          },
+          {
+            "group": "API keys",
+            "openapi": "api-reference/openapi.json",
+            "pages": [
+              "GET /api-keys",
+              "DELETE /api-keys/{apiKeyId}"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "openapi": "api-reference/openapi.json",
+            "pages": [
+              "GET /integrations",
+              "POST /integrations/refresh",
+              "GET /integrations/{integrationAccountId}/sentry-environments"
+            ]
+          },
+          {
+            "group": "Automations",
+            "openapi": "api-reference/openapi.json",
+            "pages": [
+              "GET /automations",
+              "POST /automations",
+              "GET /automations/{automationId}",
+              "PATCH /automations/{automationId}"
+            ]
+          },
+          {
+            "group": "Runs",
+            "openapi": "api-reference/openapi.json",
+            "pages": [
+              "GET /automations/{automationId}/runs",
+              "POST /automations/{automationId}/runs",
+              "GET /runs/{runId}",
+              "POST /runs/{runId}/cancel",
+              "POST /runs/{runId}/messages"
+            ]
+          },
+          {
+            "group": "Tag mode",
+            "openapi": "api-reference/openapi.json",
+            "pages": [
+              "GET /tag-mode",
+              "PATCH /tag-mode"
+            ]
+          },
+          {
+            "group": "Models",
+            "openapi": "api-reference/openapi.json",
+            "pages": [
+              "GET /models",
+              "GET /model-credentials",
+              "POST /model-credentials",
+              "POST /model-credentials/{credentialId}/rotate",
+              "POST /model-credentials/{credentialId}/test",
+              "GET /model-credentials/{credentialId}/models",
+              "DELETE /model-credentials/{credentialId}"
+            ]
+          },
+          {
+            "group": "Secrets",
+            "openapi": "api-reference/openapi.json",
+            "pages": [
+              "GET /secrets",
+              "POST /secrets"
             ]
           }
         ]
