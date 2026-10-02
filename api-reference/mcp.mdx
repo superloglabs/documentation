@@ -1,0 +1,92 @@
+---
+title: "MCP server"
+description: "Let Claude Code, Cursor, Codex, and other MCP clients manage your Superlog workspace."
+---
+
+The Superlog MCP server gives an AI assistant the [management API](/api-reference/introduction) as tools. Ask it to create an automation, change tag mode, start a run, or check why a run failed.
+
+## Server details
+
+| | |
+|---|---|
+| URL | `https://superlog.sh/api/mcp` |
+| Transport | Streamable HTTP |
+| Authentication | `Authorization: Bearer <API key>` |
+
+Create an API key under **Settings → API keys**. See [API keys](/settings/api-keys). The assistant acts as the member who created the key.
+
+## Connect a client
+
+<Tabs>
+  <Tab title="Claude Code">
+    ```bash
+    claude mcp add --transport http superlog https://superlog.sh/api/mcp \
+      --header "Authorization: Bearer $SUPERLOG_API_KEY"
+    ```
+  </Tab>
+  <Tab title="Cursor">
+    Add the server to `~/.cursor/mcp.json`, or to `.cursor/mcp.json` in a project:
+
+    ```json
+    {
+      "mcpServers": {
+        "superlog": {
+          "url": "https://superlog.sh/api/mcp",
+          "headers": { "Authorization": "Bearer slk_..." }
+        }
+      }
+    }
+    ```
+  </Tab>
+  <Tab title="Codex">
+    Add the server to `~/.codex/config.toml` and set `SUPERLOG_API_KEY` in your environment:
+
+    ```toml
+    [mcp_servers.superlog]
+    url = "https://superlog.sh/api/mcp"
+    bearer_token_env_var = "SUPERLOG_API_KEY"
+    ```
+  </Tab>
+  <Tab title="VS Code">
+    Add the server to `.vscode/mcp.json`. VS Code asks for the key the first time it starts the server:
+
+    ```json
+    {
+      "inputs": [
+        { "type": "promptString", "id": "superlog-key", "description": "Superlog API key", "password": true }
+      ],
+      "servers": {
+        "superlog": {
+          "type": "http",
+          "url": "https://superlog.sh/api/mcp",
+          "headers": { "Authorization": "Bearer ${input:superlog-key}" }
+        }
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Tools
+
+| Area | Tools |
+|---|---|
+| Workspace | `get_workspace`, `list_members` |
+| Integrations | `list_integrations`, `refresh_integrations`, `list_sentry_environments` |
+| Automations | `list_automations`, `get_automation`, `create_automation`, `update_automation` |
+| Runs | `list_automation_runs`, `start_automation_run`, `get_automation_run`, `cancel_automation_run`, `send_automation_run_message` |
+| Tag mode | `get_tag_mode`, `update_tag_mode` |
+| Models | `list_included_models`, `list_model_credentials`, `list_model_credential_models`, `test_model_credential`, `delete_model_credential` |
+| Secrets | `list_secrets` |
+| API keys | `list_api_keys`, `revoke_api_key` |
+
+Each tool takes the same fields as its API endpoint. Read-only tools are marked as read-only, and `revoke_api_key` and `delete_model_credential` are marked as destructive, so clients can ask before running them.
+
+Adding a workspace secret or a model API key is not available as a tool, so those values never pass through a model. Use the app or the [API](/api-reference/introduction) for them.
+
+## Example requests
+
+- "Create an automation that reviews new Sentry regressions in the `api` project and opens a pull request in `acme/api`."
+- "Turn off the weekly dependency review."
+- "Why did the last run of the triage automation fail?"
+- "Let tag mode read the `acme/web` repository."
