@@ -62,6 +62,12 @@
             ]
           },
           {
+            "group": "Assistants",
+            "pages": [
+              "assistants/claude"
+            ]
+          },
+          {
             "group": "Integrations",
             "pages": [
               "integrations/overview",

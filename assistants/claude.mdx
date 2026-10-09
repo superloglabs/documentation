@@ -1,0 +1,52 @@
+---
+title: "Claude"
+description: "Manage your Superlog workspace from Claude and Claude Code."
+---
+
+Connect Claude to Superlog and ask it to create an automation, start a run, check why a run failed, change tag mode, or connect an integration. Claude uses the [Superlog MCP server](/api-reference/mcp) and acts as you in the workspace you choose when you sign in.
+
+## Claude Code
+
+<Steps>
+  <Step title="Install the plugin">
+    ```bash
+    claude plugin marketplace add superloglabs/claude-plugin
+    claude plugin install superlog@superlog
+    ```
+
+    The plugin source is [superloglabs/claude-plugin](https://github.com/superloglabs/claude-plugin).
+  </Step>
+  <Step title="Sign in">
+    Start Claude Code and run `/mcp`. Select `plugin:superlog:superlog`, choose **Authenticate**, and sign in to Superlog in your browser. Choose a workspace and approve access.
+  </Step>
+</Steps>
+
+To add the server without the plugin, run:
+
+```bash
+claude mcp add --transport http superlog https://superlog.sh/api/mcp
+```
+
+Then run `/mcp` and sign in the same way.
+
+## Claude apps
+
+Add Superlog as a custom connector in Claude on the web, desktop, or mobile:
+
+1. Open **Settings → Connectors** and click **Add custom connector**.
+2. Enter the name `Superlog` and the URL `https://superlog.sh/api/mcp`.
+3. Click **Connect**, sign in to Superlog, choose a workspace, and approve access.
+
+On Team and Enterprise plans, an owner adds the connector for the organization first. Members then connect their own Superlog account.
+
+## Connect integrations from chat
+
+Ask Claude to connect an integration, such as "Connect GitHub to my Superlog workspace." Claude returns a consent link. Open it in a browser signed in to the same Superlog account and workspace, approve access, and return to the conversation. Claude then checks the connection and continues.
+
+Integrations that need an API key or other credential return a secure setup link instead. Enter the credential in Superlog, not in the conversation.
+
+## What stays in the app
+
+Claude cannot read or add workspace secret values or model API keys, so those values never pass through the model. Members, billing, and new API keys are also managed in the Superlog app.
+
+To switch workspaces, sign out of the connector and sign in again. In Claude Code, choose **Clear authentication** in `/mcp`.
