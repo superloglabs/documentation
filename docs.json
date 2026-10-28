@@ -133,9 +133,12 @@
             "group": "Integrations",
             "openapi": "api-reference/openapi.json",
             "pages": [
+              "GET /integrations/available",
+              "POST /integrations/connect",
               "GET /integrations",
               "POST /integrations/refresh",
-              "GET /integrations/{integrationAccountId}/sentry-environments"
+              "GET /integrations/{integrationAccountId}/sentry-environments",
+              "GET /slack-channels"
             ]
           },
           {
@@ -145,7 +148,8 @@
               "GET /automations",
               "POST /automations",
               "GET /automations/{automationId}",
-              "PATCH /automations/{automationId}"
+              "PATCH /automations/{automationId}",
+              "GET /automations/{automationId}/webhook"
             ]
           },
           {
@@ -186,6 +190,71 @@
             "pages": [
               "GET /secrets",
               "POST /secrets"
+            ]
+          },
+          {
+            "group": "Telemetry",
+            "openapi": "api-reference/openapi.json",
+            "pages": [
+              "POST /telemetry/logs/search",
+              "POST /telemetry/traces/search",
+              "GET /telemetry/traces/{traceId}",
+              "POST /telemetry/metrics/search",
+              "GET /telemetry/services"
+            ]
+          },
+          {
+            "group": "Errors",
+            "openapi": "api-reference/openapi.json",
+            "pages": [
+              "GET /error-issues",
+              "GET /error-issues/{issueId}",
+              "PATCH /error-issues/{issueId}"
+            ]
+          },
+          {
+            "group": "Dashboards",
+            "openapi": "api-reference/openapi.json",
+            "pages": [
+              "GET /dashboards",
+              "POST /dashboards",
+              "GET /dashboards/{dashboardId}",
+              "PATCH /dashboards/{dashboardId}",
+              "DELETE /dashboards/{dashboardId}",
+              "POST /dashboards/{dashboardId}/widgets",
+              "PATCH /dashboards/{dashboardId}/widgets/{widgetId}",
+              "DELETE /dashboards/{dashboardId}/widgets/{widgetId}",
+              "PATCH /dashboards/{dashboardId}/layout"
+            ]
+          },
+          {
+            "group": "Alerts",
+            "openapi": "api-reference/openapi.json",
+            "pages": [
+              "GET /alerts",
+              "POST /alerts",
+              "GET /alerts/{alertId}",
+              "PATCH /alerts/{alertId}",
+              "DELETE /alerts/{alertId}",
+              "POST /alerts/preview"
+            ]
+          },
+          {
+            "group": "Synthetics",
+            "openapi": "api-reference/openapi.json",
+            "pages": [
+              "GET /synthetic-checks",
+              "POST /synthetic-checks",
+              "GET /synthetic-checks/{checkId}",
+              "PATCH /synthetic-checks/{checkId}",
+              "DELETE /synthetic-checks/{checkId}"
+            ]
+          },
+          {
+            "group": "Terraform",
+            "openapi": "api-reference/openapi.json",
+            "pages": [
+              "GET /terraform"
             ]
           }
         ]
