@@ -1,10 +1,10 @@
 ---
 title: "Management API"
 sidebarTitle: "Introduction"
-description: "Manage automations, runs, tag mode, model access, and secrets over HTTP."
+description: "Manage automations, runs, tag mode, model access, secrets, dashboards, alerts, and synthetic checks over HTTP."
 ---
 
-The management API lets scripts, CI jobs, and agents do what you do in **Settings**, **Automations**, and **Tag mode**: create and change automations, start and follow runs, change tag mode, and manage model keys and workspace secrets.
+The management API lets scripts, CI jobs, and agents do what you do in **Settings**, **Automations**, and **Tag mode**: create and change automations, start and follow runs, change tag mode, and manage model keys and workspace secrets. It also reads the workspace's logs, traces, metrics, and errors, and manages dashboards, alerts, and synthetic checks.
 
 The same operations are available as tools in the [Superlog MCP server](/api-reference/mcp).
 
@@ -77,6 +77,20 @@ Send only `enabled` to turn an automation on or off. `PATCH /tag-mode` works the
 
 Send a follow-up with `POST /runs/{runId}/messages` once the run has finished.
 
+## Manage dashboards, alerts, and checks with Terraform
+
+The [`superloglabs/superlog`](https://registry.terraform.io/providers/superloglabs/superlog/latest) Terraform provider manages alerts, dashboards, and synthetic checks through this API. It also works with OpenTofu.
+
+`GET /terraform` returns provider configuration for the objects you already have, with an `import` block for each one. Applying it adopts the existing objects instead of creating copies:
+
+```bash
+curl https://superlog.sh/api/v1/terraform \
+  -H "Authorization: Bearer $SUPERLOG_API_KEY" | jq -r .hcl > superlog.tf
+terraform init && terraform apply
+```
+
+Without parameters it exports everything. Pass `alertIds`, `dashboardIds`, or `syntheticCheckIds` as comma-separated IDs to export only those. Secret header values of synthetic checks become sensitive variables for you to set. **Copy as Terraform** on an alert, dashboard, or synthetic check page copies the same configuration for one object.
+
 ## Errors
 
 Errors return a JSON body with a message and, when there is one, a stable `code`:
@@ -93,7 +107,7 @@ Errors return a JSON body with a message and, when there is one, a stable `code`
 |---|---|
 | `400` | The request is invalid. `issues` lists each invalid field. |
 | `401` | The API key is missing, revoked, or its member left the workspace. |
-| `404` | The resource is not in this workspace, or automations are not enabled for it. |
+| `404` | The resource is not in this workspace, or its feature, such as automations or alerts, is not enabled for it. |
 | `409` | The request conflicts with the current state, such as a name already in use or a run that is still active. |
 | `502`, `503` | A provider or the run queue is unavailable. Try again. |
 
