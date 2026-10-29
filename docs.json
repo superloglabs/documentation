@@ -4,14 +4,14 @@
   "description": "Observability and automations for engineering teams. Send OpenTelemetry data, and run agents that triage alerts and fix issues with your model and tokens.",
   "theme": "luma",
   "colors": {
-    "primary": "#8c8c8c",
-    "light": "#232323",
-    "dark": "#e1e1e1"
+    "primary": "#232323",
+    "light": "#e1e1e1",
+    "dark": "#232323"
   },
   "favicon": "https://media.brand.dev/795f746d-3a5f-4fb9-ac75-cc1f5a0ebd65.svg",
   "logo": {
-    "light": "https://media.brand.dev/36844916-a1f8-41f4-9fb4-2853fb1ecd17.svg",
-    "dark": "https://media.brand.dev/36844916-a1f8-41f4-9fb4-2853fb1ecd17.svg",
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg",
     "href": "https://superlog.sh"
   },
   "navbar": {
@@ -396,6 +396,14 @@
       "github": "https://github.com/superloglabs/responder-oss",
       "x": "https://x.com/superlogYC",
       "discord": "https://discord.gg/wJ56aRh8hx"
+    }
+  },
+  "thumbnails": {
+    "preset": "classic",
+    "appearance": "light",
+    "surface": "neutral",
+    "fonts": {
+      "family": "Inter"
     }
   }
 }
