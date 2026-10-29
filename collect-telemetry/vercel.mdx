@@ -1,0 +1,27 @@
+---
+title: "Vercel"
+sidebarTitle: "Vercel"
+description: "Send traces and logs from your Vercel deployments with drains Superlog creates for you."
+---
+
+import EarlyAccess from "/snippets/early-access.mdx";
+
+<EarlyAccess />
+
+Superlog creates a trace drain and a log drain on your Vercel team. Traces arrive as OpenTelemetry. Logs carry their request and trace IDs. Drains need a Pro or Enterprise team.
+
+<Steps>
+  <Step title="Open the Vercel setup">
+    Open **Overview** in the sidebar, click **Add telemetry**, and pick **Vercel**.
+  </Step>
+  <Step title="Connect Vercel">
+    Click **Connect Vercel** and install the Superlog integration on your team. The drains cover the projects you share with the integration.
+  </Step>
+  <Step title="Create the drains">
+    Click **Create drains**. Superlog creates an ingest key for the drains.
+  </Step>
+</Steps>
+
+The source appears under **Connected** with its status and when data last arrived. **Remove** deletes the drains and revokes their key.
+
+If Vercel refuses, check that the team is on Pro or Enterprise and that the integration has the Drains permission. Reconnect Vercel to grant it.

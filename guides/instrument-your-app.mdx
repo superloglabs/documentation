@@ -1,7 +1,7 @@
 ---
 title: "Instrument your app"
 sidebarTitle: "Instrument your app"
-description: "Send logs, traces, and metrics to Superlog with OpenTelemetry, an existing Collector, Vercel, or AWS."
+description: "Create an ingest key and send logs, traces, and metrics from your app with the OpenTelemetry SDK."
 ---
 
 import EarlyAccess from "/snippets/early-access.mdx";
@@ -186,85 +186,6 @@ The examples below use each language's standard automatic instrumentation. The N
 
 Start your app and send it a few requests. Then open **Logs** and **Traces** in the sidebar. Your service appears under its `service.name`. In **Settings → Ingest keys**, the key shows **Used just now**.
 
-## Send from an OpenTelemetry Collector
+## Other ways to send telemetry
 
-If you already run a Collector, add an `otlphttp` exporter and use it in each pipeline:
-
-```yaml
-exporters:
-  otlphttp/superlog:
-    endpoint: https://superlog.sh/api/ingest
-    headers:
-      x-api-key: ${env:SUPERLOG_INGEST_KEY}
-
-service:
-  pipelines:
-    traces:
-      receivers: [otlp]
-      processors: [batch]
-      exporters: [otlphttp/superlog]
-    metrics:
-      receivers: [otlp]
-      processors: [batch]
-      exporters: [otlphttp/superlog]
-    logs:
-      receivers: [otlp]
-      processors: [batch]
-      exporters: [otlphttp/superlog]
-```
-
-The `otlphttp` exporter adds `/v1/traces`, `/v1/metrics`, and `/v1/logs` to the endpoint. Gzip compression, its default, is supported. Use `otlphttp`, not the gRPC `otlp` exporter: Superlog accepts OTLP over HTTP only.
-
-## Vercel
-
-Superlog creates a trace drain and a log drain on your Vercel team. Traces arrive as OpenTelemetry. Logs carry their request and trace IDs. Drains need a Pro or Enterprise team.
-
-<Steps>
-  <Step title="Open the Vercel setup">
-    Click **Add telemetry** and pick **Vercel**.
-  </Step>
-  <Step title="Connect Vercel">
-    Click **Connect Vercel** and install the Superlog integration on your team. The drains cover the projects you share with the integration.
-  </Step>
-  <Step title="Create the drains">
-    Click **Create drains**. Superlog creates an ingest key for the drains.
-  </Step>
-</Steps>
-
-The source appears under **Connected** with its status and when data last arrived. **Remove** deletes the drains and revokes their key.
-
-If Vercel refuses, check that the team is on Pro or Enterprise and that the integration has the Drains permission. Reconnect Vercel to grant it.
-
-## AWS CloudWatch
-
-A CloudFormation stack in your account streams one region's CloudWatch metrics and CloudWatch Logs to Superlog through Amazon Data Firehose. Metric Streams, Firehose, and log delivery are billed to your AWS account. Deploy one stack per region.
-
-<Steps>
-  <Step title="Open the AWS setup">
-    Click **Add telemetry** and pick **Amazon Web Services**.
-  </Step>
-  <Step title="Choose a region">
-    Pick the **Region** and click **Create stack link**. Superlog creates an ingest key for the stack.
-  </Step>
-  <Step title="Deploy the stack">
-    Click **Open in the AWS console** to create the stack with its parameters filled in. Or download the template and run the `aws cloudformation deploy` command shown on the page.
-
-    The link and command contain the new ingest key. Copy them now. They are not shown again.
-  </Step>
-</Steps>
-
-The stack:
-
-- Streams metrics from these namespaces: `AWS/EC2`, `AWS/EBS`, `AWS/RDS`, `AWS/ApplicationELB`, `AWS/NetworkELB`, `AWS/ELB`, `AWS/Lambda`, `AWS/ECS`, `ECS/ContainerInsights`, `AWS/DynamoDB`, `AWS/SQS`, `AWS/SNS`, `AWS/S3`, `AWS/ElastiCache`, `AWS/ApiGateway`, and `AWS/CloudFront`.
-- Forwards every CloudWatch Logs log group in the region with an account-level subscription filter.
-- Keeps records Firehose could not deliver in an S3 bucket for a week.
-
-Stack parameters control the volume. Set `EnableMetrics` or `EnableLogs` to `false` to skip a signal. Set `LogsFilterPattern` to a CloudWatch Logs filter pattern to forward only matching events.
-
-To stop streaming, delete the stack in CloudFormation. **Remove** in Superlog revokes the stack's key.
-
-## Google Cloud
-
-Superlog reads a project's Cloud Logging entries every minute and its Cloud Run, Compute Engine, Cloud SQL, load balancer, and Pub/Sub metrics every five minutes. Data Access audit logs are skipped.
-
-[Connect the project](/integrations/cloud#google-cloud) in **Integrations** first. Then click **Add telemetry**, pick **Google Cloud**, choose the project, and click **Start reading**.
+See [Collect telemetry](/collect-telemetry/overview) for the OpenTelemetry Collector, Vercel, AWS CloudWatch, Google Cloud, and the browser SDK.

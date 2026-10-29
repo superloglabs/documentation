@@ -46,10 +46,28 @@
             ]
           },
           {
-            "group": "Concepts",
+            "group": "Collect telemetry",
             "pages": [
+              "collect-telemetry/overview",
+              "collect-telemetry/opentelemetry-collector",
+              "collect-telemetry/vercel",
+              "collect-telemetry/aws",
+              "collect-telemetry/google-cloud"
+            ]
+          },
+          {
+            "group": "Make your application reliable",
+            "pages": [
+              "reliability/checklist",
               "telemetry/errors",
               "telemetry/alerts",
+              "telemetry/synthetics",
+              "telemetry/dashboards"
+            ]
+          },
+          {
+            "group": "Concepts",
+            "pages": [
               "automations/overview",
               "tag-mode",
               "automations/models"
@@ -71,9 +89,7 @@
                 "pages": [
                   "telemetry/logs",
                   "telemetry/traces",
-                  "telemetry/metrics",
-                  "telemetry/dashboards",
-                  "telemetry/synthetics"
+                  "telemetry/metrics"
                 ]
               },
               {

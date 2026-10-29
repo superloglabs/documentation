@@ -1,0 +1,56 @@
+---
+title: "Collect telemetry"
+sidebarTitle: "Overview"
+description: "Every way to send logs, traces, and metrics to Superlog: OpenTelemetry SDKs, the browser SDK, a Collector, Vercel, AWS, and Google Cloud."
+---
+
+import EarlyAccess from "/snippets/early-access.mdx";
+
+<EarlyAccess />
+
+Superlog stores logs, traces, and metrics as OpenTelemetry. Send them from your code, from a Collector you already run, or straight from your cloud provider.
+
+## Choose a source
+
+| Source | Sends | Setup |
+|---|---|---|
+| [OpenTelemetry SDKs](/guides/instrument-your-app) | Logs, traces, metrics | Ingest key and three environment variables. Node.js, Python, Go, Java, and any other OpenTelemetry SDK. |
+| [Browser and React](/guides/browser) | Errors, traces, page loads, Web Vitals | `@superlog/browser`, sent through a route on your server. |
+| [OpenTelemetry Collector](/collect-telemetry/opentelemetry-collector) | Logs, traces, metrics | Add an `otlphttp` exporter. |
+| [Vercel](/collect-telemetry/vercel) | Traces, logs | Connect Vercel. Superlog creates the drains. |
+| [AWS CloudWatch](/collect-telemetry/aws) | Metrics, logs | Deploy a CloudFormation stack per region. |
+| [Google Cloud](/collect-telemetry/google-cloud) | Logs, metrics | Connect a project. Superlog reads from it. |
+
+Moving from another vendor? See the migration guides for [Datadog](/guides/migrate/datadog), [New Relic](/guides/migrate/new-relic), and [Dynatrace](/guides/migrate/dynatrace).
+
+## Ingest endpoint
+
+Code and Collectors send OTLP over HTTP to your region's endpoint:
+
+| Region | Endpoint |
+|---|---|
+| EU | `https://superlog.sh/api/ingest` |
+| US | `https://us.superlog.sh/api/ingest` |
+
+- Send to `/v1/logs`, `/v1/traces`, or `/v1/metrics` under the endpoint. OpenTelemetry SDKs and the Collector add these paths for you.
+- Send the ingest key as `x-api-key: <key>` or `Authorization: Bearer <key>`.
+- Use `http/protobuf` or `http/json`. Gzip is supported. gRPC is not.
+- A request can be up to 8 MB.
+
+## Ingest keys
+
+An ingest key decides which workspace the data goes to. Keys start with `sl_ingest_`. Create one from **Overview** in the sidebar. See [Create an ingest key](/guides/instrument-your-app#create-an-ingest-key).
+
+**Settings → Ingest keys** lists each key and when it last sent data. Revoke a key there to stop it. Vercel and AWS sources create their own keys, and removing the source revokes its key.
+
+## Name your services
+
+Set these resource attributes on every service. Superlog groups and filters your data by them.
+
+| Attribute | Example |
+|---|---|
+| `service.name` | `checkout-api` |
+| `deployment.environment.name` | `production` |
+| `service.version` | `1.4.2` |
+
+With an OpenTelemetry SDK, set them with `OTEL_SERVICE_NAME` and `OTEL_RESOURCE_ATTRIBUTES`.

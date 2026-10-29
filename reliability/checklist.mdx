@@ -1,0 +1,65 @@
+---
+title: "Make your application reliable"
+sidebarTitle: "Checklist"
+description: "The steps to set up Superlog for a service: telemetry, error notifications, alerts, synthetic checks, dashboards, and automations that investigate problems."
+---
+
+import EarlyAccess from "/snippets/early-access.mdx";
+
+<EarlyAccess />
+
+Work through these steps for each service you run. Each one links to the page that covers it.
+
+<Steps>
+  <Step title="Send telemetry">
+    Send logs, traces, and metrics from the service. Set `service.name` and `deployment.environment.name` so Superlog can group and filter by them. Connect logs to traces so each log record carries its trace and span IDs.
+
+    See [Collect telemetry](/collect-telemetry/overview).
+  </Step>
+
+  <Step title="Connect GitHub and Slack">
+    GitHub lets agents read your code and open pull requests. Slack is where alerts, error notifications, and agent replies go.
+
+    See [GitHub](/integrations/github) and [Slack](/integrations/slack).
+  </Step>
+
+  <Step title="Turn on error notifications">
+    Superlog groups exceptions into issues on its own. Turn on notifications so a Slack channel hears about each new error and each regression. Resolve or silence issues from the Slack message.
+
+    See [Errors](/telemetry/errors#slack-notifications).
+  </Step>
+
+  <Step title="Add alerts">
+    Add an alert for each signal that means users are affected, such as a spike in error logs or slow requests on a key endpoint. Preview each alert before you save it.
+
+    See [Alerts](/telemetry/alerts).
+  </Step>
+
+  <Step title="Add synthetic checks">
+    Add a check for each public endpoint and health route. Superlog requests it on a schedule and posts to Slack when it fails.
+
+    See [Synthetic checks](/telemetry/synthetics).
+  </Step>
+
+  <Step title="Build a service dashboard">
+    Chart request rate, errors, and latency for the service. Add a variable for the environment so one dashboard covers all of them.
+
+    See [Dashboards](/telemetry/dashboards).
+  </Step>
+
+  <Step title="Investigate errors with an automation">
+    Create an automation from the **Investigate new errors** template. On each new error or regression, an agent finds the code that raised it, works out the cause, and opens a pull request when the fix is small.
+
+    See [Automations](/automations/overview) and [Triggers](/automations/triggers#errors).
+  </Step>
+
+  <Step title="Keep it as code">
+    Export your alerts, dashboards, and synthetic checks to Terraform and commit them, so changes go through review.
+
+    See [Terraform provider](/developer/terraform).
+  </Step>
+</Steps>
+
+## Let an agent do the setup
+
+The [Superlog MCP server](/assistants/claude) can create alerts, dashboards, synthetic checks, and automations. Connect it to Claude Code or another agent in your repository, and ask it to work through this list for one service.
