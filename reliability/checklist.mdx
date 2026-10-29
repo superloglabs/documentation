@@ -14,15 +14,13 @@ You can set everything up with one prompt to a coding agent, or work through the
 
 <Steps>
   <Step title="Connect the agent to Superlog">
-    Sending telemetry is available for workspaces in the EU region. For a US workspace, [contact us](https://cal.com/superlog/yc).
-
     Install the [Superlog MCP server](/assistants/claude) in Claude Code, Cursor, Codex, or another agent, and open it in your repository. Sign in as a workspace owner or admin, so the agent can turn on error notifications.
   </Step>
   <Step title="Create an API key for source maps">
     If you have a browser app, create a workspace API key under **Settings → API keys** and set it as `SUPERLOG_API_KEY` in your shell. The build uses it to upload source maps. The agent creates the ingest keys itself.
   </Step>
   <Step title="Paste the prompt">
-    Paste the prompt below. The agent stops and asks you when it needs you to deploy, approve a connection, or choose a channel.
+    Paste the prompt below. For a workspace in the US region, replace `https://superlog.sh` with `https://us.superlog.sh`. The agent stops and asks you when it needs you to deploy, approve a connection, or choose a channel.
   </Step>
 </Steps>
 
@@ -32,78 +30,98 @@ affects users. Superlog is at https://superlog.sh and you have its MCP server.
 A workspace API key for source map uploads may be in SUPERLOG_API_KEY.
 Never commit a key.
 
-Work in these steps. After each step, tell me what you did. When a step needs me,
-stop and ask.
+This repository or workspace may already be partly or fully set up. Before each
+step, check what already exists. Keep what works and add only what is missing.
+Never delete, rename, rotate, or replace existing instrumentation, ingest keys,
+notification settings, dashboards, alerts, or synthetic checks. If you think an
+existing one should change, list the change and wait for my approval. Running
+this prompt again on a finished setup should change nothing.
+
+Work in these steps. After each step, tell me what was already in place, what
+you added, and what you suggest changing. When a step needs me, stop and ask.
 
 1. Inventory
    - List every service in the repository: HTTP APIs, workers, scheduled jobs,
-     and browser frontends. Give each a short, stable service name.
-   - Map how they call each other: HTTP and gRPC calls, queues and topics,
-     background jobs, and calls from the browser to the backend.
-   - Call list_integrations and list_services to see what is already connected
-     and which services already send telemetry.
+     and browser frontends.
+   - For each service, find how it sends telemetry today: an OpenTelemetry SDK,
+     the Superlog browser SDK, another vendor's agent or SDK, or nothing. Use
+     the service name it already reports. Give new services a short, stable
+     name.
+   - Map how the services call each other: HTTP and gRPC calls, queues and
+     topics, background jobs, and calls from the browser to the backend.
+   - Read the workspace: list_integrations, list_services, list_ingest_keys,
+     get_error_notifications, list_dashboards, list_alerts, and
+     list_synthetic_checks. Query the last 24 hours of traces, logs, and
+     metrics for each service in list_services to see which signals arrive.
 
 2. Ingest keys
-   - Create one ingest key for the backend services and one for each browser
-     app with create_ingest_key. Name each key after what uses it.
-   - Add the settings to the example environment file with placeholder
-     values. Tell me where to set the real values for each deployment, or set
-     them in the secret manager the project already uses.
+   - Skip services that already send to Superlog, and reuse the key a project
+     already reads from its environment or secret manager.
+   - For services that send nothing yet, create a key with create_ingest_key:
+     one for the backend services and one for each browser app. Name each key
+     after what uses it, and check list_ingest_keys first so you don't create
+     a second key with the same name.
+   - Add placeholders for new settings to the example environment file. Tell
+     me where to set the real values, or set them in the secret manager the
+     project already uses.
 
 3. Backend services: OpenTelemetry
-   - Use the official OpenTelemetry SDK for each service's language, with
-     automatic instrumentation for its framework, HTTP clients, database
-     clients, and queues.
-   - Configure the exporters only with environment variables:
-       OTEL_EXPORTER_OTLP_ENDPOINT=https://superlog.sh/api/ingest
+   - If a service already exports OpenTelemetry to Superlog, keep its setup and
+     only fill gaps from the list below.
+   - If it sends to another vendor, don't remove that. Ask me whether to add
+     Superlog as a second exporter or to replace it.
+   - For services with nothing: use the official OpenTelemetry SDK for the
+     service's language, with automatic instrumentation for its framework, HTTP
+     clients, database clients, and queues. Configure the exporters only with
+     environment variables:
+       OTEL_EXPORTER_OTLP_ENDPOINT=<endpoint from list_ingest_keys>
        OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
        OTEL_EXPORTER_OTLP_HEADERS=x-api-key=<ingest key>
-     Send traces, metrics, and logs.
-   - Set service.name, service.version, and deployment.environment.name on
-     every service.
-   - Connect the existing logger to the OpenTelemetry logs SDK so each record
-     carries its trace and span IDs. Keep console output.
-   - Record unhandled exceptions on the active span as exception events, and log
-     them at error level, so Superlog groups them into error issues.
-   - Add spans around the few operations that matter most to users, such as
-     checkout or sign-in, if automatic instrumentation does not cover them.
-   - Start the SDK before the app loads other modules. Flush and shut it down
-     when the process exits.
+     Send traces, metrics, and logs. Start the SDK before the app loads other
+     modules. Flush and shut it down when the process exits.
+   - Gaps to check on every service:
+     - service.name, service.version, and deployment.environment.name are set.
+     - The logger is connected to the OpenTelemetry logs SDK, so each record
+       carries its trace and span IDs. Console output stays.
+     - Unhandled exceptions are recorded on the active span as exception events
+       and logged at error level, so Superlog groups them into error issues.
+     - The few operations that matter most to users, such as checkout or
+       sign-in, have spans.
 
 4. Browser frontends: Superlog browser SDK
-   - Install @superlog/browser, and @superlog/react for React apps. Follow
-     https://docs.superlog.sh/guides/browser.
-   - Call init before the app renders, with service, release, environment, the
-     browser app's ingest key as ingestKey, and
-     endpoint: "https://superlog.sh/api/ingest".
-   - Use the React error boundary and router instrumentation for React apps.
-   - Upload source maps in the build with @superlog/sourcemaps and
-     SUPERLOG_API_KEY. Use the same release value as init.
+   - If @superlog/browser is already set up, keep it and only fill gaps.
+   - Otherwise install @superlog/browser, and @superlog/react for React apps.
+     Follow https://docs.superlog.sh/guides/browser. Call init before the app
+     renders, with service, release, environment, the browser app's ingest key
+     as ingestKey, and the endpoint from list_ingest_keys as endpoint.
+   - Gaps to check: the React error boundary and router instrumentation for
+     React apps, and source map uploads in the build with @superlog/sourcemaps
+     and SUPERLOG_API_KEY, using the same release value as init.
 
 5. Connect requests across services
    One user action must show up as one trace, from the browser through every
-   service it reaches.
+   service it reaches. Check each link and fix only the ones that break.
    - Use W3C trace context (traceparent and tracestate) everywhere.
-   - Browser to backend: set tracePropagationTargets in the browser SDK to the
-     app's API origins. Allow the traceparent and tracestate headers in the
-     API's CORS settings.
-   - Service to service: check that every outgoing HTTP and gRPC client is
-     instrumented so it sends traceparent, and that every server continues it.
-     Check that proxies, gateways, and load balancers pass the headers through.
-   - Queues and background jobs: inject the trace context into each message's
-     headers or attributes when it is sent, and extract it when it is
+   - Browser to backend: tracePropagationTargets in the browser SDK lists the
+     app's API origins, and the API's CORS settings allow the traceparent and
+     tracestate headers.
+   - Service to service: every outgoing HTTP and gRPC client sends
+     traceparent, every server continues it, and proxies, gateways, and load
+     balancers pass the headers through.
+   - Queues and background jobs: the trace context is injected into each
+     message's headers or attributes when it is sent and extracted when it is
      processed, so the job's spans join the trace that enqueued it. Use the
      instrumentation library for the queue if there is one.
-   - Request IDs: if the app already has a request ID, add it to the active
-     span as an attribute and to every log record. Return the trace ID in a
-     response header so support can find a user's request.
+   - Request IDs: if the app has a request ID, it is on the active span as an
+     attribute and on every log record, and the response returns the trace ID
+     in a header so support can find a user's request.
    - Verify: after step 6, find a trace for a user action that crosses services
      with query_traces, open it with get_trace, and confirm it has spans from
-     the browser and every service involved. Fix any break you find.
+     the browser and every service involved.
 
 6. Verify the data
-   - Run the project's checks. Then ask me to deploy, or to run the services
-     locally with the settings, and send some traffic.
+   - If you changed code, run the project's checks. Then ask me to deploy, or
+     to run the services locally with the settings, and send some traffic.
    - Confirm each service with list_services, query_traces, query_logs, and
      query_metrics. Note the real metric names, routes, and attribute names.
      Build everything below from data you have seen, not from guesses.
@@ -111,27 +129,32 @@ stop and ask.
 7. Slack and error notifications
    - If Slack is not connected, call start_integration_connection for Slack and
      wait for me to approve it. Then call list_slack_channels.
-   - Ask me which channel gets alerts and which gets error notifications.
-   - Turn on error notifications for that channel with
-     update_error_notifications.
+   - If error notifications are already on, keep their channel. Otherwise ask
+     me which channel to use and turn them on with update_error_notifications.
+   - For new alerts and checks, use the channel the existing alerts post to. If
+     there are none, ask me which channel to use.
 
 8. Dashboards
-   - Create one "Service health" dashboard for the whole system: requests per
-     service, error spans per service, p95 latency per service, a list of recent
-     error logs, and a list of recent error traces. Add a dashboard variable for
-     deployment.environment.name.
-   - Create one dashboard per service: throughput, errors, and p50, p95, and p99
-     latency by route; the slowest routes as a table; database and outgoing
-     call latency; runtime metrics such as memory and CPU if the service sends
-     them; and a list of its error logs.
-   - Query each widget's data before you add it. Arrange the widgets with
+   - Read each existing dashboard with get_dashboard. Treat a dashboard as
+     covering a service if its name or its widgets are about that service.
+   - If no dashboard covers the whole system, create a "Service health"
+     dashboard: requests per service, error spans per service, p95 latency per
+     service, a list of recent error logs, and a list of recent error traces,
+     with a dashboard variable for deployment.environment.name.
+   - For each service with no dashboard, create one: throughput, errors, and
+     p50, p95, and p99 latency by route; the slowest routes as a table;
+     database and outgoing call latency; runtime metrics such as memory and
+     CPU if the service sends them; and a list of its error logs.
+   - For dashboards that already exist, list the charts they are missing as
+     suggestions. Don't add them without my approval.
+   - Query each widget's data before you add it. Arrange new dashboards with
      update_dashboard_layout so the most important charts are at the top.
 
 9. Alerts
-   - Create only alerts someone should act on. Each alert name says what is
-     broken. Superlog alerts compare one value with a threshold. They cannot
-     divide two values, so use counts and percentiles.
-   - For each service, cover these cases where they apply:
+   - Only alerts someone should act on. Each alert name says what is broken.
+     Superlog alerts compare one value with a threshold. They cannot divide two
+     values, so use counts and percentiles.
+   - For each service, these are the cases to cover where they apply:
      a. Down: span count below 1 over 10 minutes, for services with steady
         traffic.
      b. Failing requests: error span count above a threshold.
@@ -139,30 +162,34 @@ stop and ask.
      d. Crashes: fatal logs above 0.
      e. Backlog: queue depth or job lag metrics above a threshold, if the
         service has them.
-   - Set each threshold from the last 7 days of data so it does not fire on
-     normal peaks. Group by service and turn on alerting for each group where
-     it helps.
-   - Check every alert with preview_alert before create_alert. Show me the rule,
-     threshold, and preview, and wait for my approval. Send alerts to the alert
-     channel.
+   - Read each existing alert with get_alert. A case is covered when an
+     existing alert watches the same service and the same kind of failure,
+     even with a different threshold or name. Skip covered cases.
+   - For uncovered cases, set the threshold from the last 7 days of data so it
+     does not fire on normal peaks. Check each new alert with preview_alert,
+     show me the rule, threshold, and preview, and wait for my approval before
+     create_alert.
+   - If an existing alert looks too noisy or too quiet, suggest a change with
+     its preview. Don't change it without my approval.
 
 10. Synthetic checks
-   - Create a check for each public health endpoint and the main pages. Run
-     every minute, retry once, and alert after 2 failed runs. Assert a 2xx
+   - Skip URLs that already have a check.
+   - For each public health endpoint and main page without one, create a
+     check: every minute, retry once, alert after 2 failed runs. Assert a 2xx
      status and a response time, a JSON status field if the health endpoint
      returns one, and a TLS certificate that expires in more than 14 days.
-     Send failures to the alert channel.
 
 11. Terraform
-   - If the repository already manages infrastructure with Terraform, offer to
-     add the output of export_terraform to it. Otherwise skip this step.
+   - If the repository already manages Superlog or other infrastructure with
+     Terraform, offer to add the output of export_terraform to it. Otherwise
+     skip this step.
 
 Finish with a table of every service, ingest key, dashboard, alert, and
-synthetic check you created, and a list of anything you could not set up and
-why.
+synthetic check, marked as already in place, added, or suggested, and a list of
+anything you could not set up and why.
 ```
 
-The agent shows you each alert before it creates it. Review the thresholds. You know which numbers mean users are affected.
+The agent keeps what is already set up and adds only what is missing, so you can run the prompt again at any time. It shows you each new alert before it creates it, and suggests changes to existing ones without making them. Review the thresholds. You know which numbers mean users are affected.
 
 ## Checklist
 
