@@ -10,44 +10,58 @@ import EarlyAccess from "/snippets/early-access.mdx";
 
 Your apps send logs, traces, and metrics to Superlog. Superlog stores them, groups exceptions into error issues, checks alerts and synthetic checks on a schedule, and posts to Slack when something is wrong. Agents read the same data through the MCP server and automations.
 
+Here is how a typical project uses Superlog to stay reliable:
+
 ```mermaid
 flowchart LR
-  subgraph Sources
-    SDK[OpenTelemetry SDKs]
-    Browser[Browser SDK]
-    Collector[OpenTelemetry Collector]
-    Cloud[Vercel, AWS, Google Cloud]
+  subgraph project[Your project]
+    web[Web app]
+    backend[Backend services]
+    infra[Cloud infrastructure]
   end
 
-  subgraph Superlog
-    Ingest[Ingest endpoint]
-    Store[(Logs, traces, metrics)]
-    Errors[Error issues]
-    Alerts[Alerts]
-    Synthetics[Synthetic checks]
-    Explore[Logs, Traces, Metrics, Dashboards]
+  subgraph send[How it sends]
+    browserSdk[Superlog browser SDK]
+    otel[OpenTelemetry SDKs]
+    cloud[Cloud integrations<br/>Vercel, AWS, Google Cloud]
   end
 
-  subgraph Team
-    Slack[Slack]
-    Agents[Agents and automations]
+  subgraph superlog[Superlog]
+    traces[Traces]
+    logs[Logs]
+    metrics[Metrics]
   end
 
-  SDK --> Ingest
-  Browser --> Ingest
-  Collector --> Ingest
-  Cloud --> Store
-  Ingest --> Store
-  Store --> Errors
-  Store --> Alerts
-  Store --> Explore
-  Synthetics --> Slack
-  Errors --> Slack
-  Alerts --> Slack
-  Store --> Agents
-  Errors --> Agents
-  Slack --> Agents
+  subgraph outcomes[What you get]
+    alerts[Alerts<br/>know when systems don't behave as expected]
+    dashboards[Dashboards<br/>gain insight and confidence]
+    errors[Error fingerprinting<br/>find new failure modes]
+    synthetics[Synthetic checks<br/>know your endpoints answer from outside]
+  end
+
+  web --> browserSdk
+  backend --> otel
+  infra --> cloud
+  browserSdk --> traces
+  browserSdk --> logs
+  otel --> traces
+  otel --> logs
+  otel --> metrics
+  cloud --> logs
+  cloud --> metrics
+  traces --> alerts
+  logs --> alerts
+  metrics --> alerts
+  traces --> dashboards
+  logs --> dashboards
+  metrics --> dashboards
+  traces --> errors
+  logs --> errors
+  synthetics -.->|requests| web
+  synthetics -.->|requests| backend
 ```
+
+Alerts, error notifications, and failing synthetic checks post to Slack. Agents read the same data through the MCP server and automations.
 
 ## 1. Your apps send telemetry
 
