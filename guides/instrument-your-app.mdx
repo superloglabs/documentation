@@ -8,7 +8,25 @@ import EarlyAccess from "/snippets/early-access.mdx";
 
 <EarlyAccess />
 
-Superlog accepts standard OpenTelemetry over OTLP/HTTP. You need an ingest key. See [Send your first telemetry](/get-started/send-telemetry) to create one.
+Superlog accepts standard OpenTelemetry over OTLP/HTTP. Your app sends logs, traces, and metrics with an ingest key.
+
+## Create an ingest key
+
+<Steps>
+  <Step title="Open the OpenTelemetry setup">
+    Open **Overview** in the sidebar. On a workspace with no telemetry, click **Set up OpenTelemetry**. Otherwise click **Add telemetry** and pick **OpenTelemetry**.
+
+    If the page says **Sending telemetry is not available**, telemetry is not turned on for your workspace yet.
+  </Step>
+
+  <Step title="Create the key">
+    Click **Create ingest key**, then **Copy key**. Keys start with `sl_ingest_`.
+
+    You can see the key only once. Store it in your secret manager. You can find and revoke it later in **Settings → Ingest keys**.
+  </Step>
+</Steps>
+
+To have a coding agent instrument your project, copy the prompt under **Paste this prompt into your coding agent** and paste it into Claude Code, Codex, Cursor, or another agent. The prompt includes your key. It tells the agent to add the OpenTelemetry SDK with automatic instrumentation, set `service.name` and `deployment.environment.name`, connect your logger, and read the key from the environment. To do it yourself, continue below.
 
 ## Configure the SDK
 
@@ -163,6 +181,12 @@ The examples below use each language's standard automatic instrumentation. The N
     The agent instruments common frameworks and clients, and sends Logback and Log4j records with their trace and span IDs.
   </Tab>
 </Tabs>
+
+## Check that data arrives
+
+Start your app and send it a few requests. Then open **Logs** and **Traces** in the sidebar. Your service appears under its `service.name`. In **Settings → Ingest keys**, the key shows **Used just now**.
+
+If nothing shows up, see [No telemetry showing up](/troubleshooting/telemetry).
 
 ## Send from an OpenTelemetry Collector
 

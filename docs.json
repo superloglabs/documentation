@@ -40,9 +40,9 @@
             "group": "Get started",
             "pages": [
               "index",
-              "get-started/send-telemetry",
-              "quickstart",
-              "integrations/overview"
+              "guides/instrument-your-app",
+              "guides/browser",
+              "assistants/claude"
             ]
           },
           {
@@ -59,12 +59,10 @@
           {
             "group": "Guides",
             "pages": [
-              "guides/instrument-your-app",
-              "guides/browser",
+              "quickstart",
               "guides/triage-sentry-issues",
               "guides/build-a-dashboard",
               "guides/alert-on-errors-and-latency",
-              "assistants/claude",
               {
                 "group": "Migrate",
                 "pages": [
@@ -104,6 +102,7 @@
               {
                 "group": "Integrations",
                 "pages": [
+                  "integrations/overview",
                   "integrations/github",
                   "integrations/slack",
                   "integrations/sentry",
