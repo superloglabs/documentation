@@ -1,0 +1,91 @@
+---
+title: "No telemetry showing up"
+sidebarTitle: "No telemetry showing up"
+description: "Check the key, region, protocol, and service name when logs, traces, or metrics don't arrive."
+---
+
+import EarlyAccess from "/snippets/early-access.mdx";
+
+<EarlyAccess />
+
+Work through these checks in order. Most problems show up in the HTTP response your app or Collector gets back, so turn on its exporter logging first.
+
+## Check whether the key was used
+
+Open **Settings → Ingest keys**. Each key shows when it last sent telemetry.
+
+- **Never used**: no request with this key has reached Superlog. Check the key, endpoint, and region below.
+- **Used just now** or **Used 5 minutes ago**: requests are arriving. Skip to [Data arrives but you can't find it](#data-arrives-but-you-cant-find-it).
+
+## 401: the key is rejected
+
+Superlog answers `401` when the key is missing, wrong, or revoked. The body says how to send it:
+
+| Endpoint | Error |
+|---|---|
+| `/api/ingest/v1/*` | `Send a valid ingest key as Authorization: Bearer <key>` |
+| `/api/ingest/vercel/logs` | `Send a valid ingest key as x-api-key` |
+| `/api/ingest/aws/firehose/*` | `Invalid Superlog ingest key in the Firehose access key` |
+
+Check that:
+
+- The key is an ingest key. It starts with `sl_ingest_`. Workspace API keys (`slk_`) do not work for ingest.
+- The header is `x-api-key=<key>` in `OTEL_EXPORTER_OTLP_HEADERS`, or `Authorization: Bearer <key>`.
+- The key is still listed in **Settings → Ingest keys**. A revoked key stops working within a minute.
+- You send to the region your workspace is in. See below.
+
+## Wrong region
+
+Each region has its own workspaces and keys. A key from an EU workspace is rejected by the US region with `401`, and the other way around.
+
+| Region | Endpoint |
+|---|---|
+| EU | `https://superlog.sh/api/ingest` |
+| US | `https://us.superlog.sh/api/ingest` |
+
+## Wrong protocol or path
+
+Superlog accepts OTLP over HTTP only. It has no gRPC endpoint.
+
+- Set `OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf`. Some SDKs, such as Python's, default to `grpc`. `http/json` also works.
+- In a Collector, use the `otlphttp` exporter, not `otlp`.
+- Set `OTEL_EXPORTER_OTLP_ENDPOINT` to the base, ending in `/api/ingest`. The SDK adds `/v1/logs`, `/v1/traces`, and `/v1/metrics`. If you set a per-signal variable such as `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`, give it the full path, ending in `/api/ingest/v1/traces`.
+- A `404` with `Not found` means the path is wrong. Only `logs`, `traces`, and `metrics` exist under `/api/ingest/v1/`.
+
+## Request too large
+
+Superlog refuses request bodies over 8 MB with `413` and `Request body too large`. Send smaller batches, or enable gzip compression.
+
+## 503: ingest is unavailable
+
+`503` with `Telemetry ingest is unavailable` means Superlog could not accept the data at that moment. OpenTelemetry exporters retry on their own. If it persists, ask in [Discord](https://discord.gg/wJ56aRh8hx).
+
+Superlog may also pass back `429` with a `Retry-After` header. Exporters wait and retry.
+
+## Telemetry is not turned on
+
+If **Add telemetry** shows **Sending telemetry is not available**, or **Settings → Ingest keys** says **This workspace cannot receive telemetry in this region yet**, telemetry is not turned on for your workspace. You cannot create ingest keys until it is.
+
+## Browser apps
+
+Superlog's ingest endpoint does not answer browser CORS requests. A page that sends to it directly fails in the browser before the request is made. Send through a relay on your own server. See [Browser and React](/guides/browser#relay-through-your-server).
+
+## Data arrives but you can't find it
+
+- **Missing service name.** Without `service.name`, OpenTelemetry SDKs report a name that starts with `unknown_service`. Set `OTEL_SERVICE_NAME`, then look for your service under that name.
+- **Time range.** Widen the time range in **Logs** or **Traces**. Check that the host clock is correct.
+- **Batching.** SDKs send in batches every few seconds. A short-lived process that exits without shutting down the SDK loses its last batch.
+- **`superlog.*` attributes.** Superlog removes any attribute whose name starts with `superlog.` and sets its own.
+
+## Cloud sources
+
+For Vercel, AWS, and Google Cloud, open **Add telemetry** and pick the provider. Each source under **Connected** shows a status:
+
+- **Waiting for data**: nothing has arrived yet.
+- **Receiving**: data arrived recently.
+- **Receiving, with errors** or **Error**: the source shows the last error next to its name.
+- **No recent data**: data arrived before but has stopped.
+
+For AWS, check the Firehose delivery log group, `/aws/kinesisfirehose/<prefix>`, in the stack's region. Records Firehose could not deliver are kept in the stack's S3 bucket.
+
+See [Instrument your app](/guides/instrument-your-app) for setup.

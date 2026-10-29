@@ -1,0 +1,56 @@
+---
+title: "Metrics"
+description: "Pick a metric, aggregate and group it, and add the graph to a dashboard or alert."
+---
+
+import EarlyAccess from "/snippets/early-access.mdx";
+
+<EarlyAccess />
+
+**Explore → Metrics** lists every metric your services sent in the time range, next to a graph of the one you pick. The page URL holds the metric, filters, aggregation, grouping, chart type, and time range, so you can share a link to the same graph.
+
+## Pick a metric
+
+The list on the left groups metrics by the part of the name before the first dot, such as `http` or `process`. Cloud provider metrics, such as CloudWatch, are listed after your own. **Search metrics** matches names, descriptions, units, and attribute keys.
+
+When you open the page without a metric, it shows the first one in the list.
+
+The header shows the metric's name, its kind (**Gauge**, **Sum**, **Histogram**, **Exp. histogram**, or **Summary**), its unit, which services report it, and how many attributes it has.
+
+## Filter
+
+The search bar filters by resource attributes and data point attributes. Pick an attribute, `=` or `!=`, and a value. A graph can have up to 50 filters.
+
+## Aggregation
+
+**Aggregation** sets how data points combine in each time step:
+
+| Kind | Default | Also offered |
+|---|---|---|
+| Sum | **Sum** | Average, Minimum, Maximum, 95th percentile, 99th percentile |
+| Gauge | **Average** | Sum, Minimum, Maximum, 95th percentile, 99th percentile |
+| Histogram, exponential histogram | **Count** | Sum, Average, Minimum, Maximum, 95th percentile, 99th percentile |
+| Summary | | Sum, Average |
+
+Histograms open on **95th percentile** and summaries on **Average**. **Count** counts data points and has no unit.
+
+## Group by
+
+**Group by** splits the graph into one series per value of an attribute. Each option shows whether it is a data point or resource attribute and how many values it has. Choose **No grouping** for one series.
+
+## Chart
+
+Switch between **Lines** and **Bars**. The heading names the aggregation, metric, and grouping, and shows the series count and time step.
+
+Drag across the graph to zoom into that window. The time picker works as in [Logs](/telemetry/logs#time-range).
+
+Below the graph, a table lists each series with its **Avg**, **Max**, and **Last** value. Click a series to hide or show it.
+
+## Use the graph elsewhere
+
+- **Add to dashboard** adds the graph as a widget to an existing dashboard or a **New dashboard**. See [Dashboards](/telemetry/dashboards).
+- **Create alert** opens a new alert with this metric, its filters, and its grouping filled in. See [Alerts](/telemetry/alerts).
+
+## Query metrics from an agent
+
+The [MCP server](/api-reference/mcp) has a `query_metrics` tool, and the [management API](/api-reference/introduction) has `POST /telemetry/metrics/search`.

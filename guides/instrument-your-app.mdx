@@ -1,0 +1,248 @@
+---
+title: "Instrument your app"
+sidebarTitle: "Instrument your app"
+description: "Send logs, traces, and metrics to Superlog with OpenTelemetry, an existing Collector, Vercel, or AWS."
+---
+
+import EarlyAccess from "/snippets/early-access.mdx";
+
+<EarlyAccess />
+
+Superlog accepts standard OpenTelemetry over OTLP/HTTP. You need an ingest key. See [Send your first telemetry](/get-started/send-telemetry) to create one.
+
+## Configure the SDK
+
+Every OpenTelemetry SDK reads the same environment variables. Set these wherever your app runs:
+
+```bash
+export OTEL_EXPORTER_OTLP_ENDPOINT=https://superlog.sh/api/ingest
+export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+export OTEL_EXPORTER_OTLP_HEADERS=x-api-key=<your ingest key>
+
+export OTEL_SERVICE_NAME=checkout-api
+export OTEL_RESOURCE_ATTRIBUTES=deployment.environment.name=production
+```
+
+- Use the origin of your workspace's region: `https://superlog.sh` for EU or `https://us.superlog.sh` for US.
+- The SDK adds `/v1/logs`, `/v1/traces`, and `/v1/metrics` to the endpoint.
+- `OTEL_SERVICE_NAME` sets `service.name`, which Superlog uses to group your data by service.
+- Superlog also accepts the key as `Authorization: Bearer <key>`.
+
+Read the key from your secret manager. Do not commit it.
+
+## Language setup
+
+The examples below use each language's standard automatic instrumentation. The Node.js, Python, and Java examples set the traces, metrics, and logs exporters to `otlp` so all three signals are sent.
+
+<Tabs>
+  <Tab title="Node.js">
+    Install the SDK and the automatic instrumentations:
+
+    ```bash
+    npm install @opentelemetry/api @opentelemetry/auto-instrumentations-node
+    ```
+
+    Start your app with the instrumentation loaded first:
+
+    ```bash
+    export OTEL_TRACES_EXPORTER=otlp
+    export OTEL_METRICS_EXPORTER=otlp
+    export OTEL_LOGS_EXPORTER=otlp
+    export NODE_OPTIONS="--require @opentelemetry/auto-instrumentations-node/register"
+    node app.js
+    ```
+
+    This instruments HTTP, common web frameworks, database clients, and the `pino`, `winston`, and `bunyan` loggers. To send `winston` records, also install `@opentelemetry/winston-transport`.
+  </Tab>
+
+  <Tab title="Python">
+    Install the distro and the OTLP exporter, then install instrumentations for the libraries your app uses:
+
+    ```bash
+    pip install opentelemetry-distro opentelemetry-exporter-otlp
+    opentelemetry-bootstrap -a install
+    ```
+
+    Run your app through `opentelemetry-instrument`:
+
+    ```bash
+    export OTEL_TRACES_EXPORTER=otlp
+    export OTEL_METRICS_EXPORTER=otlp
+    export OTEL_LOGS_EXPORTER=otlp
+    export OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED=true
+    opentelemetry-instrument python app.py
+    ```
+
+    `OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED` sends records from the standard `logging` module, with their trace and span IDs.
+  </Tab>
+
+  <Tab title="Go">
+    Go has no automatic agent. Set up the SDK in code with `autoexport`, which builds the exporters from the environment variables above:
+
+    ```bash
+    go get go.opentelemetry.io/otel \
+      go.opentelemetry.io/otel/sdk \
+      go.opentelemetry.io/otel/sdk/metric \
+      go.opentelemetry.io/otel/sdk/log \
+      go.opentelemetry.io/otel/log \
+      go.opentelemetry.io/contrib/exporters/autoexport \
+      go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp \
+      go.opentelemetry.io/contrib/bridges/otelslog
+    ```
+
+    ```go
+    package main
+
+    import (
+    	"context"
+    	"errors"
+
+    	"go.opentelemetry.io/contrib/exporters/autoexport"
+    	"go.opentelemetry.io/otel"
+    	"go.opentelemetry.io/otel/log/global"
+    	"go.opentelemetry.io/otel/propagation"
+    	sdklog "go.opentelemetry.io/otel/sdk/log"
+    	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
+    	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+    )
+
+    // setupOTel starts traces, metrics, and logs. Call the returned function on exit.
+    func setupOTel(ctx context.Context) (func(context.Context) error, error) {
+    	spans, err := autoexport.NewSpanExporter(ctx)
+    	if err != nil {
+    		return nil, err
+    	}
+    	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(spans))
+    	otel.SetTracerProvider(tracerProvider)
+    	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
+    		propagation.TraceContext{}, propagation.Baggage{},
+    	))
+
+    	metrics, err := autoexport.NewMetricReader(ctx)
+    	if err != nil {
+    		return nil, err
+    	}
+    	meterProvider := sdkmetric.NewMeterProvider(sdkmetric.WithReader(metrics))
+    	otel.SetMeterProvider(meterProvider)
+
+    	logs, err := autoexport.NewLogExporter(ctx)
+    	if err != nil {
+    		return nil, err
+    	}
+    	loggerProvider := sdklog.NewLoggerProvider(sdklog.WithProcessor(sdklog.NewBatchProcessor(logs)))
+    	global.SetLoggerProvider(loggerProvider)
+
+    	return func(ctx context.Context) error {
+    		return errors.Join(tracerProvider.Shutdown(ctx), meterProvider.Shutdown(ctx), loggerProvider.Shutdown(ctx))
+    	}, nil
+    }
+    ```
+
+    The SDK reads `OTEL_SERVICE_NAME` and `OTEL_RESOURCE_ATTRIBUTES` on its own, and `autoexport` sends all three signals over OTLP by default. Wrap HTTP handlers with `otelhttp.NewHandler` and create loggers with `otelslog.NewLogger` so requests become spans and `slog` records carry trace IDs.
+
+    Call the returned shutdown function before the process exits, or the last batch is lost.
+  </Tab>
+
+  <Tab title="Java">
+    Download the OpenTelemetry Java agent:
+
+    ```bash
+    curl -L -o opentelemetry-javaagent.jar \
+      https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar
+    ```
+
+    Start your app with the agent:
+
+    ```bash
+    export OTEL_TRACES_EXPORTER=otlp
+    export OTEL_METRICS_EXPORTER=otlp
+    export OTEL_LOGS_EXPORTER=otlp
+    java -javaagent:opentelemetry-javaagent.jar -jar app.jar
+    ```
+
+    The agent instruments common frameworks and clients, and sends Logback and Log4j records with their trace and span IDs.
+  </Tab>
+</Tabs>
+
+## Send from an OpenTelemetry Collector
+
+If you already run a Collector, add an `otlphttp` exporter and use it in each pipeline:
+
+```yaml
+exporters:
+  otlphttp/superlog:
+    endpoint: https://superlog.sh/api/ingest
+    headers:
+      x-api-key: ${env:SUPERLOG_INGEST_KEY}
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/superlog]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/superlog]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/superlog]
+```
+
+The `otlphttp` exporter adds `/v1/traces`, `/v1/metrics`, and `/v1/logs` to the endpoint. Gzip compression, its default, is supported. Use `otlphttp`, not the gRPC `otlp` exporter: Superlog accepts OTLP over HTTP only.
+
+## Vercel
+
+Superlog creates a trace drain and a log drain on your Vercel team. Traces arrive as OpenTelemetry. Logs carry their request and trace IDs. Drains need a Pro or Enterprise team.
+
+<Steps>
+  <Step title="Open the Vercel setup">
+    Click **Add telemetry** and pick **Vercel**.
+  </Step>
+  <Step title="Connect Vercel">
+    Click **Connect Vercel** and install the Superlog integration on your team. The drains cover the projects you share with the integration.
+  </Step>
+  <Step title="Create the drains">
+    Click **Create drains**. Superlog creates an ingest key for the drains.
+  </Step>
+</Steps>
+
+The source appears under **Connected** with its status and when data last arrived. **Remove** deletes the drains and revokes their key.
+
+If Vercel refuses, check that the team is on Pro or Enterprise and that the integration has the Drains permission. Reconnect Vercel to grant it.
+
+## AWS CloudWatch
+
+A CloudFormation stack in your account streams one region's CloudWatch metrics and CloudWatch Logs to Superlog through Amazon Data Firehose. Metric Streams, Firehose, and log delivery are billed to your AWS account. Deploy one stack per region.
+
+<Steps>
+  <Step title="Open the AWS setup">
+    Click **Add telemetry** and pick **Amazon Web Services**.
+  </Step>
+  <Step title="Choose a region">
+    Pick the **Region** and click **Create stack link**. Superlog creates an ingest key for the stack.
+  </Step>
+  <Step title="Deploy the stack">
+    Click **Open in the AWS console** to create the stack with its parameters filled in. Or download the template and run the `aws cloudformation deploy` command shown on the page.
+
+    The link and command contain the new ingest key. Copy them now. They are not shown again.
+  </Step>
+</Steps>
+
+The stack:
+
+- Streams metrics from these namespaces: `AWS/EC2`, `AWS/EBS`, `AWS/RDS`, `AWS/ApplicationELB`, `AWS/NetworkELB`, `AWS/ELB`, `AWS/Lambda`, `AWS/ECS`, `ECS/ContainerInsights`, `AWS/DynamoDB`, `AWS/SQS`, `AWS/SNS`, `AWS/S3`, `AWS/ElastiCache`, `AWS/ApiGateway`, and `AWS/CloudFront`.
+- Forwards every CloudWatch Logs log group in the region with an account-level subscription filter.
+- Keeps records Firehose could not deliver in an S3 bucket for a week.
+
+Stack parameters control the volume. Set `EnableMetrics` or `EnableLogs` to `false` to skip a signal. Set `LogsFilterPattern` to a CloudWatch Logs filter pattern to forward only matching events.
+
+To stop streaming, delete the stack in CloudFormation. **Remove** in Superlog revokes the stack's key.
+
+## Google Cloud
+
+Superlog reads a project's Cloud Logging entries every minute and its Cloud Run, Compute Engine, Cloud SQL, load balancer, and Pub/Sub metrics every five minutes. Data Access audit logs are skipped.
+
+[Connect the project](/integrations/cloud#google-cloud) in **Integrations** first. Then click **Add telemetry**, pick **Google Cloud**, choose the project, and click **Start reading**.

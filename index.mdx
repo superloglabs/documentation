@@ -8,18 +8,20 @@ Superlog automates routine engineering work. It can triage alerts, answer suppor
 
 Each automation has a trigger, instructions, repositories, and connectors. When the trigger fires, Superlog starts a fresh sandbox, checks out your repositories, and runs a coding agent on the task. The agent can read your tools, open pull requests, post to Slack, and create Linear issues.
 
+## Get started
+
 <CardGroup cols={2}>
-  <Card title="Quickstart" icon="rocket" href="/quickstart">
-    Sign up and run your first automation in a few minutes.
+  <Card title="Run your first automation" icon="rocket" href="/quickstart">
+    Sign up, connect GitHub, and run an automation in a few minutes.
+  </Card>
+  <Card title="Send your first telemetry" icon="satellite-dish" href="/get-started/send-telemetry">
+    Create an ingest key and send OpenTelemetry logs, traces, and metrics.
+  </Card>
+  <Card title="Connect your tools" icon="plug" href="/integrations/overview">
+    Connect GitHub, Slack, Sentry, Datadog, Linear, and more.
   </Card>
   <Card title="How Superlog works" icon="diagram-project" href="/how-it-works">
     Automations, triggers, connectors, models, and runs.
-  </Card>
-  <Card title="Templates" icon="copy" href="/automations/templates">
-    Start from bug triage, support, and reliability templates.
-  </Card>
-  <Card title="Integrations" icon="plug" href="/integrations/overview">
-    Connect GitHub, Slack, Sentry, Datadog, Linear, and more.
   </Card>
 </CardGroup>
 
@@ -40,6 +42,28 @@ Each automation has a trigger, instructions, repositories, and connectors. When 
   </Card>
 </CardGroup>
 
+## Telemetry
+
+Superlog also stores your OpenTelemetry logs, traces, and metrics. You can search them, build dashboards, group exceptions into issues, and alert on them. Automations and agents read the same data. Telemetry is in early access.
+
+- [Telemetry model](/concepts/telemetry)
+- [Instrument your app](/guides/instrument-your-app)
+- [Errors](/telemetry/errors) and [alerts](/telemetry/alerts)
+
+## Move from another tool
+
+<CardGroup cols={3}>
+  <Card title="Datadog" href="/guides/migrate/datadog">
+    Send the same data to both, then recreate monitors and dashboards.
+  </Card>
+  <Card title="New Relic" href="/guides/migrate/new-relic">
+    Move OpenTelemetry data and rebuild alerts.
+  </Card>
+  <Card title="Dynatrace" href="/guides/migrate/dynatrace">
+    Move OpenTelemetry data and rebuild alerts.
+  </Card>
+</CardGroup>
+
 ## Bring your own inference
 
 Every automation picks a model from OpenAI, Anthropic, Google Gemini, xAI, Mistral, or DeepSeek, and runs it in the Codex, Claude Agent SDK, or OpenCode harness. Add an API key or connect a ChatGPT subscription and runs use it. Without one, runs use the usage included in your plan. See [Models and harnesses](/automations/models).
@@ -47,3 +71,9 @@ Every automation picks a model from OpenAI, Anthropic, Google Gemini, xAI, Mistr
 ## Open source
 
 Superlog is open source under the Apache License 2.0. The code is at [superloglabs/responder-oss](https://github.com/superloglabs/responder-oss). Use the hosted service at [superlog.sh](https://superlog.sh), or [run it yourself](/self-hosting/overview).
+
+## Get help
+
+- Ask in [Discord](https://discord.gg/wJ56aRh8hx).
+- [Book a call](https://cal.com/superlog/yc) with the team.
+- See [troubleshooting](/troubleshooting/automation-runs) for failed runs and [missing telemetry](/troubleshooting/telemetry).

@@ -1,0 +1,84 @@
+---
+title: "Dashboards"
+description: "Chart logs, spans, and metrics on a shared grid, filter it with variables, and export it to Terraform."
+---
+
+import EarlyAccess from "/snippets/early-access.mdx";
+
+<EarlyAccess />
+
+**Explore → Dashboards** lists the workspace's dashboards with their widget count and when they last changed. Every member of the workspace sees the same dashboards.
+
+Click **New dashboard**, enter a name, and click **Create dashboard**. For a walkthrough, see [Build a dashboard](/guides/build-a-dashboard).
+
+## Widgets
+
+Click **Add widget**. The editor shows a live preview as you change settings. Choose one of three kinds:
+
+| Kind | Reads | Shows |
+|---|---|---|
+| **Chart** | **Logs**, **Spans**, or a **Metric** | A value over time, a single number, bars, or a table. |
+| **List** | **Logs** or **Traces** | The most recent matching records. |
+| **Note** | | Markdown text: headings, lists, links, bold, and code. |
+
+### Chart settings
+
+- **Measure** (logs and spans): **Count**, **Distinct values**, **Sum**, **Average**, **Minimum**, **Maximum**, **Median**, or the 90th, 95th, or 99th percentile. Anything other than a count reads a **Field**: an attribute, or for spans the **Duration** or an AI usage field such as **Cost** or **Input tokens**.
+- **Metric** and **Aggregation** (metrics): pick a metric, then keep **Default for the metric** or choose an aggregation. See [Metrics](/telemetry/metrics#aggregation).
+- **Display**: **Over time**, **Number**, **Bars**, or **Table**.
+- **Group by**: **Service**, an attribute, or for spans **AI model** or **AI provider**. Set how many **Series** or **Rows** to keep, up to 50.
+- **Filters**: an attribute, a comparison (**is**, **is not**, **does not contain**), and a value. Up to 50 per widget.
+- **Unit**: **Number**, **Milliseconds**, **Seconds**, **Bytes**, **Percent**, or **US dollars**.
+- Over time: **Bars** or **Lines**, and a **Legend** placed **Below** or **Beside**.
+- Number, bars, and table: **Compare with the previous period**.
+
+**Title** is optional. Without one, the widget is named from its settings.
+
+### List settings
+
+Set **Rows** up to 500 for logs or 200 for traces, and add filters. Click a trace, or a log that has a trace ID, to open the trace.
+
+## Layout
+
+Widgets sit on a 12-column grid. Drag a widget by its header to move it, and drag its corner to resize it. Changes save on their own. On narrow screens widgets stack in one column.
+
+Use the pencil icon to edit a widget and the trash icon to remove it.
+
+## Time range
+
+The time picker works as in [Logs](/telemetry/logs#time-range). A range that ends now reloads every widget on its own while the page is open. Drag across a chart to zoom into that window, and use **Zoom out** to go back.
+
+## Variables
+
+Variables add dropdowns above the widgets, such as an environment or service picker. Open the **⋯** menu and click **Add variable** (or **Variables** once there are some).
+
+| Setting | Meaning |
+|---|---|
+| **Name** | Letters, digits, and underscores, starting with a letter. Widgets refer to it as `$name`. |
+| **Label** | The text shown on the dropdown. |
+| **Attribute** | The attribute the variable filters, such as `deployment.environment`. The dropdown lists its values seen in the time range, with counts. |
+| **Options** | Fixed choices, separated by commas. |
+| **Allow several values** | Lets you pick more than one value. |
+| **Default** | The value selected when the dashboard opens. With options, it must be one of them. |
+
+To use a variable in a widget, add a filter with the value `$name` or `${name}`, or click **Filter by $name** in the widget editor. When nothing is selected, the filter matches every value.
+
+A variable with no options, no attribute, and one value is a text field.
+
+## Share a dashboard
+
+The page URL holds the time range and the selected variable values, so a link opens the same view for anyone in the workspace.
+
+## Export to Terraform
+
+Open the **⋯** menu and click **Copy as Terraform**. Superlog copies configuration for the `superloglabs/superlog` Terraform provider, with an import block so applying it adopts the existing dashboard instead of creating a copy.
+
+To export from a script, call `GET /terraform` on the [management API](/api-reference/introduction) or the `export_terraform` MCP tool. Without IDs it exports every alert, dashboard, and synthetic check. Pass `dashboardIds` to export only those.
+
+## Manage dashboards from an agent
+
+The [MCP server](/api-reference/mcp) can list, create, change, and delete dashboards and widgets. See [Build a dashboard](/guides/build-a-dashboard#ask-an-agent).
+
+## Rename or delete a dashboard
+
+Open the **⋯** menu and click **Rename** or **Delete dashboard**. Deleting a dashboard removes it and its widgets for everyone in the workspace.

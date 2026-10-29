@@ -1,0 +1,195 @@
+---
+title: "Migrate from Datadog"
+sidebarTitle: "From Datadog"
+description: "Map Datadog features to Superlog, send your telemetry with OpenTelemetry, run both side by side, and recreate dashboards and monitors."
+---
+
+import EarlyAccess from "/snippets/early-access.mdx";
+
+<EarlyAccess />
+
+Superlog receives logs, traces, and metrics as OpenTelemetry over OTLP/HTTP. To move from Datadog, you send your telemetry in that form, run both tools while you compare, and rebuild the dashboards and monitors you need.
+
+## Concept map
+
+| Datadog | Superlog |
+|---|---|
+| Log Management | [Logs](/telemetry/logs) |
+| APM traces | [Traces](/telemetry/traces) |
+| Metrics | [Metrics](/telemetry/metrics) |
+| Dashboards and template variables | [Dashboards](/telemetry/dashboards) and variables |
+| Error Tracking | [Errors](/telemetry/errors) |
+| Monitors | [Alerts](/telemetry/alerts) |
+| Synthetic API tests (HTTP) | [Synthetic checks](/telemetry/synthetics) |
+| Datadog Terraform provider | [Superlog Terraform provider](/developer/terraform) |
+
+Superlog alerts compare a log count, span measure, or metric with a threshold, and notify Slack. Rewrite anomaly, forecast, and composite monitors as thresholds, or leave them out.
+
+Not covered: SLOs, profiling, security products, and notebooks have no Superlog equivalent. Superlog does not import Datadog dashboards or monitors.
+
+## Move your data
+
+Create an ingest key first. See [Send your first telemetry](/get-started/send-telemetry).
+
+### If you already use OpenTelemetry
+
+Point your SDKs at Superlog:
+
+```bash
+export OTEL_EXPORTER_OTLP_ENDPOINT=https://superlog.sh/api/ingest
+export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+export OTEL_EXPORTER_OTLP_HEADERS=x-api-key=<your ingest key>
+```
+
+If you run a Collector, add an exporter and list it in each pipeline:
+
+```yaml
+exporters:
+  otlphttp/superlog:
+    endpoint: https://superlog.sh/api/ingest
+    headers:
+      x-api-key: ${env:SUPERLOG_INGEST_KEY}
+```
+
+Use `https://us.superlog.sh` for a US workspace. Superlog accepts OTLP over HTTP only, so use the HTTP exporter, not the gRPC `otlp` exporter. See [Instrument your app](/guides/instrument-your-app#send-from-an-opentelemetry-collector).
+
+### If you use Datadog tracing libraries
+
+The OpenTelemetry Collector Contrib distribution has a [`datadog` receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/datadogreceiver). It accepts traces from Datadog tracing libraries on the Datadog Agent's trace API and converts them to OpenTelemetry.
+
+<Warning>
+  The `datadog` receiver is alpha for traces and in development for metrics and logs. Its behavior can change between Collector releases. Use it as a bridge while you move to OpenTelemetry SDKs.
+</Warning>
+
+```yaml
+receivers:
+  datadog:
+    endpoint: 0.0.0.0:8126
+    read_timeout: 60s
+
+exporters:
+  otlphttp/superlog:
+    endpoint: https://superlog.sh/api/ingest
+    headers:
+      x-api-key: ${env:SUPERLOG_INGEST_KEY}
+
+service:
+  pipelines:
+    traces:
+      receivers: [datadog]
+      exporters: [otlphttp/superlog]
+```
+
+Point your tracers at the Collector with `DD_TRACE_AGENT_URL=http://<collector-host>:8126`. This setting takes precedence over `DD_AGENT_HOST` and `DD_TRACE_AGENT_PORT`. The Collector now takes the Agent's place for traces. To keep sending them to Datadog, add the Datadog exporter from the next section.
+
+The receiver sets `service.name`, `deployment.environment.name`, and `service.version` from the tracer's service, env, and version. Spans the tracer marks as errors keep an error status. [Errors](/telemetry/errors) reads `exception` span events and error logs, so check that these services show up there before you rely on it.
+
+The receiver also accepts metrics and logs in the Datadog Agent's formats. See its README for the endpoints and caveats.
+
+Over time, replace the Datadog tracing libraries with OpenTelemetry SDKs. See [Instrument your app](/guides/instrument-your-app).
+
+## Run both side by side
+
+A Collector can send the same data to Datadog and Superlog. The Datadog exporter and connector are in Collector Contrib and are beta. The [connector](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/connector/datadogconnector) is required for services to appear in Datadog APM.
+
+```yaml
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+connectors:
+  datadog/connector:
+
+exporters:
+  datadog:
+    api:
+      site: ${env:DD_SITE}
+      key: ${env:DD_API_KEY}
+  otlphttp/superlog:
+    endpoint: https://superlog.sh/api/ingest
+    headers:
+      x-api-key: ${env:SUPERLOG_INGEST_KEY}
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [datadog/connector, datadog, otlphttp/superlog]
+    metrics:
+      receivers: [otlp]
+      exporters: [datadog, otlphttp/superlog]
+    metrics/datadog-apm:
+      receivers: [datadog/connector]
+      exporters: [datadog]
+    logs:
+      receivers: [otlp]
+      exporters: [datadog, otlphttp/superlog]
+```
+
+Set `DD_SITE` to your Datadog site, such as `datadoghq.com` or `datadoghq.eu`. The `metrics/datadog-apm` pipeline sends the connector's APM stats to Datadog only. To use the `datadog` receiver from the previous section, add it to the `traces` pipeline's receivers.
+
+## Recreate dashboards and monitors
+
+An AI agent can read your Datadog dashboards and monitors and build them in Superlog. Use Claude Code or another MCP client with two servers connected:
+
+- **Datadog MCP server.** See [Datadog's setup guide](https://docs.datadoghq.com/mcp_server/setup/) for your site and client. Its default `core` toolset covers monitors and dashboards.
+- **Superlog MCP server.** See [MCP server](/api-reference/mcp).
+
+Then give the agent a prompt like this:
+
+```text
+Read the Datadog dashboard "Checkout overview" and every monitor tagged team:checkout.
+
+For each dashboard widget, find the matching Superlog data with list_services,
+query_metrics, query_traces, and query_logs. Create a Superlog dashboard with
+create_dashboard and add each widget with add_dashboard_widget.
+
+For each monitor, draft a Superlog alert and check it with preview_alert. Show me
+the rule, threshold, and preview result before you call create_alert.
+
+List every widget and monitor you could not map, and why.
+```
+
+Check the result before you trust it:
+
+- Review each alert's `preview_alert` result and threshold.
+- Open each dashboard and compare it with Datadog over the same time range.
+- Expect name changes. Metrics from Datadog integrations and from OpenTelemetry instrumentation often have different names and units.
+
+When the dashboards and alerts look right, ask the agent to call `export_terraform` and commit the output. See [Terraform](/developer/terraform).
+
+While you run both, Superlog automations can also read Datadog through the [Datadog integration](/integrations/datadog).
+
+## Attribute mapping
+
+Datadog's unified service tags map to OpenTelemetry resource attributes:
+
+| Datadog tag | Datadog variable | OpenTelemetry attribute |
+|---|---|---|
+| `service` | `DD_SERVICE` | `service.name` |
+| `env` | `DD_ENV` | `deployment.environment.name` |
+| `version` | `DD_VERSION` | `service.version` |
+
+OpenTelemetry SDKs don't read the `DD_*` variables. Set the attributes with the standard variables:
+
+```bash
+export OTEL_SERVICE_NAME=checkout-api
+export OTEL_RESOURCE_ATTRIBUTES=deployment.environment.name=production,service.version=1.4.2
+```
+
+Use `deployment.environment.name`. The older `deployment.environment` is deprecated. Move other `key:value` tags you filter on, such as `team:checkout`, into `OTEL_RESOURCE_ATTRIBUTES` as `team=checkout`.
+
+## Cutover checklist
+
+- Every service appears in Superlog with the right `service.name` and environment.
+- Logs carry trace and span IDs.
+- Each dashboard you need exists and matches Datadog over the same time range.
+- Each alert has a previewed threshold and posts to the right Slack channel.
+- HTTP checks are recreated as [synthetic checks](/telemetry/synthetics).
+- Alerts, dashboards, and checks are exported to Terraform and committed.
+- Datadog monitors that duplicate Superlog alerts are muted.
+- The Datadog exporter is removed from the Collector, then the Datadog Agent and tracing libraries are removed.

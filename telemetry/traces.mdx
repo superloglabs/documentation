@@ -1,0 +1,92 @@
+---
+title: "Traces"
+description: "See request rate, errors, and latency per service, search traces, and inspect each span."
+---
+
+import EarlyAccess from "/snippets/early-access.mdx";
+
+<EarlyAccess />
+
+**Explore → Traces** has two pages: **Overview** for a service's health, and **Search** for individual traces.
+
+## Traces overview
+
+The overview summarizes requests. A request is a span that enters a service: a server or consumer span, or the root span of a trace.
+
+Pick a **Service** or keep **All services**. When spans carry the `deployment.environment` resource attribute, an **Environment** list appears too. Choose a range of **15m**, **1h** (the default), **6h**, **24h**, or **7d**. Turn on **Live** to reload every 10 seconds.
+
+Three tiles chart the range:
+
+- **Requests** per minute, with errors marked.
+- **Error rate** as a share of requests.
+- **p95 latency**. Bars turn orange from 500 ms and red from 1 s.
+
+Below them:
+
+- **Operations**: the top request span names, with **Req/min**, **Errors**, and **p95**. Click one to search its traces.
+- **Dependencies**: outgoing client calls by p95 latency. Each is named by `peer.service`, `server.address`, `net.peer.name`, or `db.system`, whichever the span has, and otherwise by its span name.
+- **Top errors**: failing spans grouped by status message, with how many traces they hit and when they were first seen. Click one to search those traces, or **View all in Search**.
+
+## Trace search
+
+**Traces → Search** lists traces that started in the time range, newest first. It uses the same time picker as [Logs](/telemetry/logs#time-range).
+
+The search bar works like the log search. Press `/` to focus it. Fields include:
+
+- `service.name`, `status` (**Error**, **OK**, **Unset**), and `operation` (the span name). Plain text filters to that exact span name.
+- `duration` with `>=` and a value such as `500ms`, `1s`, or `1m`, up to 60 minutes.
+- `trace.id`. Paste a trace ID to open that trace directly.
+- Any resource or span attribute seen in the range.
+
+The sidebar has **Service**, **Status**, **Span name**, and **Trace duration** (**Over 100 ms** to **Over 5 s**), and every attribute key below them.
+
+A trace matches when any of its spans matches the filters. Its row describes the whole trace:
+
+| Column | Shows |
+|---|---|
+| **Started** | When the first span started. |
+| **Root span** | The span without a parent, its service, and how many services the trace crossed. |
+| **Duration** | From the first span's start to the last span's end. |
+| **Spans** | How many spans the trace has. |
+| **Status** | **Error** if any span failed, otherwise **OK**. |
+
+The histogram above counts matching spans by status. The list shows 50 traces per page.
+
+## Trace inspector
+
+Click a trace to open it in a panel beside the list. Use the arrows to move to the previous or next trace, or **Open full page** for a page of its own.
+
+The header shows the request: method, route, and HTTP status code when the root span has them. Below it are the root service, duration, and counts of spans, services, and errors, with the **Trace ID** to copy.
+
+### Waterfall
+
+The **Waterfall** tab draws each span on a timeline, nested under its parent and colored by service.
+
+- **Find a span or attribute** matches span names, services, span IDs, and attribute keys and values. Matching spans stay visible with their parents.
+- **Show only errors** hides spans that didn't fail.
+- **Collapse all** and **Expand all** fold the tree. Click a span's arrow to fold one branch.
+
+The inspector opens on the first failing span, or the root span if none failed.
+
+### Selected span
+
+Click a span to see its name, service, kind, duration, start offset, and **Span ID**. A failing span shows its error message and stack trace.
+
+Attributes are grouped:
+
+- **HTTP**: `http.*`, `url.*`, and `server.*` attributes.
+- **Request context**: the span's other attributes.
+- **Resource attributes**: the sending process. Collapsed by default.
+
+Hover an attribute for **Filter**, **Exclude**, and **Copy**. **Filter** and **Exclude** add it to your trace search.
+
+**Logs in this span** lists the logs the span wrote. **Open in Logs** opens them in [Logs](/telemetry/logs).
+
+### Logs and services
+
+- **Logs** lists every log in the trace. Click a message to select the span that wrote it.
+- **Services** lists each service with its spans, errors, and total **Time in spans**.
+
+## Query traces from an agent
+
+The [MCP server](/api-reference/mcp) has `query_traces` and `get_trace`. The [management API](/api-reference/introduction) has `POST /telemetry/traces/search` and `GET /telemetry/traces/{traceId}`.

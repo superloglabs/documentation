@@ -1,0 +1,80 @@
+---
+title: "Triage Sentry issues into pull requests"
+sidebarTitle: "Triage Sentry issues into PRs"
+description: "Set up an automation that rates each new Sentry issue, posts a summary to Slack, and opens a pull request with the fix."
+---
+
+This guide sets up an automation that runs on each new Sentry issue. The agent rates the issue, finds the cause in your code, posts a short summary to Slack, and opens a pull request with the fix. False alarms are not posted.
+
+## Before you start
+
+You need:
+
+- [Sentry](/integrations/sentry) connected, with the projects you want to watch.
+- [GitHub](/integrations/github) connected, with the GitHub App granted access to the repositories behind those projects.
+- [Slack](/integrations/slack) connected, if you want the summary in a channel.
+
+Connect them under **Integrations**, or from the automation editor when the template asks for them.
+
+## Create the automation
+
+<Steps>
+  <Step title="Pick the template">
+    Open **Automations**. Under **Start from a template**, filter by **Bug triage** and click **Alert on critical Sentry issues**. The editor opens with the trigger, instructions, and the Sentry, GitHub, and Slack connectors filled in. See [Templates](/automations/templates).
+  </Step>
+  <Step title="Choose the Sentry projects">
+    The template adds a Sentry **New issue** trigger. Under **Project**, pick the projects to watch, up to 100.
+  </Step>
+  <Step title="Exclude environments">
+    Under **Environment**, clear the environments that should not start a run, such as `staging` or `development`. The default is **All environments**. Environments that appear in Sentry later are included.
+  </Step>
+  <Step title="Add repositories">
+    Under **Repositories**, click **Add repository** and pick the code behind the projects. The first one is the agent's working directory.
+  </Step>
+  <Step title="Add a Slack channel">
+    Under **Notifications**, click **Add notification**, then **Post to Slack**, and pick the channel for the summaries.
+  </Step>
+  <Step title="Choose a model and save">
+    Click **Choose model** in the instructions toolbar, pick a model, then click **Save**. See [Models and harnesses](/automations/models).
+  </Step>
+</Steps>
+
+## Trigger options
+
+The Sentry trigger has three events:
+
+| Event | Use it when |
+|---|---|
+| **New issue** | You want each new error triaged. This is the template's default. |
+| **Issue regression** | You only care about resolved issues that come back. The **Fix regressions** template is built for this. |
+| **New issue or regression** | You want both. |
+
+To narrow what starts a run, select fewer projects or exclude more environments. See [Triggers](/automations/triggers#sentry).
+
+## Adjust the instructions
+
+The template tells the agent to:
+
+1. Rate the issue from SEV-1 to SEV-3, and stay quiet on a complete false positive.
+2. Post a short message with the severity, what broke, the suspected commit and author, and who is affected.
+3. Add the root cause and proposed fix in the thread, open a pull request, and link it there.
+
+Edit the instructions under **Agent instructions** to match your team. For example, change the severity scale, say which errors are known noise, or tell the agent to skip the pull request for some services.
+
+## What a run does
+
+Each new issue starts one run, titled with the Sentry short ID and the issue title. The run gets a fresh sandbox with your repositories checked out. The agent receives the issue details and can read more events and traces through the Sentry connector.
+
+The agent can post to the notification channel during the run. If it does not, its final message is posted there with a **View run** link. When the agent decides an issue is not worth reporting, it skips the notification, and the run page shows the reason. A failed run is always reported.
+
+When the agent opens a pull request, it appears as a card in the run and on the **PRs** page. See [Runs](/automations/runs) and [Pull requests](/automations/pull-requests).
+
+## Review the pull request
+
+Pull requests open without an approval step. Use your branch protection and review rules as the gate before merge.
+
+To ask for changes, submit a review on GitHub. The review continues the run that opened the pull request. The agent checks each comment, pushes fixes to the same branch, and replies to each comment. You can also send a follow-up from the run page. See [Follow-ups from GitHub reviews](/automations/pull-requests#follow-ups-from-github-reviews).
+
+## Test it
+
+Click **Test** in the automation header and paste a Sentry issue link or the error details. Your message is treated as the trigger event, so you can check the agent's output before real issues arrive.

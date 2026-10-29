@@ -1,0 +1,84 @@
+---
+title: "Alerts"
+description: "Get a Slack message when a log count, span measure, or metric crosses a threshold, and a reply when it recovers."
+---
+
+import EarlyAccess from "/snippets/early-access.mdx";
+
+<EarlyAccess />
+
+An alert checks one value from your telemetry on a schedule and compares it with a threshold. When the value crosses the threshold, the alert fires and posts to Slack. When it comes back, the alert recovers and replies in the same thread.
+
+Open **Alerts**, under **Detect** in the sidebar, and click **New alert**.
+
+## Create an alert
+
+The editor has three steps. Give the alert a name first.
+
+### 1. Explore your data
+
+Pick a **Data source**:
+
+| Source | What it reads |
+|---|---|
+| **Logs** | Log records. Filter by **Severity** (**Fatal**, **Error**, **Warn**, **Info**). Severity matches exactly, so **Error** doesn't include **Fatal**. |
+| **Spans** | Spans from your traces. **Only spans with an error status** is on by default. |
+| **Metric** | One metric, as its **Average** or **Sum**. |
+
+Narrow the data with **Service** and attribute filters. A filter compares an attribute with a value using **is**, **is not**, or **does not contain**. All filters must match.
+
+Pick a **Preview time range** and click **Run search** to chart the matching data.
+
+### 2. Set the threshold
+
+- **Trigger when value is**: **Above** or **Below**.
+- **Threshold**: a number. It is in milliseconds for span duration and in USD for AI cost.
+- **Over the last**: how much data each check reads, from 1 minute to 1 day.
+- **Check**: how often the alert runs, from **Every minute** to **Every hour**.
+
+The **Threshold preview** draws the threshold as a dashed line over your data.
+
+**Advanced settings** has two more options:
+
+- **Measure**: for logs and spans, **Count** or an aggregation of a field: **Distinct values**, **Sum**, **Average**, **Minimum**, **Maximum**, **Median**, or the **90th**, **95th**, or **99th percentile**. Then pick the **Field**. For spans, fields include **Duration**, AI usage such as cost and tokens, and span attributes.
+- **Group by**: split the value by service or an attribute. Turn on **Alert for each group** to have each group fire and recover on its own. Otherwise the groups are added up.
+
+### 3. Where to notify
+
+Choose a **Slack channel**. Private channels appear once the Superlog app is in them. Without a channel, the alert still records its activations.
+
+Click **Create alert**.
+
+## When an alert fires
+
+An activation starts when a check finds the value past the threshold. Superlog posts one message to the channel with the alert name, the value, the condition, a chart, and a **View alert** link. It doesn't post again while the activation lasts.
+
+The activation ends when a check finds the value back on the other side of the threshold. Superlog replies in the thread with how long it fired and the current value.
+
+Counts, distinct counts, and sums read zero when no data matches. Averages, extremes, percentiles, and metrics have no value then, so an open activation stays open until data arrives.
+
+Editing what an alert reads, or its threshold, ends open activations without a recovery message. The next check opens new ones if the value is still past the threshold.
+
+## Alert status
+
+| Status | Meaning |
+|---|---|
+| **OK** | The last check found the value within the threshold. |
+| **Firing** | The value is past the threshold. Grouped alerts show how many groups are firing. |
+| **Check failed** | The last check or Slack post failed. The alert page shows why. |
+| **Not checked yet** | The alert has not run yet. |
+| **Off** | The alert is paused. |
+
+## Alert page
+
+Click an alert to see its **Current evaluation**, recent evaluations, and **Activation history**. Click an activation to see the rule at the time, a timeline, and whether its Slack messages were delivered.
+
+**Pause alert** stops checks until you click **Resume alert**. **Edit alert** opens the editor, where you can also delete the alert. **Copy as Terraform** copies it for the [Terraform provider](/developer/terraform).
+
+## Start automations from alerts
+
+Alert messages start automations that watch the alert's Slack channel with **New message in channel** or **Message posted or app mentioned**. Each automation runs once per activation and replies in the alert's thread. See [Triggers](/automations/triggers#slack).
+
+## Manage alerts from an agent
+
+The [MCP server](/api-reference/mcp) and [REST API](/api-reference/introduction) offer `preview_alert`, `create_alert`, `update_alert`, `get_alert`, `list_alerts`, and `delete_alert`. `preview_alert` returns a draft rule's current value without saving it. `list_slack_channels` returns the channel and integration IDs. For a walkthrough, see [Alert on errors and latency](/guides/alert-on-errors-and-latency).

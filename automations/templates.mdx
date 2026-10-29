@@ -39,7 +39,7 @@ Scheduled templates default to 09:00 in your browser's time zone. Weekly templat
 
 | Template | Trigger | Connectors | What the agent does |
 |---|---|---|---|
-| **Triage new Sentry issues** | Sentry: new issue | GitHub, Slack | Rates severity, traces the cause to the suspected commit and owner, and posts a summary to Slack. Opens a pull request with a regression test when the fix is small. |
+| **Alert on critical Sentry issues** | Sentry: new issue | GitHub, Slack | Rates severity, traces the cause to the suspected commit and owner, and posts a summary to Slack. Opens a pull request with a regression test when the fix is small. |
 | **Fix bugs reported in Slack** | Slack: new message in channel | GitHub | Reproduces the bug with a failing test, fixes it, opens a pull request, and replies with the link. If it cannot reproduce the bug, says what it tried. |
 | **Fix regressions** | Sentry: issue regression | GitHub, Datadog | Finds the earlier fix and the change that undid it, checks Datadog logs, and opens a pull request that restores the fix with a regression test. |
 

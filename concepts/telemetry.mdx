@@ -1,0 +1,76 @@
+---
+title: "Telemetry model"
+sidebarTitle: "Telemetry"
+description: "What Superlog stores from your services, which attributes matter, and how logs, traces, metrics, and errors connect."
+---
+
+import EarlyAccess from "/snippets/early-access.mdx";
+
+<EarlyAccess />
+
+Superlog stores the logs, traces, and metrics your services send over OpenTelemetry. You send them over OTLP/HTTP with an ingest key. See [Send telemetry](/get-started/send-telemetry).
+
+## Signals
+
+| Signal | What it is | Where you read it |
+|---|---|---|
+| **Logs** | Log records with a level, a message, and attributes. OpenTelemetry events without a body show their event name. | [Logs](/telemetry/logs) |
+| **Traces** | Spans with a name, kind, status, duration, and attributes, grouped by trace ID. | [Traces](/telemetry/traces) |
+| **Metrics** | Gauges, sums, histograms, exponential histograms, and summaries. | [Metrics](/telemetry/metrics) |
+
+[Dashboards](/telemetry/dashboards), [alerts](/telemetry/alerts), and [errors](/telemetry/errors) are built from these three signals.
+
+## Attributes
+
+Every record has three kinds of attributes. Filters use a prefix to say which one they mean:
+
+| Prefix | Meaning | Example |
+|---|---|---|
+| `resource.` | Describes the process that sent the data. Set once in the SDK. | `resource.deployment.environment` |
+| `log.` | Set on one log record. | `log.http.status_code` |
+| `span.` | Set on one span. | `span.http.route` |
+| `field.` | A record's own fields: `field.trace_id` and `field.span_id`, and for logs `field.severity_number` and `field.event_name`. | `field.trace_id` |
+
+In the explorers you pick attributes from a list, so you rarely type the prefix. It matters when you write filters for widgets, alerts, the [management API](/api-reference/introduction), or the [MCP server](/api-reference/mcp). A key without a prefix is read as a resource attribute.
+
+### Resource attributes that matter
+
+- `service.name` names the service. Superlog groups everything by it: the services on the overview, the **Service** filter and column in every explorer, and the services in a trace. Data without it shows as `unknown_service`. Use the same name for a service's logs, traces, and metrics.
+- `deployment.environment.name` names the environment, such as `production`. Error issues show it as **Environment**, and also read the older `deployment.environment` key. The **Environment** filter on the [traces overview](/telemetry/traces#traces-overview) reads `deployment.environment`.
+
+Any other resource attribute, such as `host.name` or `cloud.region`, can be used to filter and group.
+
+## Services
+
+A service appears as soon as Superlog receives logs or spans with its `service.name`. There is no list to maintain. Services that stop sending drop off once their data falls outside the selected time range.
+
+## Errors and traces
+
+Superlog groups exceptions into error issues. An exception is a span event named `exception`, or a log at `ERROR` level or above. Occurrences with the same exception type and the same top frames of your own code belong to one issue. When the stack has none of your code, the message is used instead. See [Errors](/telemetry/errors).
+
+An occurrence keeps its trace ID. From an issue, an error log, or a failing span you can open the trace and see what led up to it.
+
+A span counts as an error when its status is **Error**. A trace shows as failed when any of its spans failed.
+
+Logs written inside a span carry its trace and span IDs. Superlog uses them to list a trace's logs in the trace inspector, and to open the trace from a log.
+
+## Telemetry overview page
+
+**Explore → Overview** shows what Superlog receives from each service and what to fix. Choose **Last hour**, **Last 6 hours**, **Last 24 hours** (the default), or **Last 7 days**.
+
+Each service gets a card with two panels:
+
+- **Logs**: all records, errors, and warnings, with a bar strip over the range. A bar is red when errors are at least 5% of it, and amber when warnings are at least 10%.
+- **Traces**: spans, errors, and slow requests that took over 1 second. A bar is amber when at least 10% of its requests were slow.
+
+Below the panels, the card lists problems Superlog found:
+
+- **No traces** or **No logs** from the service.
+- **Error logs have no exception details**: at least half of 10 or more error logs carry no exception type, message, or stack trace, so they can't be grouped into issues.
+- **Logs aren't linked to traces**: at least half of 50 or more logs carry no trace ID.
+
+Each problem has **Copy prompt**, which copies instructions for your coding agent to fix it.
+
+Services with problems come first. Use **With problems** to hide the rest. The page lists up to 50 services by volume.
+
+When spans record model calls without token counts, an **AI cost** card lists the missing `gen_ai.*` attributes and offers a prompt to add them.

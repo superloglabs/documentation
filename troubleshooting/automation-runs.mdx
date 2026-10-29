@@ -1,0 +1,81 @@
+---
+title: "Automation run failed"
+sidebarTitle: "Automation run failed"
+description: "Find out why a run failed or did not start, and what to do about each cause."
+---
+
+When a run fails, the run history shows **Failed** with the failure message in the result column. The run page shows the same message at the end of the transcript. This page lists the messages you can see and how to fix each one.
+
+To retry, send a follow-up from the run page, or click **Run now** on the automation. See [Runs](/automations/runs).
+
+## Time limit
+
+> Automation run exceeded its configured runtime limit
+
+The run reached its time limit, 30 minutes by default. Make the task smaller, for example by naming the files or services to look at in the instructions. Through the [management API](/api-reference/introduction) you can set `maxRuntimeSeconds` on an automation, up to 3600 seconds.
+
+## Usage limit
+
+When the usage allowance is used up, new runs stop before a sandbox starts. The run history shows **Usage limit** instead of **Failed**. The message is one of:
+
+> The usage allowance for this billing period is used up. Upgrade the plan in billing settings to keep running automations.
+
+> The automation usage allowance for this billing period is used up. Upgrade the plan in billing settings or connect your own model key.
+
+> The machine hours for this billing period are used up. Upgrade the plan in billing settings to keep running automations.
+
+Upgrade under **Settings → Billing**, or wait for the allowance to reset. If the message mentions a model key, you can also add your own API key under **Settings → Models** so model usage is billed by your provider. See [Billing](/settings/billing) and [Models and harnesses](/automations/models).
+
+## Model key or subscription
+
+| Message | What to do |
+|---|---|
+| `<Provider> rejected the organization's API key. Replace it in model settings.` | Click **Replace** on the key under **Settings → Models** and paste a working key. |
+| `<model> is not available with the organization's <Provider> API key. Choose another model or remove the key in model settings.` | Pick a model your key can use, or remove the key to run on included usage. |
+| `The configured model credential is unavailable` | The key or subscription the automation used is gone. Add it again under **Settings → Models**, or choose another model. |
+| `<model> is not available with the connected ChatGPT subscription. Choose another model for this automation.` | ChatGPT plans serve fewer models. Pick another model. |
+| `The ChatGPT workspace of the connected subscription is deactivated. Reconnect a ChatGPT account with an active plan.` | Reconnect ChatGPT under **Settings → Models** with an account on an active plan. |
+| `ChatGPT subscriptions require the Codex harness` | Switch the automation's harness to **Codex**. |
+
+Superlog does not fall back to included usage when your own key fails.
+
+## Automation turned off
+
+> Automation configuration is unavailable
+
+The automation was turned off after the run was queued. Turn on the **Active** switch in the automation header and start the run again.
+
+The follow-up box on a run page shows "Turn the automation on to continue this run." when the automation is off, and **Test** shows "Turn the automation on to test it."
+
+## Sandbox and harness errors
+
+Messages that start with `Codex automation harness failed`, `Claude automation harness failed`, `OpenCode automation harness failed`, or `Repository sandbox failed to` come from the agent's sandbox. Examples are the harness exiting early or a repository that could not be checked out.
+
+- Send a follow-up or start a new run. These errors are often temporary.
+- If a repository fails to download, check that the GitHub App still has access to it.
+- `GitHub repository archive exceeds the 5 GB limit` means a repository is too large to check out. Pick a smaller repository.
+
+A failed turn that is not a time limit or usage limit does not count against your usage allowance.
+
+## Queue errors
+
+| Message | What to do |
+|---|---|
+| `The follow-up could not be queued. Try sending it again.` | Send the follow-up again. |
+| `The Slack reply could not be queued. Reply again to retry.` | Reply in the Slack thread again. |
+| `Automation worker is unavailable` | Wait a minute, then click **Run now** or send the message again. |
+
+If Superlog restarts while a run is working, the run starts again on its own. The Slack card says so.
+
+## Missing integrations
+
+A disconnected integration does not always fail the run. Check the agent's transcript for these cases:
+
+- **GitHub disconnected:** the run starts without the repositories from that connection. Reconnect GitHub under **Integrations**.
+- **Connector disconnected:** the agent does not get that tool, such as Slack or Sentry. Reconnect it under **Integrations**. See [Connectors](/automations/connectors).
+
+## A run did not start
+
+- The automation is paused. Inactive automations ignore their triggers.
+- For Sentry triggers, the issue came from an excluded environment or a project that is not selected.
+- For [GitHub reviews](/automations/pull-requests#follow-ups-from-github-reviews), the reviewer is not an owner, member, or collaborator of the repository, the automation is paused, or the pull request has already had 5 bot reviews.

@@ -54,7 +54,7 @@ Scheduled automations can post each finished run to Slack.
 
 The agent can post to these channels during the run. Channels it did not post to receive its final message with a **View run** link. If the run fails, every channel gets the failure message.
 
-Notifications are available only for automations with a schedule trigger. Event-triggered automations report through their connectors, for example by replying in the Slack thread or posting with the Slack connector.
+Notifications are available for automations with a schedule, Sentry, errors, Axiom, SigNoz, Honeycomb, Better Stack, GitHub, or webhook trigger. Slack and Discord runs reply where their event came from instead.
 
 ## Sandboxes and limits
 

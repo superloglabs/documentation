@@ -1,0 +1,62 @@
+---
+title: "Build a dashboard"
+description: "Build a service dashboard with latency, log volume, and recent logs, filtered by service and environment."
+---
+
+import EarlyAccess from "/snippets/early-access.mdx";
+
+<EarlyAccess />
+
+This guide builds a dashboard for one service: request latency, log volume, and its latest logs, with dropdowns to switch service and environment. It assumes your services already send telemetry. See [Instrument your app](/guides/instrument-your-app).
+
+For every setting, see [Dashboards](/telemetry/dashboards).
+
+## Build it in the app
+
+<Steps>
+  <Step title="Create the dashboard">
+    Go to **Explore → Dashboards**, click **New dashboard**, name it, and click **Create dashboard**.
+  </Step>
+  <Step title="Add variables">
+    Open the **⋯** menu and click **Add variable**. Add two:
+
+    - Name `service`, Attribute `service.name`.
+    - Name `env`, Attribute `deployment.environment.name`.
+
+    Click **Save variables**. Two dropdowns appear above the grid, listing the values seen in the time range.
+  </Step>
+  <Step title="Chart latency">
+    Click **Add widget** and keep **Chart**. Choose **Spans**, set **Measure** to **95th percentile**, and set **Field** to **Duration**. The unit switches to **Milliseconds**.
+
+    Set **Group by** to a route attribute such as `span.http.route`. Click **Filter by $service** and **Filter by $env**, then **Add widget**.
+  </Step>
+  <Step title="Chart log volume">
+    Add another **Chart** with **Logs** and **Count**, and keep **Display** on **Over time**. Add both variable filters and save.
+  </Step>
+  <Step title="List recent logs">
+    Add a widget, choose **List** and **Logs**, and add both variable filters. Rows with a trace ID link to the trace.
+  </Step>
+  <Step title="Arrange and share">
+    Drag widgets by their header and resize them from the corner. The layout saves on its own. Pick values in the dropdowns, then copy the page URL. It keeps the time range and the selected values.
+  </Step>
+</Steps>
+
+To chart a metric, open it in [Metrics](/telemetry/metrics), set the aggregation and grouping, and click **Add to dashboard**.
+
+## Ask an agent
+
+An agent connected to the [MCP server](/api-reference/mcp) can build the same dashboard. The tools are `create_dashboard`, `add_dashboard_widget`, `update_dashboard_widget`, `update_dashboard_layout`, and `get_dashboard`.
+
+Ask it in plain language:
+
+```text
+Build a Superlog dashboard for the checkout service. Add variables for
+service.name and deployment.environment.name. Chart p95 span duration by
+http.route, log count over time, and a list of recent logs, all filtered by
+both variables. Check the attribute names exist before you add each widget,
+then send me the dashboard link.
+```
+
+The agent can call `list_services`, `query_traces`, `query_logs`, and `query_metrics` to check that the service and attribute names exist before it adds widgets. Each dashboard it creates comes back with its `url`.
+
+To keep the dashboard in version control afterward, use **Copy as Terraform** or `export_terraform`. See [Export to Terraform](/telemetry/dashboards#export-to-terraform).

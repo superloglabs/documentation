@@ -1,0 +1,55 @@
+---
+title: "Workspaces and regions"
+sidebarTitle: "Workspaces and regions"
+description: "How workspaces hold your data, who can access them, and how the EU and US regions work."
+---
+
+A workspace is your team's space in Superlog. Everything you set up lives in one workspace: automations and their runs, skills, tag mode, integrations, workspace secrets, model keys, API keys, and telemetry. Data and credentials are never shared across workspaces.
+
+## Members
+
+People join a workspace by invitation. Each member is an **Admin** or a **Member**. The person who creates a workspace is its first admin. See [Workspace and members](/settings/workspace) to invite people and change roles.
+
+An API key belongs to one workspace and acts as the member who created it. See [API keys](/settings/api-keys).
+
+## Several workspaces
+
+You can belong to several workspaces in the same region. Open the account menu at the top of the sidebar and pick a workspace under **Workspaces** to switch. The first time you sign in without a workspace, Superlog asks you to name one.
+
+## Regions
+
+Hosted Superlog runs in two regions. Each region is a separate copy of the product with its own address.
+
+| Region | Address |
+|---|---|
+| Europe | `https://superlog.sh` |
+| United States | `https://us.superlog.sh` |
+
+A workspace belongs to one region. Its application data and telemetry are stored in that region.
+
+### Choose a region
+
+The sign-in and sign-up pages have a **Data region** switch with **Europe** and **United States**. Pick the region before you sign in or create an account. Switching the region reloads the page on that region's address.
+
+Superlog remembers the region you last used. When you return to `superlog.sh`, the app sends you to that region.
+
+Invitation links open in the region of the workspace that sent them, so the sign-in page does not offer a region choice for an invitation.
+
+### Accounts in both regions
+
+Accounts are separate in each region. An account you create in Europe does not exist in the United States, and the account menu lists only the workspaces in the region you are signed in to.
+
+To use workspaces in both regions, sign up in each one. You can use the same email address. To switch, sign in with the other region selected.
+
+### Moving a workspace
+
+There is no option in the app to move a workspace to another region. Pick the region when you create the workspace.
+
+## Region-specific addresses
+
+Tools that talk to Superlog need the address of your workspace's region:
+
+- The [management API](/api-reference/introduction) and [MCP server](/api-reference/mcp) are served from each region's address. For a US workspace, use `https://us.superlog.sh/api/v1` and `https://us.superlog.sh/api/mcp`, with an API key from that workspace.
+- The [Terraform provider](/developer/terraform) takes the region's address as its `endpoint`.
+
+Integrations such as Slack, GitHub, and Sentry connect the same way in both regions. You do not need to configure anything different for a US workspace.
