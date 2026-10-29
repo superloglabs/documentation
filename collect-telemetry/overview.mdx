@@ -25,9 +25,12 @@ Moving from another vendor? See the migration guides for [Datadog](/guides/migra
 
 ## Ingest endpoint
 
-Code and Collectors send OTLP over HTTP to `https://superlog.sh/api/ingest`.
+Code and Collectors send OTLP over HTTP to your region's endpoint:
 
-Sending telemetry is available for workspaces in the EU region. For a US workspace, [contact us](https://cal.com/superlog/yc).
+| Region | Endpoint |
+|---|---|
+| EU | `https://superlog.sh/api/ingest` |
+| US | `https://us.superlog.sh/api/ingest` |
 
 - Send to `/v1/logs`, `/v1/traces`, or `/v1/metrics` under the endpoint. OpenTelemetry SDKs and the Collector add these paths for you.
 - Send the ingest key as `x-api-key: <key>` or `Authorization: Bearer <key>`.

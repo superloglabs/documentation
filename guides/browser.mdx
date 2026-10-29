@@ -30,7 +30,7 @@ The key ships in your page's JavaScript, so anyone who loads the page can read i
 
 ## Start the SDK
 
-Call `init` before the app renders. Set `endpoint` to `https://superlog.sh/api/ingest`. Sending telemetry is available for workspaces in the EU region. For a US workspace, [contact us](https://cal.com/superlog/yc). The SDK adds `/v1/logs` and `/v1/traces` to it.
+Call `init` before the app renders. The SDK sends to `https://superlog.sh/api/ingest` by default. For a workspace in the US region, set `endpoint` to `https://us.superlog.sh/api/ingest`. The SDK adds `/v1/logs` and `/v1/traces` to it.
 
 ```ts
 import { init, setUser } from "@superlog/browser";
@@ -38,7 +38,7 @@ import { init, setUser } from "@superlog/browser";
 init({
   service: "storefront",
   ingestKey: import.meta.env.VITE_SUPERLOG_INGEST_KEY,
-  endpoint: "https://superlog.sh/api/ingest",
+  // For a US workspace: endpoint: "https://us.superlog.sh/api/ingest",
   release: import.meta.env.VITE_RELEASE,
   environment: import.meta.env.MODE,
   // Cross-origin APIs that should continue the trace. Same-origin requests always do.
