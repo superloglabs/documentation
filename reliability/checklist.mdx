@@ -1,12 +1,147 @@
 ---
 title: "Make your application reliable"
 sidebarTitle: "Checklist"
-description: "The steps to set up Superlog for a service: telemetry, error notifications, alerts, synthetic checks, dashboards, and automations that investigate problems."
+description: "Set up telemetry, dashboards, alerts, error notifications, synthetic checks, and error investigation with one agent prompt, or step by step."
 ---
 
 import EarlyAccess from "/snippets/early-access.mdx";
 
 <EarlyAccess />
+
+You can set everything up with one prompt to a coding agent, or work through the [checklist](#checklist) by hand.
+
+## Set it up with one prompt
+
+<Steps>
+  <Step title="Connect the agent to Superlog">
+    Install the [Superlog MCP server](/assistants/claude) in Claude Code, Cursor, Codex, or another agent, and open it in your repository.
+  </Step>
+  <Step title="Create the keys">
+    Create an ingest key. See [Create an ingest key](/guides/instrument-your-app#create-an-ingest-key). If you have a browser app, also create a workspace API key under **Settings → API keys** for source map uploads. Set them as `SUPERLOG_INGEST_KEY` and `SUPERLOG_API_KEY` in your shell.
+  </Step>
+  <Step title="Paste the prompt">
+    Paste the prompt below. For a workspace in the US region, replace `https://superlog.sh` with `https://us.superlog.sh`. The agent stops and asks you when it needs you to deploy, approve a connection, or change a setting in the app.
+  </Step>
+</Steps>
+
+```text Setup prompt
+Set up Superlog for this repository so the team knows about every failure that
+affects users. Superlog is at https://superlog.sh and you have its MCP server.
+The ingest key is in SUPERLOG_INGEST_KEY and a workspace API key is in
+SUPERLOG_API_KEY. Never commit either key or print them.
+
+Work in these steps. After each step, tell me what you did. When a step needs me,
+stop and ask.
+
+1. Inventory
+   - List every service in the repository: HTTP APIs, workers, scheduled jobs,
+     and browser frontends. Give each a short, stable service name.
+   - Call list_integrations and list_services to see what is already connected
+     and which services already send telemetry.
+
+2. Backend services: OpenTelemetry
+   - Use the official OpenTelemetry SDK for each service's language, with
+     automatic instrumentation for its framework, HTTP clients, database
+     clients, and queues.
+   - Configure the exporters only with environment variables, and add them to
+     the example environment file:
+       OTEL_EXPORTER_OTLP_ENDPOINT=https://superlog.sh/api/ingest
+       OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+       OTEL_EXPORTER_OTLP_HEADERS=x-api-key=${SUPERLOG_INGEST_KEY}
+     Send traces, metrics, and logs.
+   - Set service.name, service.version, and deployment.environment.name on
+     every service.
+   - Connect the existing logger to the OpenTelemetry logs SDK so each record
+     carries its trace and span IDs. Keep console output.
+   - Record unhandled exceptions on the active span as exception events, and log
+     them at error level, so Superlog groups them into error issues.
+   - Add spans around the few operations that matter most to users, such as
+     checkout or sign-in, if automatic instrumentation does not cover them.
+   - Start the SDK before the app loads other modules. Flush and shut it down
+     when the process exits.
+
+3. Browser frontends: Superlog browser SDK
+   - Install @superlog/browser, and @superlog/react for React apps. Follow
+     https://docs.superlog.sh/guides/browser.
+   - Superlog ingest does not accept browser CORS requests. Add a route on the
+     app's own server that forwards /v1/logs and /v1/traces to
+     https://superlog.sh/api/ingest with the ingest key added on the server.
+     Point the SDK's endpoint at that route.
+   - Call init before the app renders, with service, release, and environment.
+     Set tracePropagationTargets to the app's API origins so browser traces
+     continue into the backend.
+   - Use the React error boundary and router instrumentation for React apps.
+   - Upload source maps in the build with @superlog/sourcemaps and
+     SUPERLOG_API_KEY. Use the same release value as init.
+
+4. Verify the data
+   - Run the project's checks. Then ask me to deploy, or to run the services
+     locally with the variables set, and send some traffic.
+   - Confirm each service with list_services, query_traces, query_logs, and
+     query_metrics. Note the real metric names, routes, and attribute names.
+     Build everything below from data you have seen, not from guesses.
+
+5. Slack and GitHub
+   - If Slack or GitHub is not connected, call start_integration_connection for
+     it and wait for me to approve it. Then call list_slack_channels.
+   - Ask me which channel gets alerts and which gets error notifications.
+   - Ask me to open Errors > Notifications in Superlog and turn on error
+     notifications for that channel. You cannot change this setting.
+
+6. Dashboards
+   - Create one "Service health" dashboard for the whole system: requests per
+     service, error spans per service, p95 latency per service, a list of recent
+     error logs, and a list of recent error traces. Add a dashboard variable for
+     deployment.environment.name.
+   - Create one dashboard per service: throughput, errors, and p50, p95, and p99
+     latency by route; the slowest routes as a table; database and outgoing
+     call latency; runtime metrics such as memory and CPU if the service sends
+     them; and a list of its error logs.
+   - Query each widget's data before you add it. Arrange the widgets with
+     update_dashboard_layout so the most important charts are at the top.
+
+7. Alerts
+   - Create only alerts someone should act on. Each alert name says what is
+     broken. Superlog alerts compare one value with a threshold. They cannot
+     divide two values, so use counts and percentiles.
+   - For each service, cover these cases where they apply:
+     a. Down: span count below 1 over 10 minutes, for services with steady
+        traffic.
+     b. Failing requests: error span count above a threshold.
+     c. Slow: p95 span duration above a threshold on the main routes.
+     d. Crashes: fatal logs above 0.
+     e. Backlog: queue depth or job lag metrics above a threshold, if the
+        service has them.
+   - Set each threshold from the last 7 days of data so it does not fire on
+     normal peaks. Group by service and turn on alerting for each group where
+     it helps.
+   - Check every alert with preview_alert before create_alert. Show me the rule,
+     threshold, and preview, and wait for my approval. Send alerts to the alert
+     channel.
+
+8. Synthetic checks
+   - Create a check for each public health endpoint and the main pages. Run
+     every minute, retry once, and alert after 2 failed runs. Assert a 2xx
+     status and a response time, a JSON status field if the health endpoint
+     returns one, and a TLS certificate that expires in more than 14 days.
+     Send failures to the alert channel.
+
+9. Error investigation
+   - Create an automation with an errors trigger for new errors and
+     regressions, this repository, and the alert channel for notifications.
+     Its instructions: find the code that raised the error, work out the cause,
+     report it, and open a pull request when the fix is small and clear.
+
+10. Keep it as code
+   - Call export_terraform. Ask me where to commit the output, then commit it.
+
+Finish with a table of every service, dashboard, alert, synthetic check, and
+automation you created, and a list of anything you could not set up and why.
+```
+
+The agent shows you each alert before it creates it. Review the thresholds. You know which numbers mean users are affected.
+
+## Checklist
 
 Work through these steps for each service you run. Each one links to the page that covers it.
 
@@ -59,7 +194,3 @@ Work through these steps for each service you run. Each one links to the page th
     See [Terraform provider](/developer/terraform).
   </Step>
 </Steps>
-
-## Let an agent do the setup
-
-The [Superlog MCP server](/assistants/claude) can create alerts, dashboards, synthetic checks, and automations. Connect it to Claude Code or another agent in your repository, and ask it to work through this list for one service.
