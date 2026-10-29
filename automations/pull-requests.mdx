@@ -1,0 +1,73 @@
+---
+title: "Pull requests"
+description: "See every pull request your automations opened, review it in Superlog, and have the agent address GitHub reviews."
+---
+
+When an automation run opens a pull request, Superlog records it. The **PRs** page in the sidebar lists them for the whole workspace, newest first. Pull requests need [GitHub](/integrations/github) to be connected.
+
+## The pull requests list
+
+Each row shows:
+
+| Column | What it shows |
+|---|---|
+| **Pull request** | The title, with the repository and number, such as `acme/api #42`. |
+| **Automation** | The automation that opened it. Click it to open the run. |
+| **Status** | The current state on GitHub. |
+| **Opened** | When the run opened it. |
+
+The list shows 25 pull requests per page. Use **Previous** and **Next** to move between pages.
+
+## Statuses
+
+Superlog reads each pull request's state from GitHub when you open the page.
+
+| Status | Meaning |
+|---|---|
+| **Open** | Open and ready for review. |
+| **Draft** | Open as a draft. |
+| **Merged** | Merged into its base branch. |
+| **Closed** | Closed without merging. |
+| **Unknown** | Superlog could not read the pull request from GitHub. |
+
+## Review a pull request
+
+Click a row to open the pull request. The header shows its title, status, the automation that opened it with a link to the run, the head and base branches, and the lines and files changed. Click **View on GitHub** to open it on GitHub.
+
+The page has two tabs:
+
+- **Overview** shows the **Description**, the **Comments** and reviews, and the **Commits**. When there are more comments than fit, a link takes you to GitHub for the rest.
+- **Files changed** shows the diff. Switch between **Unified** and **Split** layouts.
+
+If Superlog no longer has access to the repository, the page says so. Reconnect GitHub or grant the GitHub App access to the repository again. See [GitHub](/integrations/github).
+
+## From the run
+
+Pull requests also appear as cards in the run's transcript. See [Runs](/automations/runs). From the run page, you can send a follow-up asking the agent to change its pull request. The agent can push commits only to pull requests its own run opened.
+
+## Follow-ups from GitHub reviews
+
+When someone submits a review on a pull request that a run opened, the review continues that run. The agent does not start over in a new run.
+
+<Steps>
+  <Step title="Submit a review on GitHub">
+    Leave inline comments, a review summary, or both, and submit the review.
+  </Step>
+  <Step title="The run picks it up">
+    Superlog sends the review and its inline comments to the run as a new message, shown as from the reviewer on GitHub. The agent checks out the pull request's latest commit.
+  </Step>
+  <Step title="The agent addresses the comments">
+    The agent checks each comment against the code and fixes the ones that are right. It pushes the fixes as one commit to the same pull request. It then replies to each comment with what changed or why no change is needed, and resolves it.
+  </Step>
+</Steps>
+
+The agent treats review text as claims to check, not as instructions. The run page shows "Pushed a commit to pull request #N." when it pushes.
+
+### Which reviews start a follow-up
+
+- The review must be submitted, with a summary or at least one inline comment.
+- The reviewer must be an owner, member, or collaborator of the repository. Reviews from other people are ignored, so outside users of a public repository cannot steer the agent.
+- Review bots, such as automated code reviewers, are accepted. Each pull request accepts follow-ups from up to 5 bot reviews. Reviews from people are not limited.
+- The automation must be active. Reviews on pull requests from a paused automation are ignored.
+
+If the run is still working when a review arrives, the agent answers it in the next turn.

@@ -1,0 +1,100 @@
+---
+title: "Errors"
+description: "Group exceptions into issues, resolve or ignore them, and get a Slack message when a new error appears or a resolved one returns."
+---
+
+import EarlyAccess from "/snippets/early-access.mdx";
+
+<EarlyAccess />
+
+**Errors**, under **Detect** in the sidebar, groups the exceptions your services send into issues. Each issue is one distinct problem. New exceptions show up within about a minute.
+
+## What counts as an error
+
+Superlog reads two kinds of telemetry:
+
+- Span events named `exception`, as OpenTelemetry SDKs record them.
+- Logs at `ERROR` severity or above.
+
+You don't need to configure anything beyond sending telemetry. See [Instrument your app](/guides/instrument-your-app).
+
+## How errors are grouped
+
+Each exception gets a fingerprint. Exceptions with the same fingerprint are one issue.
+
+- **With a stack trace:** the exception type and the top five frames from your own code. A frame is its function and file, without line numbers or bundle hashes, so the same bug groups across builds and hosts.
+- **Without your own frames:** the exception type and message. IDs, URLs, numbers, and timestamps in the message are replaced first, so per-request values don't split the issue.
+- **Logs without a stack:** the service, severity, and normalized log body.
+
+Frames from `node_modules`, language internals, browser extensions, and public CDNs are skipped. Chunk load errors and React hydration errors each group into one issue.
+
+## The errors list
+
+Each row shows the issue title, its state, event count, a trend, and when it was last seen.
+
+| State | Meaning |
+|---|---|
+| **New** | First seen in the last 24 hours. |
+| **Recurring** | First seen more than 24 hours ago. |
+| **Regressed** | Resolved, then seen again. |
+
+Search by message or ID, and pick a **Time range**. Add filters for **Status**, **Activity** (**Still happening** means seen in the last 15 minutes), **Service**, or **Environment**. Sort by last seen, first seen, or events.
+
+Select issues to **Resolve**, **Ignore**, or **Reopen** them together.
+
+## Issue status
+
+| Status | What happens to new occurrences |
+|---|---|
+| **Unresolved** | They are counted. |
+| **Resolved** | The issue reopens as regressed and notifies again. |
+| **Ignored** | They are counted. Nothing reopens or notifies. |
+
+An occurrence from before you resolved an issue does not reopen it.
+
+## Issue detail
+
+Click an issue to open it. The page shows:
+
+- The **Latest event**, with its message, **Stack trace**, and attributes. Click **View trace** to open its [trace](/telemetry/traces).
+- **Occurrences** over the last 30 days.
+- **Related traces**: error traces from the same service and environment.
+- **Grouped by**: the fingerprint and the frames it was built from.
+
+Use **Ignore**, **Resolve**, or **Reopen** at the top of the page.
+
+## Source maps for browser errors
+
+Once your build uploads its source maps, minified browser stacks are mapped back to your original files and functions before grouping. The browser's original stack stays on the event as `exception.stacktrace.minified`. Upload maps with the `@superlog/sourcemaps` package and a workspace API key. See [Browser](/guides/browser).
+
+## Slack notifications
+
+Workspace owners and admins can post errors to one Slack channel.
+
+<Steps>
+  <Step title="Open notifications">
+    On **Errors**, click **Notifications**.
+  </Step>
+  <Step title="Pick a channel">
+    Turn on **Enable error notifications** and choose a **Slack channel**. For a private channel, invite the Superlog app first.
+  </Step>
+  <Step title="Save">
+    Click **Save notifications**.
+  </Step>
+</Steps>
+
+Superlog posts when an error is seen for the first time and when a resolved error happens again. Repeat occurrences of an open or ignored issue don't post. The message shows the exception, service, and time, with **Resolve**, **Silence**, and **Fix in Conductor** buttons. **Silence** sets the issue to **Ignored**.
+
+Notifications are off by default. Earlier errors are not posted when you turn them on.
+
+An agent with the [Superlog MCP server](/assistants/claude) can turn notifications on with `update_error_notifications`, when you sign in as an owner or admin.
+
+## Start automations from errors
+
+Add the **Errors** trigger to an automation to start a run on **New error**, **Error regression**, or both. You can limit it to some services. The agent receives the issue with its newest stack trace, trace ID, and attributes. See [Triggers](/automations/triggers).
+
+To alert on error volume instead, click **Create alert**. See [Alerts](/telemetry/alerts).
+
+## Use errors from an agent
+
+The [MCP server](/api-reference/mcp) and [REST API](/api-reference/introduction) offer `list_error_issues`, `get_error_issue`, and `update_error_issue`. Follow an issue's trace ID with `get_trace`.

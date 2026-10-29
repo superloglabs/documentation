@@ -7525,7 +7525,7 @@
                     }
                   },
                   "search": {
-                    "description": "Case-insensitive text in the log body.",
+                    "description": "Case-insensitive text in the log body or event name.",
                     "type": "string",
                     "maxLength": 500
                   },
@@ -7574,6 +7574,10 @@
                           },
                           "body": {
                             "type": "string"
+                          },
+                          "eventName": {
+                            "type": "string",
+                            "description": "The OpenTelemetry event name, such as `browser.navigation`. Events usually have no body."
                           },
                           "exception": {
                             "anyOf": [
@@ -7642,6 +7646,7 @@
                         "required": [
                           "attributes",
                           "body",
+                          "eventName",
                           "exception",
                           "resourceAttributes",
                           "service",
@@ -8052,6 +8057,10 @@
                           "body": {
                             "type": "string"
                           },
+                          "eventName": {
+                            "type": "string",
+                            "description": "The OpenTelemetry event name, such as `browser.navigation`. Events usually have no body."
+                          },
                           "exception": {
                             "anyOf": [
                               {
@@ -8119,6 +8128,7 @@
                         "required": [
                           "attributes",
                           "body",
+                          "eventName",
                           "exception",
                           "resourceAttributes",
                           "service",
@@ -8706,6 +8716,256 @@
           "Telemetry"
         ],
         "x-mcp-tool": "list_services"
+      }
+    },
+    "/ingest-keys": {
+      "get": {
+        "description": "Lists the workspace's ingest keys, newest first, with when each one last sent telemetry. Key values are not returned.",
+        "operationId": "list_ingest_keys",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "endpoint": {
+                      "type": "string",
+                      "description": "The OTLP/HTTP endpoint the keys send to."
+                    },
+                    "keys": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "id": {
+                            "type": "string"
+                          },
+                          "lastUsedAt": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "When the key last sent telemetry. Null until it is used."
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "prefix": {
+                            "type": "string",
+                            "description": "The start of the key, to tell keys apart."
+                          }
+                        },
+                        "required": [
+                          "createdAt",
+                          "id",
+                          "lastUsedAt",
+                          "name",
+                          "prefix"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "endpoint",
+                    "keys"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "The API key is missing, revoked, or its creator left the workspace."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "The resource does not exist in this workspace, or the feature it belongs to is not enabled."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List ingest keys",
+        "tags": [
+          "Telemetry"
+        ],
+        "x-mcp-tool": "list_ingest_keys"
+      },
+      "post": {
+        "description": "Creates a key that applications send logs, traces, and metrics with, and returns its value once. The key can only add telemetry to this workspace. Put it in the app's environment or secret manager, never in a committed file. Browser apps may embed it.",
+        "operationId": "create_ingest_key",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "description": "What the key is for, such as the service or environment."
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "endpoint": {
+                      "type": "string",
+                      "description": "The OTLP/HTTP endpoint. SDKs add /v1/logs, /v1/traces, and /v1/metrics."
+                    },
+                    "environment": {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "OpenTelemetry SDK settings for the key."
+                    },
+                    "key": {
+                      "type": "object",
+                      "properties": {
+                        "createdAt": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "lastUsedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "When the key last sent telemetry. Null until it is used."
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "prefix": {
+                          "type": "string",
+                          "description": "The start of the key, to tell keys apart."
+                        }
+                      },
+                      "required": [
+                        "createdAt",
+                        "id",
+                        "lastUsedAt",
+                        "name",
+                        "prefix"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "token": {
+                      "type": "string",
+                      "description": "The key. It is not shown again."
+                    }
+                  },
+                  "required": [
+                    "endpoint",
+                    "environment",
+                    "key",
+                    "token"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "description": "Created"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "The request is invalid. `issues` lists each invalid field."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "The API key is missing, revoked, or its creator left the workspace."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "The resource does not exist in this workspace, or the feature it belongs to is not enabled."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "The request conflicts with the current state, such as a name already in use."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create an ingest key",
+        "tags": [
+          "Telemetry"
+        ],
+        "x-mcp-tool": "create_ingest_key"
       }
     },
     "/error-issues": {
@@ -9643,6 +9903,249 @@
           "Errors"
         ],
         "x-mcp-tool": "update_error_issue"
+      }
+    },
+    "/error-notifications": {
+      "get": {
+        "description": "Returns whether new and regressed error issues post to Slack, and to which channel. Workspace owners and admins only.",
+        "operationId": "get_error_notifications",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "notifications": {
+                      "type": "object",
+                      "properties": {
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "slack": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "channelId": {
+                                  "type": "string"
+                                },
+                                "integrationAccountId": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "channelId",
+                                "integrationAccountId"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "enabled",
+                        "slack"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "notifications"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "The API key is missing, revoked, or its creator left the workspace."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "The resource does not exist in this workspace, or the feature it belongs to is not enabled."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get error notifications",
+        "tags": [
+          "Errors"
+        ],
+        "x-mcp-tool": "get_error_notifications"
+      },
+      "patch": {
+        "description": "Posts each new error issue, and each resolved issue that occurs again, to one Slack channel. For a private channel, invite the Superlog app first. Earlier errors are not posted. Workspace owners and admins only.",
+        "operationId": "update_error_notifications",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "slack": {
+                    "description": "Required to turn notifications on. Keeps the current channel when left out.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "channelId": {
+                            "type": "string",
+                            "pattern": "^[CG][A-Z0-9]+$",
+                            "description": "The Slack channel ID: the `externalId` of a `slack_channel` resource."
+                          },
+                          "integrationAccountId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "The ID of the Slack integration the channel belongs to."
+                          }
+                        },
+                        "required": [
+                          "channelId",
+                          "integrationAccountId"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "enabled"
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "notifications": {
+                      "type": "object",
+                      "properties": {
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "slack": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "channelId": {
+                                  "type": "string"
+                                },
+                                "integrationAccountId": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "channelId",
+                                "integrationAccountId"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "enabled",
+                        "slack"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "notifications"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "The request is invalid. `issues` lists each invalid field."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "The API key is missing, revoked, or its creator left the workspace."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "The resource does not exist in this workspace, or the feature it belongs to is not enabled."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "The request conflicts with the current state, such as a name already in use."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Turn error notifications on or off",
+        "tags": [
+          "Errors"
+        ],
+        "x-mcp-tool": "update_error_notifications"
       }
     },
     "/dashboards": {

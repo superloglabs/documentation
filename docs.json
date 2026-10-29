@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "name": "Superlog",
-  "description": "Automate routine engineering tasks. Choose your model and harness, bring your tokens and subscriptions.",
+  "description": "Observability and automations for engineering teams. Send OpenTelemetry data, and run agents that triage alerts and fix issues with your model and tokens.",
   "theme": "luma",
   "colors": {
     "primary": "#8c8c8c",
@@ -40,65 +40,122 @@
             "group": "Get started",
             "pages": [
               "index",
-              "quickstart",
-              "how-it-works"
-            ]
-          },
-          {
-            "group": "Automations",
-            "pages": [
-              "automations/overview",
-              "automations/templates",
-              "automations/triggers",
-              "automations/connectors",
-              "automations/models",
-              "automations/runs"
-            ]
-          },
-          {
-            "group": "Tag mode",
-            "pages": [
-              "tag-mode"
-            ]
-          },
-          {
-            "group": "Assistants",
-            "pages": [
+              "overview",
+              "guides/instrument-your-app",
+              "guides/browser",
               "assistants/claude"
             ]
           },
           {
-            "group": "Integrations",
+            "group": "Collect telemetry",
             "pages": [
-              "integrations/overview",
-              "integrations/github",
-              "integrations/slack",
-              "integrations/sentry",
-              "integrations/datadog",
-              "integrations/linear",
-              "integrations/discord",
-              "integrations/custom-mcp",
-              "integrations/cloud",
-              "integrations/more"
+              "collect-telemetry/overview",
+              "collect-telemetry/opentelemetry-collector",
+              "collect-telemetry/vercel",
+              "collect-telemetry/aws",
+              "collect-telemetry/google-cloud"
             ]
           },
           {
-            "group": "Settings",
+            "group": "Make your application reliable",
             "pages": [
-              "settings/workspace",
-              "settings/billing",
-              "settings/workspace-secrets",
-              "settings/api-keys",
+              "reliability/checklist",
+              "telemetry/errors",
+              "telemetry/alerts",
+              "telemetry/synthetics",
+              "telemetry/dashboards"
+            ]
+          },
+          {
+            "group": "Concepts",
+            "pages": [
+              "automations/overview",
+              "tag-mode",
+              "automations/models"
+            ]
+          },
+          {
+            "group": "Migrate",
+            "pages": [
+              "guides/migrate/datadog",
+              "guides/migrate/new-relic",
+              "guides/migrate/dynatrace"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              {
+                "group": "Telemetry",
+                "pages": [
+                  "telemetry/logs",
+                  "telemetry/traces",
+                  "telemetry/metrics"
+                ]
+              },
+              {
+                "group": "Automations",
+                "pages": [
+                  "automations/triggers",
+                  "automations/templates",
+                  "automations/connectors",
+                  "automations/runs",
+                  "automations/skills",
+                  "automations/pull-requests"
+                ]
+              },
+              {
+                "group": "Integrations",
+                "pages": [
+                  "integrations/overview",
+                  "integrations/github",
+                  "integrations/slack",
+                  "integrations/sentry",
+                  "integrations/datadog",
+                  "integrations/linear",
+                  "integrations/discord",
+                  "integrations/custom-mcp",
+                  "integrations/cloud",
+                  "integrations/more"
+                ]
+              },
+              {
+                "group": "Workspace",
+                "pages": [
+                  "settings/workspace",
+                  "settings/billing",
+                  "settings/workspace-secrets",
+                  "settings/api-keys"
+                ]
+              },
+              {
+                "group": "Developer",
+                "pages": [
+                  "api-reference/mcp",
+                  "developer/terraform"
+                ]
+              },
+              {
+                "group": "Self-hosting",
+                "pages": [
+                  "self-hosting/overview",
+                  "self-hosting/local-development",
+                  "self-hosting/deployment",
+                  "self-hosting/environment"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Security",
+            "pages": [
               "security"
             ]
           },
           {
-            "group": "Self-hosting",
+            "group": "Cookbook",
             "pages": [
-              "self-hosting/overview",
-              "self-hosting/local-development",
-              "self-hosting/deployment",
-              "self-hosting/environment"
+              "guides/triage-sentry-issues"
             ]
           }
         ]
@@ -109,8 +166,7 @@
           {
             "group": "Overview",
             "pages": [
-              "api-reference/introduction",
-              "api-reference/mcp"
+              "api-reference/introduction"
             ]
           },
           {
@@ -200,7 +256,9 @@
               "POST /telemetry/traces/search",
               "GET /telemetry/traces/{traceId}",
               "POST /telemetry/metrics/search",
-              "GET /telemetry/services"
+              "GET /telemetry/services",
+              "GET /ingest-keys",
+              "POST /ingest-keys"
             ]
           },
           {
@@ -209,7 +267,9 @@
             "pages": [
               "GET /error-issues",
               "GET /error-issues/{issueId}",
-              "PATCH /error-issues/{issueId}"
+              "PATCH /error-issues/{issueId}",
+              "GET /error-notifications",
+              "PATCH /error-notifications"
             ]
           },
           {
@@ -262,21 +322,74 @@
     ]
   },
   "redirects": [
-    { "source": "/introduction", "destination": "/how-it-works" },
-    { "source": "/deployment", "destination": "/self-hosting/deployment" },
-    { "source": "/concepts/agents", "destination": "/automations/overview" },
-    { "source": "/concepts/investigations", "destination": "/automations/runs" },
-    { "source": "/concepts/issues", "destination": "/automations/overview" },
-    { "source": "/concepts/runtime-profiles", "destination": "/self-hosting/overview" },
-    { "source": "/guides/create-agent", "destination": "/automations/overview" },
-    { "source": "/guides/investigate-alert", "destination": "/automations/runs" },
-    { "source": "/guides/remediation", "destination": "/integrations/github" },
-    { "source": "/guides/automations", "destination": "/automations/overview" },
-    { "source": "/guides/workspace-secrets", "destination": "/settings/workspace-secrets" },
-    { "source": "/integrations/observability", "destination": "/integrations/more" },
-    { "source": "/configuration/environment", "destination": "/self-hosting/environment" },
-    { "source": "/configuration/model-access", "destination": "/automations/models" },
-    { "source": "/configuration/workspace", "destination": "/settings/workspace" }
+    {
+      "source": "/how-it-works",
+      "destination": "/overview"
+    },
+    {
+      "source": "/quickstart",
+      "destination": "/automations/overview"
+    },
+    {
+      "source": "/introduction",
+      "destination": "/overview"
+    },
+    {
+      "source": "/deployment",
+      "destination": "/self-hosting/deployment"
+    },
+    {
+      "source": "/concepts/agents",
+      "destination": "/automations/overview"
+    },
+    {
+      "source": "/concepts/investigations",
+      "destination": "/automations/runs"
+    },
+    {
+      "source": "/concepts/issues",
+      "destination": "/automations/overview"
+    },
+    {
+      "source": "/concepts/runtime-profiles",
+      "destination": "/self-hosting/overview"
+    },
+    {
+      "source": "/guides/create-agent",
+      "destination": "/automations/overview"
+    },
+    {
+      "source": "/guides/investigate-alert",
+      "destination": "/automations/runs"
+    },
+    {
+      "source": "/guides/remediation",
+      "destination": "/integrations/github"
+    },
+    {
+      "source": "/guides/automations",
+      "destination": "/automations/overview"
+    },
+    {
+      "source": "/guides/workspace-secrets",
+      "destination": "/settings/workspace-secrets"
+    },
+    {
+      "source": "/integrations/observability",
+      "destination": "/integrations/more"
+    },
+    {
+      "source": "/configuration/environment",
+      "destination": "/self-hosting/environment"
+    },
+    {
+      "source": "/configuration/model-access",
+      "destination": "/automations/models"
+    },
+    {
+      "source": "/configuration/workspace",
+      "destination": "/settings/workspace"
+    }
   ],
   "footer": {
     "socials": {

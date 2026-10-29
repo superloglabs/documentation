@@ -1,0 +1,170 @@
+---
+title: "Migrate from New Relic"
+sidebarTitle: "From New Relic"
+description: "Map New Relic features to Superlog, move to OpenTelemetry, send to both while you compare, and recreate dashboards and alerts."
+---
+
+import EarlyAccess from "/snippets/early-access.mdx";
+
+<EarlyAccess />
+
+Superlog receives logs, traces, and metrics as OpenTelemetry over OTLP/HTTP. New Relic also accepts OTLP, so once your services use OpenTelemetry you can send the same data to both and compare before you switch.
+
+## Concept map
+
+| New Relic | Superlog |
+|---|---|
+| Logs | [Logs](/telemetry/logs) |
+| Distributed tracing | [Traces](/telemetry/traces) |
+| Metrics | [Metrics](/telemetry/metrics) |
+| Dashboards | [Dashboards](/telemetry/dashboards) |
+| Errors inbox | [Errors](/telemetry/errors) |
+| Alert policies and conditions | [Alerts](/telemetry/alerts) |
+| Ping synthetic monitors | [Synthetic checks](/telemetry/synthetics) |
+| New Relic Terraform provider | [Superlog Terraform provider](/developer/terraform) |
+
+Superlog has no query language like NRQL. Charts and alerts are built from a data source, filters, a measure, and a group-by. Alerts compare that value with a threshold and notify Slack.
+
+Not covered: scripted browser and scripted API monitors, anomaly detection, and notification destinations other than Slack. Superlog does not import New Relic dashboards or alert conditions.
+
+## Move your data
+
+Create an ingest key first. See [Create an ingest key](/guides/instrument-your-app#create-an-ingest-key).
+
+### If you already use OpenTelemetry
+
+Point your SDKs at Superlog:
+
+```bash
+export OTEL_EXPORTER_OTLP_ENDPOINT=https://superlog.sh/api/ingest
+export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+export OTEL_EXPORTER_OTLP_HEADERS=x-api-key=<your ingest key>
+```
+
+If you run a Collector, add an exporter and list it in each pipeline:
+
+```yaml
+exporters:
+  otlphttp/superlog:
+    endpoint: https://superlog.sh/api/ingest
+    headers:
+      x-api-key: ${env:SUPERLOG_INGEST_KEY}
+```
+
+Superlog accepts OTLP over HTTP only, so use the HTTP exporter, not the gRPC `otlp` exporter. See [OpenTelemetry Collector](/collect-telemetry/opentelemetry-collector).
+
+### If you use New Relic APM agents
+
+New Relic APM agents report to New Relic in their own format. The OpenTelemetry Collector has no receiver for it, so the path is to replace each agent with an OpenTelemetry SDK. See [Instrument your app](/guides/instrument-your-app).
+
+Move one service at a time:
+
+1. Remove the New Relic agent from the service. New Relic does not guarantee its agents work alongside another APM product in the same process.
+2. Add the OpenTelemetry SDK with automatic instrumentation.
+3. Send to a Collector that exports to both New Relic and Superlog, as shown below. The service keeps reporting to New Relic while you compare.
+
+Some New Relic agents can capture spans you create with the OpenTelemetry API. This is off by default, and the agent still reports to New Relic, not over OTLP. It lets you write OpenTelemetry instrumentation before you remove the agent. See [OpenTelemetry API support in New Relic agents](https://docs.newrelic.com/docs/apm/agents/manage-apm-agents/opentelemetry-api-support/).
+
+## Run both side by side
+
+```yaml
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+exporters:
+  otlphttp/newrelic:
+    endpoint: https://otlp.nr-data.net
+    headers:
+      api-key: ${env:NEW_RELIC_LICENSE_KEY}
+  otlphttp/superlog:
+    endpoint: https://superlog.sh/api/ingest
+    headers:
+      x-api-key: ${env:SUPERLOG_INGEST_KEY}
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [otlphttp/newrelic, otlphttp/superlog]
+    metrics:
+      receivers: [otlp]
+      exporters: [otlphttp/newrelic, otlphttp/superlog]
+    logs:
+      receivers: [otlp]
+      exporters: [otlphttp/newrelic, otlphttp/superlog]
+```
+
+- The `api-key` header takes your New Relic license key.
+- `https://otlp.nr-data.net` is the US endpoint. EU accounts use `https://otlp.eu01.nr-data.net`. For other regions, see [New Relic's OTLP endpoint list](https://docs.newrelic.com/docs/opentelemetry/best-practices/opentelemetry-otlp/).
+- New Relic rejects payloads over 1 MB and prefers delta temporality for counters and histograms. Superlog reads both delta and cumulative metrics, so `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=delta` in your SDKs works for both.
+
+## Recreate dashboards and alerts
+
+New Relic publishes an [MCP server](https://docs.newrelic.com/docs/agentic-ai/mcp/overview/). Its tools include `list_dashboards`, `get_dashboard`, `list_alert_policies`, `list_alert_conditions`, and `execute_nrql_query`. An AI agent connected to it and to Superlog can read your New Relic setup and build it in Superlog.
+
+Use Claude Code or another MCP client with two servers connected:
+
+- **New Relic MCP server.** See [New Relic's setup guide](https://docs.newrelic.com/docs/agentic-ai/mcp/setup/). The US endpoint is `https://mcp.newrelic.com/mcp/` and the EU endpoint is `https://mcp.eu.newrelic.com/mcp/`.
+- **Superlog MCP server.** See [MCP server](/api-reference/mcp).
+
+Then give the agent a prompt like this:
+
+```text
+Read the New Relic dashboard "Checkout overview" and the conditions in the
+alert policy "Checkout".
+
+For each widget, read its NRQL and run it with execute_nrql_query. Find the
+matching Superlog data with list_services, query_metrics, query_traces, and
+query_logs. Create a Superlog dashboard with create_dashboard and add each
+widget with add_dashboard_widget. Compare the numbers for the same time range.
+
+For each alert condition, draft a Superlog alert and check it with
+preview_alert. Show me the rule, threshold, and preview result before you call
+create_alert.
+
+List every widget and condition you could not map, and why.
+```
+
+Check the result before you trust it:
+
+- Review each alert's `preview_alert` result and threshold.
+- Open each dashboard and compare it with New Relic over the same time range.
+- Expect query changes. NRQL often reads New Relic event types such as `Transaction`. The agent has to map each one to OpenTelemetry spans or metrics.
+
+When the dashboards and alerts look right, ask the agent to call `export_terraform` and commit the output. See [Terraform](/developer/terraform).
+
+## Attribute mapping
+
+| New Relic agent | OpenTelemetry |
+|---|---|
+| App name (`app_name`, `NEW_RELIC_APP_NAME`) | `service.name` |
+| Labels (`NEW_RELIC_LABELS`, such as `Env:Dev`) | Resource attributes in `OTEL_RESOURCE_ATTRIBUTES` |
+| Environment label | `deployment.environment.name` |
+| Host | `host.name` |
+
+```bash
+export OTEL_SERVICE_NAME=checkout-api
+export OTEL_RESOURCE_ATTRIBUTES=deployment.environment.name=production,service.version=1.4.2
+```
+
+- New Relic shows OpenTelemetry services under their `service.name`. Keep the old app name to make the two easy to compare.
+- A New Relic app can have up to three names. `service.name` takes one value.
+- SDK resource detectors and the Collector's `resourcedetection` processor set `host.name`.
+- Set `service.version` too, so you can tell deploys apart.
+
+## Cutover checklist
+
+- Every service appears in Superlog with the right `service.name` and environment.
+- No service runs a New Relic agent and OpenTelemetry instrumentation in the same process.
+- Logs carry trace and span IDs.
+- Each dashboard you need exists and matches New Relic over the same time range.
+- Each alert has a previewed threshold and posts to the right Slack channel.
+- Ping monitors are recreated as [synthetic checks](/telemetry/synthetics).
+- Alerts, dashboards, and checks are exported to Terraform and committed.
+- New Relic alert conditions that duplicate Superlog alerts are disabled.
+- The New Relic exporter is removed from the Collector.

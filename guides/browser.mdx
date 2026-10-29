@@ -1,0 +1,158 @@
+---
+title: "Browser and React"
+sidebarTitle: "Browser and React"
+description: "Send errors, traces, page loads, and Web Vitals from the browser, and upload source maps."
+---
+
+import EarlyAccess from "/snippets/early-access.mdx";
+
+<EarlyAccess />
+
+The Superlog browser SDK sends errors, sessions, traces, and Web Vitals as standard OpenTelemetry over OTLP/HTTP. It has three packages:
+
+- `@superlog/browser`: error capture, breadcrumbs, user and attributes, sessions, `fetch` and `XMLHttpRequest` tracing, navigations, and Web Vitals.
+- `@superlog/react`: an error boundary, React 19 root error handlers, and route patterns from React Router.
+- `@superlog/sourcemaps`: a Vite plugin and a CLI that upload your source maps, so errors show and group by the original code.
+
+The source is at [github.com/superloglabs/browser](https://github.com/superloglabs/browser).
+
+## Install
+
+```bash
+npm install @superlog/browser @superlog/react
+```
+
+## Create an ingest key
+
+The SDK sends to Superlog with an ingest key. Create one for the app. See [Create an ingest key](/guides/instrument-your-app#create-an-ingest-key).
+
+The key ships in your page's JavaScript, so anyone who loads the page can read it. An ingest key can only add telemetry to your workspace. It can't read data or change settings. Use a separate key for each app, so you can revoke one without affecting the others.
+
+## Start the SDK
+
+Call `init` before the app renders. Set `endpoint` to `https://superlog.sh/api/ingest`. Sending telemetry is available for workspaces in the EU region. For a US workspace, [contact us](https://cal.com/superlog/yc). The SDK adds `/v1/logs` and `/v1/traces` to it.
+
+```ts
+import { init, setUser } from "@superlog/browser";
+
+init({
+  service: "storefront",
+  ingestKey: import.meta.env.VITE_SUPERLOG_INGEST_KEY,
+  endpoint: "https://superlog.sh/api/ingest",
+  release: import.meta.env.VITE_RELEASE,
+  environment: import.meta.env.MODE,
+  // Cross-origin APIs that should continue the trace. Same-origin requests always do.
+  tracePropagationTargets: ["https://api.example.com"],
+});
+
+setUser({ id: user.id, email: user.email });
+```
+
+- `service` is sent as `service.name`, `release` as `service.version`, and `environment` as `deployment.environment.name`.
+- `ignoreUrls` keeps requests, such as analytics, out of traces and breadcrumbs.
+- `tracesSampleRate` keeps a share of traces, from 0 to 1. Errors are always sent.
+- `beforeSend` can change or drop any error, and `beforeBreadcrumb` any breadcrumb.
+
+## React
+
+Add the error handlers to your root and instrument the router so errors carry the route pattern:
+
+```tsx
+import { ErrorBoundary, reactErrorHandler } from "@superlog/react";
+import { instrumentRouter } from "@superlog/react/router";
+import { createBrowserRouter, RouterProvider } from "react-router";
+
+const router = createBrowserRouter(routes);
+instrumentRouter(router);
+
+createRoot(document.getElementById("root")!, {
+  onCaughtError: reactErrorHandler(),
+  onRecoverableError: reactErrorHandler(),
+}).render(
+  <ErrorBoundary fallback={({ reset }) => <button onClick={reset}>Try again</button>}>
+    <RouterProvider router={router} />
+  </ErrorBoundary>,
+);
+```
+
+With declarative routes, use `SuperlogRoutes` in place of `<Routes>`:
+
+```tsx
+import { SuperlogRoutes } from "@superlog/react/router";
+
+<SuperlogRoutes>
+  <Route path="/orders/:orderId" element={<Order />} />
+</SuperlogRoutes>
+```
+
+`@superlog/react` needs React 18 or later, and React Router 6.4 or later for the router integration.
+
+## Capture errors yourself
+
+```ts
+import { addBreadcrumb, captureException, captureMessage, setAttributes } from "@superlog/browser";
+
+try {
+  await pay(cart);
+} catch (error) {
+  captureException(error, { attributes: { "payment.provider": "stripe" } });
+}
+
+addBreadcrumb({ category: "checkout", message: "payment started" });
+setAttributes({ "app.plan": "pro" });
+captureMessage("checkout took longer than 5s", "warning");
+```
+
+## Upload source maps
+
+Source maps let Superlog map minified stack frames back to the original file, line, and function before it groups errors. Uploads use a workspace API key from [Settings → API keys](/settings/api-keys), not the ingest key.
+
+With Vite, add the plugin:
+
+```ts vite.config.ts
+import { superlogSourceMaps } from "@superlog/sourcemaps/vite";
+
+export default defineConfig({
+  plugins: [superlogSourceMaps({ release: process.env.RELEASE })],
+});
+```
+
+The plugin builds hidden source maps, writes a debug ID into each file and its map, uploads the maps with `SUPERLOG_API_KEY`, and deletes them from the output. A failed upload is printed and the build still succeeds. Set `failOnError: true` to fail the build instead.
+
+For other bundlers, run the CLI on the build output:
+
+```bash
+SUPERLOG_API_KEY=... npx superlog-sourcemaps upload dist --release "$RELEASE" --delete
+```
+
+Uploads go to `https://superlog.sh`. For a workspace in the US region, pass `url: "https://us.superlog.sh"` to the plugin, or `--url https://us.superlog.sh` to the CLI.
+
+## What gets captured
+
+Each error is an OpenTelemetry log record at ERROR severity, so it appears in [Errors](/telemetry/errors) and [Logs](/telemetry/logs). It carries:
+
+| Attribute | Value |
+|---|---|
+| `exception.type`, `exception.message`, `exception.stacktrace` | The error. Causes follow the stack as `Caused by:` |
+| `exception.mechanism` | `onerror`, `onunhandledrejection`, `react`, or `manual` |
+| `exception.handled` | Whether the app caught it |
+| `app.breadcrumbs` | The last clicks, navigations, console messages, and requests |
+| `app.debug_ids` | The debug ID of each file in the stack, for source maps |
+| `url.full` | The page |
+| `url.template` | The route pattern, with the React Router integration |
+| `react.component_stack` | The component stack, from React |
+| `session.id` | The session, on every log and span |
+| `user.id`, `user.email`, `user.name` | From `setUser`, on every log and span |
+
+The SDK also sends:
+
+- Spans for `fetch` and `XMLHttpRequest` calls, which appear in [Traces](/telemetry/traces).
+- Logs for page loads and navigations, page load timing, and Web Vitals (LCP, INP, CLS, FCP, and TTFB).
+
+These errors are dropped before sending:
+
+- `Script error.` without details, and the ResizeObserver loop notice.
+- Errors whose frames all come from browser extensions or from `denyUrls`.
+- Errors that match `ignoreErrors`.
+- The same error repeated within a second.
+- Errors past 30 per minute. Change this with `maxErrorsPerMinute`.

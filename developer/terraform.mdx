@@ -1,0 +1,111 @@
+---
+title: "Terraform provider"
+sidebarTitle: "Terraform provider"
+description: "Manage Superlog alerts, dashboards, and synthetic checks with Terraform or OpenTofu, and export the ones you already have."
+---
+
+The Superlog provider manages alerts, dashboards, and synthetic checks as code. It works with Terraform and OpenTofu.
+
+| | |
+|---|---|
+| Source address | `superloglabs/superlog` |
+| Latest version | `0.1.0` |
+| Registry | [registry.terraform.io/providers/superloglabs/superlog](https://registry.terraform.io/providers/superloglabs/superlog/latest) |
+| Source code | [github.com/superloglabs/terraform-provider-superlog](https://github.com/superloglabs/terraform-provider-superlog) |
+
+## Configure the provider
+
+```hcl
+terraform {
+  required_providers {
+    superlog = {
+      source  = "superloglabs/superlog"
+      version = "~> 0.1"
+    }
+  }
+}
+
+provider "superlog" {
+  # https://superlog.sh for the EU region, https://us.superlog.sh for the US region.
+  endpoint = "https://superlog.sh"
+}
+```
+
+| Argument | Environment variable | Description |
+|---|---|---|
+| `api_key` | `SUPERLOG_API_KEY` | A Superlog API key. Sensitive. |
+| `endpoint` | `SUPERLOG_ENDPOINT` | Your region's address. Defaults to `https://superlog.sh`. |
+
+Create the key under **Settings → API keys**. See [API keys](/settings/api-keys). The provider acts as the member who created the key, in that key's workspace. Set `endpoint` to the region your workspace is in: `https://superlog.sh` for EU or `https://us.superlog.sh` for US.
+
+```bash
+export SUPERLOG_API_KEY=slk_...
+terraform init
+```
+
+## Resources and data sources
+
+| Name | Type | What it manages |
+|---|---|---|
+| `superlog_alert` | Resource | Threshold alerts on logs, spans, or a metric. See [Alerts](/telemetry/alerts). |
+| `superlog_dashboard` | Resource | Dashboards, their variables, and all of their widgets. See [Dashboards](/telemetry/dashboards). |
+| `superlog_synthetic_check` | Resource | Scheduled HTTP checks. See [Synthetic checks](/telemetry/synthetics). |
+| `superlog_slack_channel` | Data source | Looks up a Slack channel by name for an alert or check to post to. |
+
+Two behaviors to know:
+
+- `superlog_dashboard` owns all of its widgets. Widgets added in Superlog are removed on the next apply.
+- `superlog_synthetic_check` stores `secret_headers` encrypted, and Superlog never returns their values. Changes made to them outside Terraform are not detected.
+
+Every resource has a read-only `url` that links to the object in Superlog. Import an existing object by the ID from its URL, for example `terraform import superlog_alert.checkout_errors <alert-id>`.
+
+## Example: an alert that posts to Slack
+
+This alert fires when checkout logs more than 50 errors in production in 5 minutes, and posts to `#alerts`. Connect [Slack](/integrations/slack) first. The channel must be public, or private with the Superlog app in it.
+
+```hcl
+data "superlog_slack_channel" "alerts" {
+  name = "alerts"
+}
+
+resource "superlog_alert" "checkout_errors" {
+  name        = "Checkout errors"
+  source      = "logs"
+  aggregation = "count"
+  comparator  = "gt"
+  threshold   = 50
+  filter = {
+    service  = "checkout"
+    severity = "ERROR"
+    attributes = [
+      { key = "deployment.environment", value = "production" },
+    ]
+  }
+  slack = {
+    channel_id             = data.superlog_slack_channel.alerts.channel_id
+    integration_account_id = data.superlog_slack_channel.alerts.integration_account_id
+  }
+}
+```
+
+While the value is past the threshold, the alert posts once to the channel and posts the recovery in the same thread. Without `slack`, the alert only records its history in Superlog.
+
+If more than one connected Slack workspace has a channel with that name, set `workspace` on the data source to the Slack workspace's name.
+
+Alert defaults: `window_minutes` is 5, `evaluation_interval_seconds` is 60, `group_mode` is `single`, and `enabled` is `true`. To check each service separately, set `group_mode = "per_group"` and `group_by = "service.name"`.
+
+## Export existing configuration
+
+Superlog can write Terraform for objects you already have. The output has an `import` block for each one, so `terraform apply` adopts the existing objects instead of creating copies.
+
+- **One object:** click **Copy as Terraform** on an alert, dashboard, or synthetic check page.
+- **The whole workspace:** call `GET /terraform` on the [management API](/api-reference/introduction).
+- **From an agent:** call the `export_terraform` tool on the [MCP server](/api-reference/mcp).
+
+```bash
+curl -s -H "Authorization: Bearer $SUPERLOG_API_KEY" \
+  https://superlog.sh/api/v1/terraform | jq -r .hcl > superlog.tf
+terraform init && terraform apply
+```
+
+Without parameters, the export includes every alert, dashboard, and synthetic check. To export only some, pass `alertIds`, `dashboardIds`, or `syntheticCheckIds` as comma-separated IDs. Secret header values of synthetic checks become sensitive variables for you to set.

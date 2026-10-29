@@ -35,6 +35,18 @@ While a run is active, Superlog posts a live progress card in the thread that st
 
 Pick up to 100 projects. The run is titled with the Sentry short ID and issue title, and the agent receives the issue details.
 
+## Errors
+
+This trigger is available in workspaces with telemetry, which is in early access. It starts runs from Superlog's own [error issues](/telemetry/errors).
+
+| Event | Starts a run when |
+|---|---|
+| **New error** | Superlog groups an exception into a new issue. |
+| **Error regression** | A resolved issue comes back. |
+| **New error or regression** | Either of the above. |
+
+You can limit the trigger to some services. The agent receives the issue with its newest stack trace, trace ID, and attributes.
+
 ## Discord
 
 | Event | Starts a run when |

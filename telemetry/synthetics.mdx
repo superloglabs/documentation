@@ -1,0 +1,83 @@
+---
+title: "Synthetic checks"
+description: "Request an HTTP endpoint on a schedule, assert on the response, and get a Slack message when it fails."
+sidebarTitle: "Synthetics"
+---
+
+import EarlyAccess from "/snippets/early-access.mdx";
+
+<EarlyAccess />
+
+A synthetic check sends an HTTP request to a URL on a schedule and checks the response. When runs fail, Superlog posts to Slack. When the check passes again, it replies in the same thread.
+
+Open **Synthetics**, under **Detect** in the sidebar, and click **New check**.
+
+## Request
+
+- **Method**: `GET`, `HEAD`, `POST`, `PUT`, `PATCH`, `DELETE`, or `OPTIONS`.
+- **URL**: a full `http` or `https` URL. The host must resolve to public addresses.
+- **Headers**: up to 30. Lock a header to store its value as a secret. Secrets are encrypted, never shown again, and sent only to the URL's host.
+- **Body**: for methods other than `GET` and `HEAD`.
+- **Timeout**: 5, 10, 20, or 30 seconds.
+- **Follow redirects**: on by default, up to 5 redirects. `Authorization` and `Cookie` headers are not sent to another origin after a redirect.
+
+## Success criteria
+
+Add up to 20 assertions. A new check starts with **Status code** is `2xx` and **Response time** below 2,000 ms.
+
+| Assertion | Checks |
+|---|---|
+| **Status code** | A code such as `200`, or a class such as `2xx`. |
+| **Response time** | The request finished below a number of milliseconds. |
+| **Header** | A response header's value, or whether it exists. |
+| **Body** | The body contains, or doesn't contain, some text. The first 1 MB is read. |
+| **JSON path** | A value in a JSON body, such as `$.status`. |
+| **TLS certificate** | The certificate expires in more than a number of days. |
+
+Each assertion has a **Severity**. **Fails** fails the run. **Degrades** marks the run degraded but not failed. A run also fails when the request can't connect or times out.
+
+Click **Test** to send the request once and see the response and which assertions hold.
+
+## Schedule
+
+- **Run**: every minute, 5 minutes, 15 minutes, 30 minutes, or hour.
+- **When a run fails**: **Don't retry**, **Retry once**, or **Retry twice**. Retries happen at once. Only the last attempt counts.
+
+## Notifications
+
+Choose a **Slack channel**. Private channels appear once the Superlog app is in them.
+
+**Alert** sets how many failed runs in a row start a failure: 1, 2, 3, or 5. Superlog posts once when the check starts failing, with the request, the number of failed runs, where they ran from, and the reason. It replies in the thread when a run passes again. Degraded runs don't post.
+
+Turn off **Run this check** to pause it. Click **Create check**.
+
+## Check page
+
+The list shows each check's status, latest runs, uptime over 24 hours, average duration, and last run. Click a check to see:
+
+- **Uptime** and **Average duration** for the last 24 hours, 7 days, or 30 days.
+- **Runs** over time, and **Duration by phase** (DNS, connect, TLS, first byte, download).
+- **Latest runs**. Click a run to see its assertions, timing, and response. The response is kept only for runs that didn't pass.
+- **Failures**: each time the check failed, how long it lasted, and why.
+
+Runs are kept for 30 days. Use **Edit** to change the check, **Delete** to remove it and its history, and **Copy as Terraform** for the [Terraform provider](/developer/terraform).
+
+## Metrics
+
+In workspaces with telemetry, each run is also sent to your metrics:
+
+| Metric | Value |
+|---|---|
+| `synthetic_check.up` | `1` when the run passed or was degraded, `0` when it failed. |
+| `synthetic_check.duration` | How long the request took, in ms. |
+| `synthetic_check.phase.duration` | Each phase's time, in ms, with a `synthetic_check.phase` attribute. |
+
+They come from the `superlog-synthetics` service with `synthetic_check.name` and `synthetic_check.id` attributes. Chart them on [dashboards](/telemetry/dashboards) or build [alerts](/telemetry/alerts) on them, for example when the average of `synthetic_check.duration` is above a threshold.
+
+## Start automations from failures
+
+A failure message starts automations that watch its Slack channel with **New message in channel** or **Message posted or app mentioned**. Each automation runs once per failure and replies in the thread. See [Triggers](/automations/triggers#slack).
+
+## Manage checks from an agent
+
+The [MCP server](/api-reference/mcp) offers `create_synthetic_check`, `update_synthetic_check`, `get_synthetic_check`, `list_synthetic_checks`, and `delete_synthetic_check`. Use `list_slack_channels` for the channel and integration IDs. The same operations are in the [REST API](/api-reference/introduction).

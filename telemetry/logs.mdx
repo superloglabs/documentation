@@ -1,0 +1,78 @@
+---
+title: "Logs"
+description: "Search and filter log records, read a log's attributes, and jump to its trace or error."
+---
+
+import EarlyAccess from "/snippets/early-access.mdx";
+
+<EarlyAccess />
+
+**Explore → Logs** lists the log records your services send, newest first. The page URL holds the search, filters, and time range, so you can share a link to the same view.
+
+## Search
+
+Click the search bar or press `/`. As you type, the bar suggests fields and values:
+
+- Plain text adds **Search messages for "…"**. It matches the message, or the event name of a log without one. Case is ignored.
+- `service.name` and `level` filter by service and level.
+- `trace.id` filters to one trace. Paste a 32-character trace ID to add it directly.
+- Any attribute key seen in the time range, grouped as **Resource attributes** and **Log attributes**.
+
+Pick a field, then an operator (`=` is, `!=` is not), then a value from the suggestions or type your own. You can also type the filter in one go, such as `deployment.environment!=staging` or `log.http.status_code=500`. A key without a prefix is read as a resource attribute unless it matches a listed attribute.
+
+Each filter becomes a chip. Click a chip to edit it, or **×** to remove it. Several values of one field match any of them. Different fields must all match.
+
+## Sidebar filters
+
+The sidebar lists **Service** and **Level** with counts, and every attribute key below them. Click a key to see its top values and check the ones you want. Up to 10 attribute facets stay open; opening another closes the oldest. Use **Search facets** to find a key.
+
+## Time range
+
+The time picker defaults to the last hour. It offers:
+
+- Relative ranges from **Last 5 minutes** to **Last 30 days**, plus **Today so far** and **Yesterday**.
+- Absolute **From** and **To** times with a calendar.
+- Typed ranges, such as `3h`, `yesterday`, or `14:00 to 15:30`.
+- A time zone: **Browser time**, **UTC**, or any zone.
+
+The arrows beside the range move it earlier or later. **Zoom out** doubles it. A range can be up to 30 days long. Click the refresh button to reload with the current time.
+
+The same picker is used on trace search, metrics, and dashboards.
+
+## Results
+
+A histogram above the list shows matching logs over time, split into **Error**, **Warn**, and **Other**. The list has these columns:
+
+| Column | Shows |
+|---|---|
+| **Time** | When the record was written, with milliseconds. The date appears for ranges of a day or more. |
+| **Level** | The log's severity text. Logs without one show **Unset**. |
+| **Service** | The `service.name` of the sender. |
+| **Message** | The log body. |
+
+The list shows 100 logs per page. Use **Previous** and **Next** to page through.
+
+## Log details
+
+Click a log to open its details. Use the arrows in the header to move to the previous or next log.
+
+The panel shows:
+
+- The full message.
+- **Exception**: the exception type, message, and stack trace, when the log has them.
+- **Attributes**: `event_name`, `trace_id`, and `span_id` first, then log attributes and resource attributes. Use **Filter keys** to find one.
+
+Hover an attribute for **Filter**, **Exclude**, and **Copy**. **Filter** and **Exclude** add the value to your search.
+
+## Jump to the trace or error
+
+When the log has a trace ID, the panel shows:
+
+- **Open trace** opens the trace in the [trace view](/telemetry/traces#trace-inspector).
+- **Logs in this trace** filters the list to logs with the same trace ID.
+
+When the log is at `ERROR` level or above and belongs to an error issue, **Open error** opens the issue. See [Errors](/telemetry/errors).
+
+## Query logs from an agent
+
+The [MCP server](/api-reference/mcp) has a `query_logs` tool, and the [management API](/api-reference/introduction) has `POST /telemetry/logs/search`. Use them to let an agent search logs with the same filters.

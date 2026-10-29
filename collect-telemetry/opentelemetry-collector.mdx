@@ -1,0 +1,40 @@
+---
+title: "Send from an OpenTelemetry Collector"
+sidebarTitle: "OpenTelemetry Collector"
+description: "Add Superlog as an OTLP/HTTP exporter to a Collector you already run."
+---
+
+import EarlyAccess from "/snippets/early-access.mdx";
+
+<EarlyAccess />
+
+You need an ingest key. See [Create an ingest key](/guides/instrument-your-app#create-an-ingest-key).
+
+If you already run a Collector, add an `otlphttp` exporter and use it in each pipeline:
+
+```yaml
+exporters:
+  otlphttp/superlog:
+    endpoint: https://superlog.sh/api/ingest
+    headers:
+      x-api-key: ${env:SUPERLOG_INGEST_KEY}
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/superlog]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/superlog]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/superlog]
+```
+
+The `otlphttp` exporter adds `/v1/traces`, `/v1/metrics`, and `/v1/logs` to the endpoint. Gzip compression, its default, is supported. Use `otlphttp`, not the gRPC `otlp` exporter: Superlog accepts OTLP over HTTP only.
+
+Sending telemetry is available for workspaces in the EU region. For a US workspace, [contact us](https://cal.com/superlog/yc).

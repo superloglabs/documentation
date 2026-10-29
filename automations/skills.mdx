@@ -1,0 +1,79 @@
+---
+title: "Skills"
+description: "Give automations reusable instructions, reference files such as an OpenAPI spec, and the secrets to call an API."
+---
+
+A skill is a folder of instructions and reference files that an agent reads before a task the skill covers. A skill can also carry workspace secrets, so the agent can call the API it describes. Skills belong to the workspace, and any automation can use them.
+
+Skills follow the Agent Skills format. A skill folder written for Claude Code or Codex, with a `SKILL.md` and its files, can be uploaded as is.
+
+## The skills list
+
+Open **Skills** in the sidebar. Each row shows the skill's name and description, its file count, its secrets, how many automations use it (**Used by**), and when it was last updated. Click a row to edit the skill.
+
+## Create a skill
+
+<Steps>
+  <Step title="Start a skill">
+    On the **Skills** page, click **Create skill**.
+  </Step>
+  <Step title="Fill in the details">
+    Under **Details**, enter a **Name** and a **Description**. The name uses lowercase letters, numbers, and single hyphens, such as `billing-api`. The description tells the agent when to use the skill.
+  </Step>
+  <Step title="Write the instructions">
+    Under **Instructions**, explain how to do the task: for an API, the base URL, how to authenticate, the endpoints that matter, and examples.
+  </Step>
+  <Step title="Add reference files">
+    Under **Reference files**, click **Add files, such as an OpenAPI spec**. Files keep their names inside the skill folder.
+  </Step>
+  <Step title="Add secrets">
+    Under **Secrets**, click **Add secret** and pick a workspace secret, or choose **Create a secret** to store a new one. See [Workspace secrets](/settings/workspace-secrets).
+  </Step>
+  <Step title="Save">
+    Click **Save**.
+  </Step>
+</Steps>
+
+To import an existing skill, click **Upload folder** and choose a folder that contains a `SKILL.md`. Superlog reads the name and description from its front matter and the rest as instructions. The folder's other text files become reference files. Hidden files are left out. Binary files and unsupported file names are skipped, and the editor lists what it skipped.
+
+<Warning>
+  Skill text is stored as written, and the agent can read it. If the instructions or a file look like they contain a credential, the editor warns you. Store keys as workspace secrets instead.
+</Warning>
+
+## Use a skill in an automation
+
+<Steps>
+  <Step title="Open the connector picker">
+    In the automation editor, under **Connectors**, click **Add connector**.
+  </Step>
+  <Step title="Pick the skill">
+    Choose the skill under **Skills**. To make a new one, choose **Create a skill**. It opens in a new tab, and the picker lists it when you return.
+  </Step>
+</Steps>
+
+Selected skills appear under **Connectors**. Click **Manage** to open a skill, or the trash icon to remove it from the automation. An automation can use up to 20 skills.
+
+## How runs use skills
+
+At the start of each turn, Superlog writes every skill the automation uses into the sandbox at `.responder/skills/<name>/`. The folder holds the `SKILL.md` and the reference files. The agent gets a list of the skills with their descriptions and is told to read a skill's `SKILL.md` before a task it covers.
+
+A skill's secrets are added to the run's environment variables, next to the automation's own secrets. As with any workspace secret, the variable holds a placeholder, and Superlog swaps in the real value only on requests to the secret's allowed hosts.
+
+Skills are read fresh on every turn. When you edit a skill, the next run or follow-up of every automation that uses it gets the new version.
+
+Agents also find skills in your repositories. Superlog lists `SKILL.md` files under `.agents/skills/` and `.claude/skills/`, and `AGENTS.md` and `CLAUDE.md` files, from the checked-out repositories, whatever the harness.
+
+## Delete a skill
+
+Open the skill and click **Delete**. You cannot delete a skill that an automation still uses. Remove it from those automations first. The **Used by** section on the skill page lists them, with an **Open** link to each one.
+
+## Limits
+
+| Setting | Limit |
+|---|---|
+| Name | 64 characters, unique in the workspace |
+| Description | 1,024 characters |
+| Instructions | 100,000 characters |
+| Reference files | 100 files, 3 MB in total, text only |
+| Secrets per skill | 20 |
+| Skills per automation | 20 |

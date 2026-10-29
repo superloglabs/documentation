@@ -1,0 +1,179 @@
+---
+title: "Migrate from Dynatrace"
+sidebarTitle: "From Dynatrace"
+description: "Map Dynatrace features to Superlog, move to OpenTelemetry, send to both while you compare, and recreate dashboards and alerts."
+---
+
+import EarlyAccess from "/snippets/early-access.mdx";
+
+<EarlyAccess />
+
+Superlog receives logs, traces, and metrics as OpenTelemetry over OTLP/HTTP. Dynatrace also accepts OTLP, so once your services use OpenTelemetry you can send the same data to both and compare before you switch.
+
+## Concept map
+
+| Dynatrace | Superlog |
+|---|---|
+| Logs | [Logs](/telemetry/logs) |
+| Distributed traces | [Traces](/telemetry/traces) |
+| Metrics | [Metrics](/telemetry/metrics) |
+| Dashboards | [Dashboards](/telemetry/dashboards) |
+| Metric events and custom alerts | [Alerts](/telemetry/alerts) |
+| HTTP monitors | [Synthetic checks](/telemetry/synthetics) |
+
+Superlog has no query language like DQL. Charts and alerts are built from a data source, filters, a measure, and a group-by. Alerts compare that value with a threshold and notify Slack. [Errors](/telemetry/errors) groups the exceptions your OpenTelemetry SDKs record.
+
+Not covered: Davis problem detection and automatic baselines, Smartscape topology, notebooks, and notification destinations other than Slack. Superlog does not import Dynatrace dashboards or alerts.
+
+## Move your data
+
+Create an ingest key first. See [Create an ingest key](/guides/instrument-your-app#create-an-ingest-key).
+
+### If you already use OpenTelemetry
+
+Point your SDKs at Superlog:
+
+```bash
+export OTEL_EXPORTER_OTLP_ENDPOINT=https://superlog.sh/api/ingest
+export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+export OTEL_EXPORTER_OTLP_HEADERS=x-api-key=<your ingest key>
+```
+
+If you run a Collector, add an exporter and list it in each pipeline:
+
+```yaml
+exporters:
+  otlphttp/superlog:
+    endpoint: https://superlog.sh/api/ingest
+    headers:
+      x-api-key: ${env:SUPERLOG_INGEST_KEY}
+```
+
+Superlog accepts OTLP over HTTP only, so use the HTTP exporter, not the gRPC `otlp` exporter. See [OpenTelemetry Collector](/collect-telemetry/opentelemetry-collector).
+
+### If you use OneAgent
+
+OneAgent reports to Dynatrace in its own format. The OpenTelemetry Collector has no receiver for it, so the path is to replace OneAgent instrumentation with OpenTelemetry SDKs. See [Instrument your app](/guides/instrument-your-app).
+
+Move one service at a time:
+
+1. Add the OpenTelemetry SDK with automatic instrumentation.
+2. Send to a Collector that exports to both Dynatrace and Superlog, as shown below. The service keeps reporting to Dynatrace while you compare.
+3. When the service's OpenTelemetry data in Dynatrace covers what you need, stop monitoring it with OneAgent.
+
+If OneAgent still runs on a host while the app exports OTLP, leave OneAgent's OpenTelemetry Span Sensor off. With both on, Dynatrace records duplicate spans.
+
+## Run both side by side
+
+Dynatrace accepts OTLP over HTTP with protobuf, and only delta metrics. Superlog reads both delta and cumulative metrics. This config converts metrics to delta on the Dynatrace pipeline only:
+
+```yaml
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  cumulative_to_delta:
+
+exporters:
+  otlphttp/dynatrace:
+    endpoint: https://<environment-id>.live.dynatrace.com/api/v2/otlp
+    headers:
+      Authorization: "Bearer ${env:DT_PLATFORM_TOKEN}"
+  otlphttp/superlog:
+    endpoint: https://superlog.sh/api/ingest
+    headers:
+      x-api-key: ${env:SUPERLOG_INGEST_KEY}
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [otlphttp/dynatrace, otlphttp/superlog]
+    logs:
+      receivers: [otlp]
+      exporters: [otlphttp/dynatrace, otlphttp/superlog]
+    metrics/dynatrace:
+      receivers: [otlp]
+      processors: [cumulative_to_delta]
+      exporters: [otlphttp/dynatrace]
+    metrics/superlog:
+      receivers: [otlp]
+      exporters: [otlphttp/superlog]
+```
+
+- The token is a Dynatrace platform token with `openpipeline:logs:ingest`, `openpipeline:metrics:ingest`, and `openpipeline:traces:ingest`.
+- Remove `.apps` from the environment ID if you copied it from the browser address bar.
+- To send through an Environment ActiveGate instead, see [Dynatrace's OTLP export guide](https://docs.dynatrace.com/docs/shortlink/api-otlp-ingest).
+- The conversion keeps state in the Collector. Send each service's metrics through the same Collector instance. You can skip the processor if your SDKs export delta with `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=delta`.
+
+<Tip>
+  Collector Contrib releases before v0.157.0 name the processor `cumulativetodelta`.
+</Tip>
+
+## Recreate dashboards and alerts
+
+Dynatrace publishes a [remote MCP server](https://docs.dynatrace.com/docs/shortlink/dynatrace-mcp-server) that can generate and run DQL queries. An AI agent connected to it and to Superlog can run your Dynatrace queries and build matching charts and alerts in Superlog.
+
+Use Claude Code or another MCP client with two servers connected:
+
+- **Dynatrace MCP server.** See [Dynatrace's setup guide](https://docs.dynatrace.com/docs/shortlink/dynatrace-mcp-server). It authenticates with a platform token.
+- **Superlog MCP server.** See [MCP server](/api-reference/mcp).
+
+Copy the DQL from each dashboard tile and alert you want to keep. Then give the agent a prompt like this:
+
+```text
+Here are the DQL queries behind my Dynatrace "Checkout overview" dashboard and
+my checkout alerts: <paste queries>.
+
+Run each query in Dynatrace. Find the matching Superlog data with
+list_services, query_metrics, query_traces, and query_logs. Create a Superlog
+dashboard with create_dashboard and add a widget per query with
+add_dashboard_widget. Compare the numbers for the same time range.
+
+For each alert, draft a Superlog alert and check it with preview_alert. Show me
+the rule, threshold, and preview result before you call create_alert.
+
+List every query you could not map, and why.
+```
+
+Check the result before you trust it:
+
+- Review each alert's `preview_alert` result and threshold.
+- Open each dashboard and compare it with Dynatrace over the same time range.
+- Expect name changes. OneAgent metrics and OpenTelemetry metrics have different names.
+- Alerts that rely on Davis baselines need a fixed threshold. Use the preview to pick one.
+
+When the dashboards and alerts look right, ask the agent to call `export_terraform` and commit the output. See [Terraform](/developer/terraform).
+
+## Attribute mapping
+
+| Dynatrace | OpenTelemetry |
+|---|---|
+| Service name | `service.name` |
+| `DT_RELEASE_STAGE` | `deployment.environment.name` |
+| `DT_RELEASE_VERSION` | `service.version` |
+
+```bash
+export OTEL_SERVICE_NAME=checkout-api
+export OTEL_RESOURCE_ATTRIBUTES=deployment.environment.name=production,service.version=1.4.2
+```
+
+- Dynatrace uses `service.name` as the service name for OpenTelemetry services in Service Detection v2. Keep the old service name to make the two easy to compare.
+- If you set `deployment.release_stage` and `deployment.release_version` for Dynatrace, set `deployment.environment.name` and `service.version` as well.
+
+## Cutover checklist
+
+- Every service appears in Superlog with the right `service.name` and environment.
+- No host runs the OneAgent Span Sensor alongside OTLP export.
+- Logs carry trace and span IDs.
+- Each dashboard you need exists and matches Dynatrace over the same time range.
+- Each alert has a previewed threshold and posts to the right Slack channel.
+- HTTP monitors are recreated as [synthetic checks](/telemetry/synthetics).
+- Alerts, dashboards, and checks are exported to Terraform and committed.
+- Dynatrace alerts that duplicate Superlog alerts are turned off.
+- The Dynatrace exporter is removed from the Collector, then OneAgent is removed.

@@ -1,0 +1,193 @@
+---
+title: "Instrument your app"
+sidebarTitle: "Instrument your app"
+description: "Create an ingest key and send logs, traces, and metrics from your app with the OpenTelemetry SDK."
+---
+
+import EarlyAccess from "/snippets/early-access.mdx";
+
+<EarlyAccess />
+
+Superlog accepts standard OpenTelemetry over OTLP/HTTP. Your app sends logs, traces, and metrics with an ingest key.
+
+## Create an ingest key
+
+<Steps>
+  <Step title="Open the OpenTelemetry setup">
+    Open **Overview** in the sidebar. On a workspace with no telemetry, click **Set up OpenTelemetry**. Otherwise click **Add telemetry** and pick **OpenTelemetry**.
+
+    If the page says **Sending telemetry is not available**, telemetry is not turned on for your workspace yet.
+  </Step>
+
+  <Step title="Create the key">
+    Click **Create ingest key**, then **Copy key**. Keys start with `sl_ingest_`.
+
+    You can see the key only once. Store it in your secret manager. You can find and revoke it later in **Settings → Ingest keys**.
+  </Step>
+</Steps>
+
+An agent with the [Superlog MCP server](/assistants/claude) can also create a key with `create_ingest_key`.
+
+To have a coding agent instrument your project, copy the prompt under **Paste this prompt into your coding agent** and paste it into Claude Code, Codex, Cursor, or another agent. The prompt includes your key. It tells the agent to add the OpenTelemetry SDK with automatic instrumentation, set `service.name` and `deployment.environment.name`, connect your logger, and read the key from the environment. To do it yourself, continue below.
+
+## Configure the SDK
+
+Every OpenTelemetry SDK reads the same environment variables. Set these wherever your app runs:
+
+```bash
+export OTEL_EXPORTER_OTLP_ENDPOINT=https://superlog.sh/api/ingest
+export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+export OTEL_EXPORTER_OTLP_HEADERS=x-api-key=<your ingest key>
+
+export OTEL_SERVICE_NAME=checkout-api
+export OTEL_RESOURCE_ATTRIBUTES=deployment.environment.name=production
+```
+
+- Sending telemetry is available for workspaces in the EU region. For a US workspace, [contact us](https://cal.com/superlog/yc).
+- The SDK adds `/v1/logs`, `/v1/traces`, and `/v1/metrics` to the endpoint.
+- `OTEL_SERVICE_NAME` sets `service.name`, which Superlog uses to group your data by service.
+- Superlog also accepts the key as `Authorization: Bearer <key>`.
+
+Read the key from your secret manager. Do not commit it.
+
+## Language setup
+
+The examples below use each language's standard automatic instrumentation. The Node.js, Python, and Java examples set the traces, metrics, and logs exporters to `otlp` so all three signals are sent.
+
+<Tabs>
+  <Tab title="Node.js">
+    Install the SDK and the automatic instrumentations:
+
+    ```bash
+    npm install @opentelemetry/api @opentelemetry/auto-instrumentations-node
+    ```
+
+    Start your app with the instrumentation loaded first:
+
+    ```bash
+    export OTEL_TRACES_EXPORTER=otlp
+    export OTEL_METRICS_EXPORTER=otlp
+    export OTEL_LOGS_EXPORTER=otlp
+    export NODE_OPTIONS="--require @opentelemetry/auto-instrumentations-node/register"
+    node app.js
+    ```
+
+    This instruments HTTP, common web frameworks, database clients, and the `pino`, `winston`, and `bunyan` loggers. To send `winston` records, also install `@opentelemetry/winston-transport`.
+  </Tab>
+
+  <Tab title="Python">
+    Install the distro and the OTLP exporter, then install instrumentations for the libraries your app uses:
+
+    ```bash
+    pip install opentelemetry-distro opentelemetry-exporter-otlp
+    opentelemetry-bootstrap -a install
+    ```
+
+    Run your app through `opentelemetry-instrument`:
+
+    ```bash
+    export OTEL_TRACES_EXPORTER=otlp
+    export OTEL_METRICS_EXPORTER=otlp
+    export OTEL_LOGS_EXPORTER=otlp
+    export OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED=true
+    opentelemetry-instrument python app.py
+    ```
+
+    `OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED` sends records from the standard `logging` module, with their trace and span IDs.
+  </Tab>
+
+  <Tab title="Go">
+    Go has no automatic agent. Set up the SDK in code with `autoexport`, which builds the exporters from the environment variables above:
+
+    ```bash
+    go get go.opentelemetry.io/otel \
+      go.opentelemetry.io/otel/sdk \
+      go.opentelemetry.io/otel/sdk/metric \
+      go.opentelemetry.io/otel/sdk/log \
+      go.opentelemetry.io/otel/log \
+      go.opentelemetry.io/contrib/exporters/autoexport \
+      go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp \
+      go.opentelemetry.io/contrib/bridges/otelslog
+    ```
+
+    ```go
+    package main
+
+    import (
+    	"context"
+    	"errors"
+
+    	"go.opentelemetry.io/contrib/exporters/autoexport"
+    	"go.opentelemetry.io/otel"
+    	"go.opentelemetry.io/otel/log/global"
+    	"go.opentelemetry.io/otel/propagation"
+    	sdklog "go.opentelemetry.io/otel/sdk/log"
+    	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
+    	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+    )
+
+    // setupOTel starts traces, metrics, and logs. Call the returned function on exit.
+    func setupOTel(ctx context.Context) (func(context.Context) error, error) {
+    	spans, err := autoexport.NewSpanExporter(ctx)
+    	if err != nil {
+    		return nil, err
+    	}
+    	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(spans))
+    	otel.SetTracerProvider(tracerProvider)
+    	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
+    		propagation.TraceContext{}, propagation.Baggage{},
+    	))
+
+    	metrics, err := autoexport.NewMetricReader(ctx)
+    	if err != nil {
+    		return nil, err
+    	}
+    	meterProvider := sdkmetric.NewMeterProvider(sdkmetric.WithReader(metrics))
+    	otel.SetMeterProvider(meterProvider)
+
+    	logs, err := autoexport.NewLogExporter(ctx)
+    	if err != nil {
+    		return nil, err
+    	}
+    	loggerProvider := sdklog.NewLoggerProvider(sdklog.WithProcessor(sdklog.NewBatchProcessor(logs)))
+    	global.SetLoggerProvider(loggerProvider)
+
+    	return func(ctx context.Context) error {
+    		return errors.Join(tracerProvider.Shutdown(ctx), meterProvider.Shutdown(ctx), loggerProvider.Shutdown(ctx))
+    	}, nil
+    }
+    ```
+
+    The SDK reads `OTEL_SERVICE_NAME` and `OTEL_RESOURCE_ATTRIBUTES` on its own, and `autoexport` sends all three signals over OTLP by default. Wrap HTTP handlers with `otelhttp.NewHandler` and create loggers with `otelslog.NewLogger` so requests become spans and `slog` records carry trace IDs.
+
+    Call the returned shutdown function before the process exits, or the last batch is lost.
+  </Tab>
+
+  <Tab title="Java">
+    Download the OpenTelemetry Java agent:
+
+    ```bash
+    curl -L -o opentelemetry-javaagent.jar \
+      https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar
+    ```
+
+    Start your app with the agent:
+
+    ```bash
+    export OTEL_TRACES_EXPORTER=otlp
+    export OTEL_METRICS_EXPORTER=otlp
+    export OTEL_LOGS_EXPORTER=otlp
+    java -javaagent:opentelemetry-javaagent.jar -jar app.jar
+    ```
+
+    The agent instruments common frameworks and clients, and sends Logback and Log4j records with their trace and span IDs.
+  </Tab>
+</Tabs>
+
+## Check that data arrives
+
+Start your app and send it a few requests. Then open **Logs** and **Traces** in the sidebar. Your service appears under its `service.name`. In **Settings → Ingest keys**, the key shows **Used just now**.
+
+## Other ways to send telemetry
+
+See [Collect telemetry](/collect-telemetry/overview) for the OpenTelemetry Collector, Vercel, AWS CloudWatch, Google Cloud, and the browser SDK.
