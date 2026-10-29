@@ -48,29 +48,19 @@
           {
             "group": "Concepts",
             "pages": [
-              "how-it-works",
-              "concepts/workspaces-and-regions",
-              "concepts/telemetry",
+              "telemetry/errors",
+              "telemetry/alerts",
               "automations/overview",
               "tag-mode",
               "automations/models"
             ]
           },
           {
-            "group": "Guides",
+            "group": "Migrate",
             "pages": [
-              "quickstart",
-              "guides/triage-sentry-issues",
-              "guides/build-a-dashboard",
-              "guides/alert-on-errors-and-latency",
-              {
-                "group": "Migrate",
-                "pages": [
-                  "guides/migrate/datadog",
-                  "guides/migrate/new-relic",
-                  "guides/migrate/dynatrace"
-                ]
-              }
+              "guides/migrate/datadog",
+              "guides/migrate/new-relic",
+              "guides/migrate/dynatrace"
             ]
           },
           {
@@ -83,8 +73,6 @@
                   "telemetry/traces",
                   "telemetry/metrics",
                   "telemetry/dashboards",
-                  "telemetry/errors",
-                  "telemetry/alerts",
                   "telemetry/synthetics"
                 ]
               },
@@ -148,10 +136,9 @@
             ]
           },
           {
-            "group": "Troubleshooting",
+            "group": "Cookbook",
             "pages": [
-              "troubleshooting/telemetry",
-              "troubleshooting/automation-runs"
+              "guides/triage-sentry-issues"
             ]
           }
         ]
@@ -315,8 +302,16 @@
   },
   "redirects": [
     {
+      "source": "/how-it-works",
+      "destination": "/automations/overview"
+    },
+    {
+      "source": "/quickstart",
+      "destination": "/automations/overview"
+    },
+    {
       "source": "/introduction",
-      "destination": "/how-it-works"
+      "destination": "/automations/overview"
     },
     {
       "source": "/deployment",

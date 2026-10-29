@@ -16,7 +16,7 @@ Superlog reads two kinds of telemetry:
 - Span events named `exception`, as OpenTelemetry SDKs record them.
 - Logs at `ERROR` severity or above.
 
-You don't need to configure anything beyond sending telemetry. See [Telemetry](/concepts/telemetry).
+You don't need to configure anything beyond sending telemetry. See [Instrument your app](/guides/instrument-your-app).
 
 ## How errors are grouped
 
@@ -91,7 +91,7 @@ Notifications are off by default. Earlier errors are not posted when you turn th
 
 Add the **Errors** trigger to an automation to start a run on **New error**, **Error regression**, or both. You can limit it to some services. The agent receives the issue with its newest stack trace, trace ID, and attributes. See [Triggers](/automations/triggers).
 
-To alert on error volume instead, click **Create alert**. See [Alert on errors and latency](/guides/alert-on-errors-and-latency).
+To alert on error volume instead, click **Create alert**. See [Alerts](/telemetry/alerts).
 
 ## Use errors from an agent
 

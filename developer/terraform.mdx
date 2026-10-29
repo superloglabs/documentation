@@ -36,7 +36,7 @@ provider "superlog" {
 | `api_key` | `SUPERLOG_API_KEY` | A Superlog API key. Sensitive. |
 | `endpoint` | `SUPERLOG_ENDPOINT` | Your region's address. Defaults to `https://superlog.sh`. |
 
-Create the key under **Settings → API keys**. See [API keys](/settings/api-keys). The provider acts as the member who created the key, in that key's workspace. Set `endpoint` to the region your workspace is in. See [Workspaces and regions](/concepts/workspaces-and-regions).
+Create the key under **Settings → API keys**. See [API keys](/settings/api-keys). The provider acts as the member who created the key, in that key's workspace. Set `endpoint` to the region your workspace is in: `https://superlog.sh` for EU or `https://us.superlog.sh` for US.
 
 ```bash
 export SUPERLOG_API_KEY=slk_...
