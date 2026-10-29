@@ -15,7 +15,7 @@ Superlog stores logs, traces, and metrics as OpenTelemetry. Send them from your 
 | Source | Sends | Setup |
 |---|---|---|
 | [OpenTelemetry SDKs](/guides/instrument-your-app) | Logs, traces, metrics | Ingest key and three environment variables. Node.js, Python, Go, Java, and any other OpenTelemetry SDK. |
-| [Browser and React](/guides/browser) | Errors, traces, page loads, Web Vitals | `@superlog/browser`, sent through a route on your server. |
+| [Browser and React](/guides/browser) | Errors, traces, page loads, Web Vitals | `@superlog/browser` with an ingest key. |
 | [OpenTelemetry Collector](/collect-telemetry/opentelemetry-collector) | Logs, traces, metrics | Add an `otlphttp` exporter. |
 | [Vercel](/collect-telemetry/vercel) | Traces, logs | Connect Vercel. Superlog creates the drains. |
 | [AWS CloudWatch](/collect-telemetry/aws) | Metrics, logs | Deploy a CloudFormation stack per region. |

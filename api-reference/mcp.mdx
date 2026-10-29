@@ -86,10 +86,18 @@ For clients without OAuth, create an API key under **Settings → API keys** and
 | Models | `list_included_models`, `list_model_credentials`, `list_model_credential_models`, `test_model_credential`, `delete_model_credential` |
 | Secrets | `list_secrets` |
 | API keys | `list_api_keys`, `revoke_api_key` |
+| Telemetry | `list_services`, `query_logs`, `query_traces`, `query_metrics`, `get_trace`, `list_ingest_keys`, `create_ingest_key` |
+| Errors | `list_error_issues`, `get_error_issue`, `update_error_issue`, `get_error_notifications`, `update_error_notifications` |
+| Dashboards | `list_dashboards`, `get_dashboard`, `create_dashboard`, `update_dashboard`, `delete_dashboard`, `add_dashboard_widget`, `update_dashboard_widget`, `delete_dashboard_widget`, `update_dashboard_layout` |
+| Alerts | `list_alerts`, `get_alert`, `preview_alert`, `create_alert`, `update_alert`, `delete_alert`, `list_slack_channels` |
+| Synthetics | `list_synthetic_checks`, `get_synthetic_check`, `create_synthetic_check`, `update_synthetic_check`, `delete_synthetic_check` |
+| Terraform | `export_terraform` |
 
 Each tool takes the same fields as its API endpoint. Read-only tools are marked as read-only. `update_automation`, `cancel_automation_run`, `update_tag_mode`, `revoke_api_key`, and `delete_model_credential` are marked as destructive, so clients can ask before running them.
 
 `start_integration_connection` returns a consent link for the person to open in their browser. Integrations that need a credential return a secure setup link instead, so the credential is entered in Superlog and not in the conversation.
+
+The telemetry, error, dashboard, alert, synthetic, and Terraform tools need telemetry, which is in early access. `create_ingest_key` returns the new key once, with the OpenTelemetry settings for it. `get_error_notifications` and `update_error_notifications` are for workspace owners and admins.
 
 Adding a workspace secret or a model API key is not available as a tool, so those values never pass through a model. Use the app or the [API](/api-reference/introduction) for them.
 

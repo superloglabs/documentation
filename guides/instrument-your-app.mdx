@@ -26,6 +26,8 @@ Superlog accepts standard OpenTelemetry over OTLP/HTTP. Your app sends logs, tra
   </Step>
 </Steps>
 
+An agent with the [Superlog MCP server](/assistants/claude) can also create a key with `create_ingest_key`.
+
 To have a coding agent instrument your project, copy the prompt under **Paste this prompt into your coding agent** and paste it into Claude Code, Codex, Cursor, or another agent. The prompt includes your key. It tells the agent to add the OpenTelemetry SDK with automatic instrumentation, set `service.name` and `deployment.environment.name`, connect your logger, and read the key from the environment. To do it yourself, continue below.
 
 ## Configure the SDK

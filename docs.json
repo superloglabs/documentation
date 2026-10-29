@@ -255,7 +255,9 @@
               "POST /telemetry/traces/search",
               "GET /telemetry/traces/{traceId}",
               "POST /telemetry/metrics/search",
-              "GET /telemetry/services"
+              "GET /telemetry/services",
+              "GET /ingest-keys",
+              "POST /ingest-keys"
             ]
           },
           {
@@ -264,7 +266,9 @@
             "pages": [
               "GET /error-issues",
               "GET /error-issues/{issueId}",
-              "PATCH /error-issues/{issueId}"
+              "PATCH /error-issues/{issueId}",
+              "GET /error-notifications",
+              "PATCH /error-notifications"
             ]
           },
           {

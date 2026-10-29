@@ -22,51 +22,23 @@ The source is at [github.com/superloglabs/browser](https://github.com/superlogla
 npm install @superlog/browser @superlog/react
 ```
 
-## Relay through your server
+## Create an ingest key
 
-Superlog's ingest endpoint does not answer browser CORS requests, so a page cannot send to it directly. Add a route on your own server that forwards OTLP to Superlog with your ingest key. The key stays on the server.
+The SDK sends to Superlog with an ingest key. Create one for the app. See [Create an ingest key](/guides/instrument-your-app#create-an-ingest-key).
 
-This example is a Next.js route handler. Any server that can forward a request works the same way.
-
-```ts app/api/otel/v1/[signal]/route.ts
-// https://us.superlog.sh for a workspace in the US region.
-const superlog = "https://superlog.sh";
-
-export async function POST(request: Request, { params }: { params: Promise<{ signal: string }> }) {
-  const { signal } = await params;
-  if (signal !== "logs" && signal !== "traces") return new Response(null, { status: 404 });
-
-  const headers = new Headers({
-    "content-type": request.headers.get("content-type") ?? "application/x-protobuf",
-    "x-api-key": process.env.SUPERLOG_INGEST_KEY!,
-  });
-  const encoding = request.headers.get("content-encoding");
-  if (encoding) headers.set("content-encoding", encoding);
-
-  const response = await fetch(`${superlog}/api/ingest/v1/${signal}`, {
-    body: await request.arrayBuffer(),
-    headers,
-    method: "POST",
-  });
-  return new Response(response.body, {
-    headers: { "content-type": response.headers.get("content-type") ?? "application/json" },
-    status: response.status,
-  });
-}
-```
-
-The SDK sends only logs and traces. Anyone who can load your page can send through the relay, so add your own checks, such as a rate limit, if you need them.
+The key ships in your page's JavaScript, so anyone who loads the page can read it. An ingest key can only add telemetry to your workspace. It can't read data or change settings. Use a separate key for each app, so you can revoke one without affecting the others.
 
 ## Start the SDK
 
-Call `init` before the app renders. Point `endpoint` at your relay. The SDK adds `/v1/logs` and `/v1/traces` to it.
+Call `init` before the app renders. Set `endpoint` to your region's ingest endpoint: `https://superlog.sh/api/ingest` for EU or `https://us.superlog.sh/api/ingest` for US. The SDK adds `/v1/logs` and `/v1/traces` to it.
 
 ```ts
 import { init, setUser } from "@superlog/browser";
 
 init({
   service: "storefront",
-  endpoint: `${window.location.origin}/api/otel`,
+  ingestKey: import.meta.env.VITE_SUPERLOG_INGEST_KEY,
+  endpoint: "https://superlog.sh/api/ingest",
   release: import.meta.env.VITE_RELEASE,
   environment: import.meta.env.MODE,
   // Cross-origin APIs that should continue the trace. Same-origin requests always do.
