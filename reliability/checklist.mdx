@@ -14,13 +14,15 @@ You can set everything up with one prompt to a coding agent, or work through the
 
 <Steps>
   <Step title="Connect the agent to Superlog">
+    Sending telemetry is available for workspaces in the EU region. For a US workspace, [contact us](https://cal.com/superlog/yc).
+
     Install the [Superlog MCP server](/assistants/claude) in Claude Code, Cursor, Codex, or another agent, and open it in your repository. Sign in as a workspace owner or admin, so the agent can turn on error notifications.
   </Step>
   <Step title="Create an API key for source maps">
     If you have a browser app, create a workspace API key under **Settings → API keys** and set it as `SUPERLOG_API_KEY` in your shell. The build uses it to upload source maps. The agent creates the ingest keys itself.
   </Step>
   <Step title="Paste the prompt">
-    Paste the prompt below. For a workspace in the US region, replace `https://superlog.sh` with `https://us.superlog.sh`. The agent stops and asks you when it needs you to deploy, approve a connection, or choose a channel.
+    Paste the prompt below. The agent stops and asks you when it needs you to deploy, approve a connection, or choose a channel.
   </Step>
 </Steps>
 

@@ -30,7 +30,7 @@ The key ships in your page's JavaScript, so anyone who loads the page can read i
 
 ## Start the SDK
 
-Call `init` before the app renders. Set `endpoint` to your region's ingest endpoint: `https://superlog.sh/api/ingest` for EU or `https://us.superlog.sh/api/ingest` for US. The SDK adds `/v1/logs` and `/v1/traces` to it.
+Call `init` before the app renders. Set `endpoint` to `https://superlog.sh/api/ingest`. Sending telemetry is available for workspaces in the EU region. For a US workspace, [contact us](https://cal.com/superlog/yc). The SDK adds `/v1/logs` and `/v1/traces` to it.
 
 ```ts
 import { init, setUser } from "@superlog/browser";

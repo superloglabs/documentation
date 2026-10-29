@@ -43,7 +43,7 @@ export OTEL_SERVICE_NAME=checkout-api
 export OTEL_RESOURCE_ATTRIBUTES=deployment.environment.name=production
 ```
 
-- Use the origin of your workspace's region: `https://superlog.sh` for EU or `https://us.superlog.sh` for US.
+- Sending telemetry is available for workspaces in the EU region. For a US workspace, [contact us](https://cal.com/superlog/yc).
 - The SDK adds `/v1/logs`, `/v1/traces`, and `/v1/metrics` to the endpoint.
 - `OTEL_SERVICE_NAME` sets `service.name`, which Superlog uses to group your data by service.
 - Superlog also accepts the key as `Authorization: Bearer <key>`.
