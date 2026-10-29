@@ -1,6 +1,7 @@
 """Generate the overview's editable SVG diagrams (standard library only)."""
 from pathlib import Path
 from html import escape
+from base64 import b64encode
 
 ROOT = Path(__file__).resolve().parents[1]
 ICONS = {
@@ -16,26 +17,26 @@ ICONS = {
 }
 
 def render(dark=False):
- c = dict(bg='#101216',card='#1b1e24',text='#f1f2f5',muted='#a1a7b2',border='#30343d',line='#7393c8',dot='#2c313b',accent='#9dbcff',tint='#26354c',white='#252a33',soft='#171b24') if dark else dict(bg='#fdfdfe',card='#ffffff',text='#24262c',muted='#858993',border='#eceef2',line='#a9c4ea',dot='#d9dfe9',accent='#568ce6',tint='#f0f5ff',white='#ffffff',soft='#f6f8fd')
+ c = dict(bg='#090909',card='#171717',text='#f2f2f0',muted='#b7b7b2',border='#292929',line='#796ba9',dot='#292929',accent='#d2d2d0',tint='#202020',white='#202020',soft='#111111') if dark else dict(bg='#fcfcfc',card='#ffffff',text='#202020',muted='#767676',border='#eeeeee',line='#b5a9df',dot='#eeeeee',accent='#646464',tint='#f5f5f5',white='#ffffff',soft='#f9f9f9')
  p = ['<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="840" viewBox="0 0 1200 840" role="img" aria-labelledby="title desc">', '<title id="title">How Superlog works</title>', '<desc id="desc">Web apps send logs and traces through the browser SDK. Backend services send logs, traces and metrics through OpenTelemetry. Cloud integrations send logs and metrics. Superlog stores telemetry for dashboards, alerts, error issues and agent access. Synthetic checks send requests to web apps and backend services. Alerts, errors and failing checks notify Slack.</desc>', f'''<defs>
  <pattern id="dots" width="12" height="12" patternUnits="userSpaceOnUse"><circle cx="6" cy="6" r="0.7" fill="{c['dot']}"/></pattern>
  <radialGradient id="fade"><stop offset="0" stop-color="white"/><stop offset="0.7" stop-color="white" stop-opacity=".65"/><stop offset="1" stop-color="white" stop-opacity="0"/></radialGradient>
  <mask id="grid-fade"><rect width="1200" height="840" fill="url(#fade)"/></mask>
  <linearGradient id="surface" x2="0" y2="1"><stop stop-color="{c['white']}"/><stop offset="1" stop-color="{c['soft']}"/></linearGradient>
  <linearGradient id="icon" x2="0" y2="1"><stop stop-color="{c['white']}"/><stop offset="1" stop-color="{c['tint']}"/></linearGradient>
- <filter id="shadow" x="-40%" y="-40%" width="180%" height="220%"><feDropShadow dx="0" dy="12" stdDeviation="15" flood-color="#182b50" flood-opacity=".055"/><feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#182b50" flood-opacity=".035"/></filter>
- <filter id="icon-shadow" x="-50%" y="-50%" width="200%" height="220%"><feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#4574c4" flood-opacity=".09"/></filter>
- </defs>''',f'<rect width="1200" height="840" fill="{c["bg"]}"/>','<rect width="1200" height="840" fill="url(#dots)" mask="url(#grid-fade)"/>','<g font-family="Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif">']
+ <filter id="shadow" x="-40%" y="-40%" width="180%" height="220%"><feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity=".025"/><feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000000" flood-opacity=".04"/></filter>
+ <filter id="icon-shadow" x="-50%" y="-50%" width="200%" height="220%"><feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000000" flood-opacity=".06"/></filter>
+ </defs>''',f'<rect width="1200" height="840" fill="{c["bg"]}"/>',f'<g fill="none" stroke="{c["line"]}" stroke-width="1.2" opacity=".22"><circle cx="600" cy="400" r="200"/><circle cx="600" cy="400" r="246"/><circle cx="600" cy="400" r="292" opacity=".5"/></g>','<g font-family="Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif">']
  def text(x,y,s,size=18,color='text',weight=400,anchor='start'):
   p.append(f'<text x="{x}" y="{y}" fill="{c[color]}" font-size="{size}" font-weight="{weight}" text-anchor="{anchor}">{escape(s)}</text>')
  def line(d,dashed=False):
   p.append(f'<path d="{d}" fill="none" stroke="{c["line"]}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"'+(' stroke-dasharray="4 6"' if dashed else '')+'/>')
  def port(x,y):
-  p.append(f'<circle cx="{x}" cy="{y}" r="7" fill="{c["tint"]}"/><circle cx="{x}" cy="{y}" r="4" fill="{c["card"]}" stroke="{c["line"]}" stroke-width="1.5"/>')
+  p.append(f'<circle cx="{x}" cy="{y}" r="6" fill="{c["bg"]}"/><circle cx="{x}" cy="{y}" r="3.5" fill="{c["line"]}"/>')
  def icon(x,y,key,size=44):
-  p.append(f'<rect x="{x}" y="{y}" width="{size}" height="{size}" rx="13" fill="url(#icon)" stroke="{c["border"]}" filter="url(#icon-shadow)"/><g transform="translate({x+(size-28)/2} {y+(size-28)/2})" fill="none" stroke="{c["accent"]}" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round">{ICONS[key]}</g>')
+  p.append(f'<rect x="{x}" y="{y}" width="{size}" height="{size}" rx="{size/2}" fill="{c["card"]}" stroke="{c["border"]}" filter="url(#icon-shadow)"/><g transform="translate({x+(size-28)/2} {y+(size-28)/2})" fill="none" stroke="{c["accent"]}" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round">{ICONS[key]}</g>')
  def card(x,y,title,subtitle,key):
-  p.append(f'<rect x="{x}" y="{y}" width="288" height="96" rx="17" fill="{c["card"]}" stroke="{c["border"]}" filter="url(#shadow)"/>')
+  p.append(f'<rect x="{x}" y="{y}" width="288" height="96" rx="13" fill="{c["card"]}" stroke="{c["border"]}" filter="url(#shadow)"/>')
   icon(x+17,y+23,key);text(x+76,y+40,title,20);text(x+76,y+65,subtitle,14,'muted')
  # Fine shared rails, with visible ports rather than a tangle of arrows.
  line('M344 232 H374 Q400 232 400 258 V358 Q400 384 426 384 H456')
@@ -64,7 +65,7 @@ def render(dark=False):
  p.append(f'<rect x="466" y="264" width="268" height="292" rx="27" fill="{c["soft"]}" stroke="{c["border"]}"/>')
  p.append(f'<rect x="456" y="252" width="288" height="296" rx="25" fill="url(#surface)" stroke="{c["border"]}" filter="url(#shadow)"/>')
  p.append(f'<rect x="464" y="260" width="272" height="280" rx="19" fill="none" stroke="{c["white"]}"/>')
- icon(572,282,'pulse',56)
+ p.append(f'<circle cx="600" cy="310" r="33" fill="{c["card"]}" stroke="{c["border"]}" filter="url(#icon-shadow)"/><g transform="translate(580 290) scale(0.1142857)" fill="{c["text"]}"><rect x="172.464" y="172.464" width="96.3768" height="96.3768"/><rect y="81.1594" width="81.1594" height="187.681"/><rect x="268.841" y="81.1594" width="81.1594" height="187.681"/><rect x="81.16" width="187.681" height="81.1594"/><rect x="81.16" y="268.841" width="187.681" height="81.1594"/></g>')
  text(600,377,'Superlog',28,'text',500,'middle')
  text(600,405,'Your telemetry, together',16,'muted',anchor='middle')
  for x,label,key in [(508,'Logs','server'),(578,'Traces','pulse'),(648,'Metrics','chart')]:
@@ -75,6 +76,11 @@ def render(dark=False):
  for x,y in [(344,232),(344,384),(344,536),(456,384),(744,384),(856,232),(856,384),(856,536),(600,548),(600,680),(56,232),(56,384),(56,728),(1144,384),(1144,536),(1144,728),(200,776),(1000,776)]: port(x,y)
  p.append(f'<rect x="501" y="600" width="198" height="28" rx="14" fill="{c["bg"]}" stroke="{c["border"]}"/>');text(600,619,'Read the same telemetry',13,'muted',anchor='middle')
  p.append(f'<rect x="493" y="799" width="214" height="27" rx="13" fill="{c["bg"]}"/>');text(600,818,'Failing check notifications',13,'muted',anchor='middle')
+ fonts = []
+ for weight in [400, 500]:
+  data = b64encode((ROOT/'images'/'fonts'/f'inter-latin-{weight}-normal.woff2').read_bytes()).decode()
+  fonts.append(f"@font-face{{font-family:Inter;font-style:normal;font-weight:{weight};src:url(data:font/woff2;base64,{data}) format('woff2');}}")
+ p.insert(1, '<style>'+''.join(fonts)+'</style>')
  p.append('</g></svg>')
  return '\n'.join(p)+'\n'
 
