@@ -12,54 +12,8 @@ Your apps send logs, traces, and metrics to Superlog. Superlog stores them, grou
 
 Here is how a typical project uses Superlog to stay reliable:
 
-```mermaid
-flowchart LR
-  subgraph project[Your project]
-    web[Web app]
-    backend[Backend services]
-    infra[Cloud infrastructure]
-  end
-
-  subgraph send[How it sends]
-    browserSdk[Superlog browser SDK]
-    otel[OpenTelemetry SDKs]
-    cloud[Cloud integrations<br/>Vercel, AWS, Google Cloud]
-  end
-
-  subgraph superlog[Superlog]
-    traces[Traces]
-    logs[Logs]
-    metrics[Metrics]
-  end
-
-  subgraph outcomes[What you get]
-    alerts[Alerts<br/>know when systems don't behave as expected]
-    dashboards[Dashboards<br/>gain insight and confidence]
-    errors[Error fingerprinting<br/>find new failure modes]
-    synthetics[Synthetic checks<br/>know your endpoints answer from outside]
-  end
-
-  web --> browserSdk
-  backend --> otel
-  infra --> cloud
-  browserSdk --> traces
-  browserSdk --> logs
-  otel --> traces
-  otel --> logs
-  otel --> metrics
-  cloud --> logs
-  cloud --> metrics
-  traces --> alerts
-  logs --> alerts
-  metrics --> alerts
-  traces --> dashboards
-  logs --> dashboards
-  metrics --> dashboards
-  traces --> errors
-  logs --> errors
-  synthetics -.->|requests| web
-  synthetics -.->|requests| backend
-```
+<img className="block dark:hidden" src="/images/how-superlog-works.svg" alt="Telemetry flows from web apps, backend services, and cloud integrations into Superlog logs, traces, and metrics. Dashboards, alerts, error issues, and agents use this data. Synthetic checks probe your apps. Alerts, errors, and failing checks notify Slack." />
+<img className="hidden dark:block" src="/images/how-superlog-works-dark.svg" alt="Telemetry flows from web apps, backend services, and cloud integrations into Superlog logs, traces, and metrics. Dashboards, alerts, error issues, and agents use this data. Synthetic checks probe your apps. Alerts, errors, and failing checks notify Slack." />
 
 Alerts, error notifications, and failing synthetic checks post to Slack. Agents read the same data through the MCP server and automations.
 

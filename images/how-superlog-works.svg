@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="840" viewBox="0 0 1200 840" role="img" aria-labelledby="title desc">
+<title id="title">How Superlog works</title>
+<desc id="desc">Web apps send logs and traces through the browser SDK. Backend services send logs, traces and metrics through OpenTelemetry. Cloud integrations send logs and metrics. Superlog stores telemetry for dashboards, alerts, error issues and agent access. Synthetic checks send requests to web apps and backend services. Alerts, errors and failing checks notify Slack.</desc>
+<defs>
+ <pattern id="dots" width="12" height="12" patternUnits="userSpaceOnUse"><circle cx="6" cy="6" r="0.7" fill="#d9dfe9"/></pattern>
+ <radialGradient id="fade"><stop offset="0" stop-color="white"/><stop offset="0.7" stop-color="white" stop-opacity=".65"/><stop offset="1" stop-color="white" stop-opacity="0"/></radialGradient>
+ <mask id="grid-fade"><rect width="1200" height="840" fill="url(#fade)"/></mask>
+ <linearGradient id="surface" x2="0" y2="1"><stop stop-color="#ffffff"/><stop offset="1" stop-color="#f6f8fd"/></linearGradient>
+ <linearGradient id="icon" x2="0" y2="1"><stop stop-color="#ffffff"/><stop offset="1" stop-color="#f0f5ff"/></linearGradient>
+ <filter id="shadow" x="-40%" y="-40%" width="180%" height="220%"><feDropShadow dx="0" dy="12" stdDeviation="15" flood-color="#182b50" flood-opacity=".055"/><feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#182b50" flood-opacity=".035"/></filter>
+ <filter id="icon-shadow" x="-50%" y="-50%" width="200%" height="220%"><feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#4574c4" flood-opacity=".09"/></filter>
+ </defs>
+<rect width="1200" height="840" fill="#fdfdfe"/>
+<rect width="1200" height="840" fill="url(#dots)" mask="url(#grid-fade)"/>
+<g font-family="Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif">
+<path d="M344 232 H374 Q400 232 400 258 V358 Q400 384 426 384 H456" fill="none" stroke="#a9c4ea" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M344 384 H456" fill="none" stroke="#a9c4ea" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M344 536 H374 Q400 536 400 510 V410 Q400 384 426 384 H456" fill="none" stroke="#a9c4ea" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M744 384 H774 Q800 384 800 358 V258 Q800 232 826 232 H856" fill="none" stroke="#a9c4ea" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M744 384 H856" fill="none" stroke="#a9c4ea" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M744 384 H774 Q800 384 800 410 V510 Q800 536 826 536 H856" fill="none" stroke="#a9c4ea" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M600 548 V680" fill="none" stroke="#a9c4ea" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M56 728 H48 Q28 728 28 708 V252 Q28 232 48 232 H56" fill="none" stroke="#a9c4ea" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4 6"/>
+<path d="M28 404 Q28 384 48 384 H56" fill="none" stroke="#a9c4ea" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4 6"/>
+<path d="M1144 384 H1152 Q1172 384 1172 404 V708 Q1172 728 1152 728 H1144" fill="none" stroke="#a9c4ea" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M1144 536 H1172" fill="none" stroke="#a9c4ea" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M200 776 V790 Q200 812 222 812 H978 Q1000 812 1000 790 V776" fill="none" stroke="#a9c4ea" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4 6"/>
+<text x="200" y="139" fill="#858993" font-size="17" font-weight="400" text-anchor="middle">Your stack</text>
+<text x="600" y="139" fill="#858993" font-size="17" font-weight="400" text-anchor="middle">Collect &amp; connect</text>
+<text x="1000" y="139" fill="#858993" font-size="17" font-weight="400" text-anchor="middle">Understand &amp; act</text>
+<rect x="56" y="184" width="288" height="96" rx="17" fill="#ffffff" stroke="#eceef2" filter="url(#shadow)"/>
+<rect x="73" y="207" width="44" height="44" rx="13" fill="url(#icon)" stroke="#eceef2" filter="url(#icon-shadow)"/><g transform="translate(81.0 215.0)" fill="none" stroke="#568ce6" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="22" height="18" rx="3"/><path d="M3 10h22M8 7h.1M12 7h.1"/></g>
+<text x="132" y="224" fill="#24262c" font-size="20" font-weight="400" text-anchor="start">Web app</text>
+<text x="132" y="249" fill="#858993" font-size="14" font-weight="400" text-anchor="start">Superlog browser SDK</text>
+<rect x="56" y="336" width="288" height="96" rx="17" fill="#ffffff" stroke="#eceef2" filter="url(#shadow)"/>
+<rect x="73" y="359" width="44" height="44" rx="13" fill="url(#icon)" stroke="#eceef2" filter="url(#icon-shadow)"/><g transform="translate(81.0 367.0)" fill="none" stroke="#568ce6" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="20" height="9" rx="2"/><rect x="4" y="16" width="20" height="9" rx="2"/><path d="M8 7.5h.1M8 20.5h.1M14 7.5h6M14 20.5h6"/></g>
+<text x="132" y="376" fill="#24262c" font-size="20" font-weight="400" text-anchor="start">Backend services</text>
+<text x="132" y="401" fill="#858993" font-size="14" font-weight="400" text-anchor="start">OpenTelemetry SDKs</text>
+<rect x="56" y="488" width="288" height="96" rx="17" fill="#ffffff" stroke="#eceef2" filter="url(#shadow)"/>
+<rect x="73" y="511" width="44" height="44" rx="13" fill="url(#icon)" stroke="#eceef2" filter="url(#icon-shadow)"/><g transform="translate(81.0 519.0)" fill="none" stroke="#568ce6" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 22a6 6 0 0 1-1-12 8 8 0 0 1 15-1 6.5 6.5 0 0 1 0 13Z"/></g>
+<text x="132" y="528" fill="#24262c" font-size="20" font-weight="400" text-anchor="start">Cloud infrastructure</text>
+<text x="132" y="553" fill="#858993" font-size="14" font-weight="400" text-anchor="start">Vercel · AWS · Google Cloud</text>
+<rect x="856" y="184" width="288" height="96" rx="17" fill="#ffffff" stroke="#eceef2" filter="url(#shadow)"/>
+<rect x="873" y="207" width="44" height="44" rx="13" fill="url(#icon)" stroke="#eceef2" filter="url(#icon-shadow)"/><g transform="translate(881.0 215.0)" fill="none" stroke="#568ce6" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v20h21M9 19v-6M15 19V7M21 19V11"/></g>
+<text x="932" y="224" fill="#24262c" font-size="20" font-weight="400" text-anchor="start">Dashboards</text>
+<text x="932" y="249" fill="#858993" font-size="14" font-weight="400" text-anchor="start">Explore logs, traces &amp; metrics</text>
+<rect x="856" y="336" width="288" height="96" rx="17" fill="#ffffff" stroke="#eceef2" filter="url(#shadow)"/>
+<rect x="873" y="359" width="44" height="44" rx="13" fill="url(#icon)" stroke="#eceef2" filter="url(#icon-shadow)"/><g transform="translate(881.0 367.0)" fill="none" stroke="#568ce6" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11a7 7 0 0 1 14 0c0 8 3 8 3 10H4c0-2 3-2 3-10ZM11 25h6"/></g>
+<text x="932" y="376" fill="#24262c" font-size="20" font-weight="400" text-anchor="start">Alerts</text>
+<text x="932" y="401" fill="#858993" font-size="14" font-weight="400" text-anchor="start">Detect threshold crossings</text>
+<rect x="856" y="488" width="288" height="96" rx="17" fill="#ffffff" stroke="#eceef2" filter="url(#shadow)"/>
+<rect x="873" y="511" width="44" height="44" rx="13" fill="url(#icon)" stroke="#eceef2" filter="url(#icon-shadow)"/><g transform="translate(881.0 519.0)" fill="none" stroke="#568ce6" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m14 3 11 6v12l-11 6-11-6V9Z M14 9v8M14 21h.1"/></g>
+<text x="932" y="528" fill="#24262c" font-size="20" font-weight="400" text-anchor="start">Error issues</text>
+<text x="932" y="553" fill="#858993" font-size="14" font-weight="400" text-anchor="start">Group matching exceptions</text>
+<rect x="466" y="264" width="268" height="292" rx="27" fill="#f6f8fd" stroke="#eceef2"/>
+<rect x="456" y="252" width="288" height="296" rx="25" fill="url(#surface)" stroke="#eceef2" filter="url(#shadow)"/>
+<rect x="464" y="260" width="272" height="280" rx="19" fill="none" stroke="#ffffff"/>
+<rect x="572" y="282" width="56" height="56" rx="13" fill="url(#icon)" stroke="#eceef2" filter="url(#icon-shadow)"/><g transform="translate(586.0 296.0)" fill="none" stroke="#568ce6" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M2 14h6l4-9 5 18 4-9h5"/></g>
+<text x="600" y="377" fill="#24262c" font-size="28" font-weight="500" text-anchor="middle">Superlog</text>
+<text x="600" y="405" fill="#858993" font-size="16" font-weight="400" text-anchor="middle">Your telemetry, together</text>
+<rect x="508" y="433" width="44" height="44" rx="13" fill="url(#icon)" stroke="#eceef2" filter="url(#icon-shadow)"/><g transform="translate(516.0 441.0)" fill="none" stroke="#568ce6" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="20" height="9" rx="2"/><rect x="4" y="16" width="20" height="9" rx="2"/><path d="M8 7.5h.1M8 20.5h.1M14 7.5h6M14 20.5h6"/></g>
+<text x="530" y="502" fill="#858993" font-size="14" font-weight="400" text-anchor="middle">Logs</text>
+<rect x="578" y="433" width="44" height="44" rx="13" fill="url(#icon)" stroke="#eceef2" filter="url(#icon-shadow)"/><g transform="translate(586.0 441.0)" fill="none" stroke="#568ce6" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M2 14h6l4-9 5 18 4-9h5"/></g>
+<text x="600" y="502" fill="#858993" font-size="14" font-weight="400" text-anchor="middle">Traces</text>
+<rect x="648" y="433" width="44" height="44" rx="13" fill="url(#icon)" stroke="#eceef2" filter="url(#icon-shadow)"/><g transform="translate(656.0 441.0)" fill="none" stroke="#568ce6" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v20h21M9 19v-6M15 19V7M21 19V11"/></g>
+<text x="670" y="502" fill="#858993" font-size="14" font-weight="400" text-anchor="middle">Metrics</text>
+<rect x="56" y="680" width="288" height="96" rx="17" fill="#ffffff" stroke="#eceef2" filter="url(#shadow)"/>
+<rect x="73" y="703" width="44" height="44" rx="13" fill="url(#icon)" stroke="#eceef2" filter="url(#icon-shadow)"/><g transform="translate(81.0 711.0)" fill="none" stroke="#568ce6" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M2 14h6l4-9 5 18 4-9h5"/></g>
+<text x="132" y="720" fill="#24262c" font-size="20" font-weight="400" text-anchor="start">Synthetic checks</text>
+<text x="132" y="745" fill="#858993" font-size="14" font-weight="400" text-anchor="start">Check endpoint availability</text>
+<rect x="456" y="680" width="288" height="96" rx="17" fill="#ffffff" stroke="#eceef2" filter="url(#shadow)"/>
+<rect x="473" y="703" width="44" height="44" rx="13" fill="url(#icon)" stroke="#eceef2" filter="url(#icon-shadow)"/><g transform="translate(481.0 711.0)" fill="none" stroke="#568ce6" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m10 7-7 7 7 7M18 7l7 7-7 7M16 4l-4 20"/></g>
+<text x="532" y="720" fill="#24262c" font-size="20" font-weight="400" text-anchor="start">Agents</text>
+<text x="532" y="745" fill="#858993" font-size="14" font-weight="400" text-anchor="start">MCP server &amp; automations</text>
+<rect x="856" y="680" width="288" height="96" rx="17" fill="#ffffff" stroke="#eceef2" filter="url(#shadow)"/>
+<rect x="873" y="703" width="44" height="44" rx="13" fill="url(#icon)" stroke="#eceef2" filter="url(#icon-shadow)"/><g transform="translate(881.0 711.0)" fill="none" stroke="#568ce6" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h18a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H12l-7 5v-5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2ZM8 10h12M8 15h8"/></g>
+<text x="932" y="720" fill="#24262c" font-size="20" font-weight="400" text-anchor="start">Slack</text>
+<text x="932" y="745" fill="#858993" font-size="14" font-weight="400" text-anchor="start">Notifications &amp; recoveries</text>
+<circle cx="344" cy="232" r="7" fill="#f0f5ff"/><circle cx="344" cy="232" r="4" fill="#ffffff" stroke="#a9c4ea" stroke-width="1.5"/>
+<circle cx="344" cy="384" r="7" fill="#f0f5ff"/><circle cx="344" cy="384" r="4" fill="#ffffff" stroke="#a9c4ea" stroke-width="1.5"/>
+<circle cx="344" cy="536" r="7" fill="#f0f5ff"/><circle cx="344" cy="536" r="4" fill="#ffffff" stroke="#a9c4ea" stroke-width="1.5"/>
+<circle cx="456" cy="384" r="7" fill="#f0f5ff"/><circle cx="456" cy="384" r="4" fill="#ffffff" stroke="#a9c4ea" stroke-width="1.5"/>
+<circle cx="744" cy="384" r="7" fill="#f0f5ff"/><circle cx="744" cy="384" r="4" fill="#ffffff" stroke="#a9c4ea" stroke-width="1.5"/>
+<circle cx="856" cy="232" r="7" fill="#f0f5ff"/><circle cx="856" cy="232" r="4" fill="#ffffff" stroke="#a9c4ea" stroke-width="1.5"/>
+<circle cx="856" cy="384" r="7" fill="#f0f5ff"/><circle cx="856" cy="384" r="4" fill="#ffffff" stroke="#a9c4ea" stroke-width="1.5"/>
+<circle cx="856" cy="536" r="7" fill="#f0f5ff"/><circle cx="856" cy="536" r="4" fill="#ffffff" stroke="#a9c4ea" stroke-width="1.5"/>
+<circle cx="600" cy="548" r="7" fill="#f0f5ff"/><circle cx="600" cy="548" r="4" fill="#ffffff" stroke="#a9c4ea" stroke-width="1.5"/>
+<circle cx="600" cy="680" r="7" fill="#f0f5ff"/><circle cx="600" cy="680" r="4" fill="#ffffff" stroke="#a9c4ea" stroke-width="1.5"/>
+<circle cx="56" cy="232" r="7" fill="#f0f5ff"/><circle cx="56" cy="232" r="4" fill="#ffffff" stroke="#a9c4ea" stroke-width="1.5"/>
+<circle cx="56" cy="384" r="7" fill="#f0f5ff"/><circle cx="56" cy="384" r="4" fill="#ffffff" stroke="#a9c4ea" stroke-width="1.5"/>
+<circle cx="56" cy="728" r="7" fill="#f0f5ff"/><circle cx="56" cy="728" r="4" fill="#ffffff" stroke="#a9c4ea" stroke-width="1.5"/>
+<circle cx="1144" cy="384" r="7" fill="#f0f5ff"/><circle cx="1144" cy="384" r="4" fill="#ffffff" stroke="#a9c4ea" stroke-width="1.5"/>
+<circle cx="1144" cy="536" r="7" fill="#f0f5ff"/><circle cx="1144" cy="536" r="4" fill="#ffffff" stroke="#a9c4ea" stroke-width="1.5"/>
+<circle cx="1144" cy="728" r="7" fill="#f0f5ff"/><circle cx="1144" cy="728" r="4" fill="#ffffff" stroke="#a9c4ea" stroke-width="1.5"/>
+<circle cx="200" cy="776" r="7" fill="#f0f5ff"/><circle cx="200" cy="776" r="4" fill="#ffffff" stroke="#a9c4ea" stroke-width="1.5"/>
+<circle cx="1000" cy="776" r="7" fill="#f0f5ff"/><circle cx="1000" cy="776" r="4" fill="#ffffff" stroke="#a9c4ea" stroke-width="1.5"/>
+<rect x="501" y="600" width="198" height="28" rx="14" fill="#fdfdfe" stroke="#eceef2"/>
+<text x="600" y="619" fill="#858993" font-size="13" font-weight="400" text-anchor="middle">Read the same telemetry</text>
+<rect x="493" y="799" width="214" height="27" rx="13" fill="#fdfdfe"/>
+<text x="600" y="818" fill="#858993" font-size="13" font-weight="400" text-anchor="middle">Failing check notifications</text>
+</g></svg>
