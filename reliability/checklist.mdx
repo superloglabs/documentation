@@ -1,14 +1,14 @@
 ---
 title: "Make your application reliable"
 sidebarTitle: "Checklist"
-description: "Set up telemetry, connected traces, dashboards, alerts, error notifications, and synthetic checks with one agent prompt, or step by step."
+description: "Set up telemetry, connected traces, dashboards, alerts, error notifications, and synthetic checks with one agent prompt, one prompt per step, or by hand."
 ---
 
 import EarlyAccess from "/snippets/early-access.mdx";
 
 <EarlyAccess />
 
-You can set everything up with one prompt to a coding agent, or work through the [checklist](#checklist) by hand.
+You can set everything up with one prompt to a coding agent, or work through the [checklist](#checklist) one step at a time, by hand or with that step's prompt.
 
 ## Set it up with one prompt
 
@@ -193,50 +193,421 @@ The agent keeps what is already set up and adds only what is missing, so you can
 
 ## Checklist
 
-Work through these steps for each service you run. Each one links to the page that covers it.
+Work through these steps for each service you run. Each one links to the page that covers it and has a prompt that sets up or improves only that part.
+
+You can run a prompt on its own, as often as you like. It keeps what exists and adds only what is missing. Each prompt needs the [Superlog MCP server](/assistants/claude). Alerts and dashboards are built from real data, so send telemetry first.
 
 <Steps>
   <Step title="Send telemetry">
     Send logs, traces, and metrics from the service. Set `service.name` and `deployment.environment.name` so Superlog can group and filter by them. Connect logs to traces so each log record carries its trace and span IDs.
 
     See [Collect telemetry](/collect-telemetry/overview).
+
+    <Accordion title="Prompt: backend services">
+      ```text
+      Set up OpenTelemetry for the backend services in this repository so they send
+      traces, metrics, and logs to Superlog. You have the Superlog MCP server. Never
+      commit a key.
+
+      This may already be partly or fully set up. Check what exists first. Keep what
+      works and add only what is missing. Never delete, rename, rotate, or replace
+      existing instrumentation or ingest keys. If you think one should change, list
+      the change and wait for my approval. Running this prompt again on a finished
+      setup should change nothing.
+
+      1. Inventory
+         - List every backend service: HTTP APIs, workers, and scheduled jobs. Find
+           how each one sends telemetry today: an OpenTelemetry SDK, another vendor's
+           agent or SDK, or nothing. Use the service name it already reports. Give
+           new services a short, stable name.
+         - Read list_services and list_ingest_keys. Query the last 24 hours of
+           traces, logs, and metrics for each service to see which signals arrive.
+
+      2. Ingest key
+         - Skip services that already send to Superlog, and reuse the key a project
+           already reads from its environment or secret manager.
+         - If services that send nothing still need a key, create one for the backend
+           services with create_ingest_key. Name it after what uses it, and check
+           list_ingest_keys first so you don't create a second key with the same name.
+         - Add placeholders for new settings to the example environment file. Tell
+           me where to set the real values, or set them in the secret manager the
+           project already uses.
+
+      3. Instrumentation
+         - If a service already exports OpenTelemetry to Superlog, keep its setup and
+           only fill gaps from the list below.
+         - If it sends to another vendor, don't remove that. Ask me whether to add
+           Superlog as a second exporter or to replace it.
+         - For services with nothing: use the official OpenTelemetry SDK for the
+           service's language, with automatic instrumentation for its framework, HTTP
+           clients, database clients, and queues. Configure the exporters only with
+           environment variables:
+             OTEL_EXPORTER_OTLP_ENDPOINT=<endpoint from list_ingest_keys>
+             OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+             OTEL_EXPORTER_OTLP_HEADERS=x-api-key=<ingest key>
+           Send traces, metrics, and logs. Start the SDK before the app loads other
+           modules. Flush and shut it down when the process exits.
+         - Gaps to check on every service:
+           - service.name, service.version, and deployment.environment.name are set.
+           - The logger is connected to the OpenTelemetry logs SDK, so each record
+             carries its trace and span IDs. Console output stays.
+           - Unhandled exceptions are recorded on the active span as exception events
+             and logged at error level, so Superlog groups them into error issues.
+           - The few operations that matter most to users, such as checkout or
+             sign-in, have spans.
+
+      4. Verify
+         - If you changed code, run the project's checks. Then ask me to deploy, or
+           to run the services locally with the settings, and send some traffic.
+         - Confirm each service with list_services, query_traces, query_logs, and
+           query_metrics.
+
+      Finish with a table of every service and ingest key, marked as already in
+      place, added, or suggested, and a list of anything you could not set up and why.
+      ```
+    </Accordion>
+
+    <Accordion title="Prompt: browser frontends">
+      ```text
+      Set up the Superlog browser SDK for the browser frontends in this repository.
+      You have the Superlog MCP server. A workspace API key for source map uploads may
+      be in SUPERLOG_API_KEY. Never commit a key.
+
+      This may already be partly or fully set up. Check what exists first. Keep what
+      works and add only what is missing. Never delete, rename, rotate, or replace
+      existing instrumentation or ingest keys. If you think one should change, list
+      the change and wait for my approval. Running this prompt again on a finished
+      setup should change nothing.
+
+      1. Inventory
+         - List every browser frontend. Find how each one sends telemetry today: the
+           Superlog browser SDK, another vendor's SDK, or nothing. Use the service
+           name it already reports. Give new apps a short, stable name.
+         - Read list_services and list_ingest_keys. Query the last 24 hours of traces
+           and logs for each app to see which signals arrive.
+
+      2. Ingest key
+         - Skip apps that already send to Superlog, and reuse the key a project
+           already reads from its environment.
+         - If an app that sends nothing still needs a key, create one for it with
+           create_ingest_key. Name it after the app, and check list_ingest_keys first
+           so you don't create a second key with the same name.
+         - Add placeholders for new settings to the example environment file. Tell
+           me where to set the real values.
+
+      3. Instrumentation
+         - If @superlog/browser is already set up, keep it and only fill gaps.
+         - If an app sends to another vendor, don't remove that. Ask me whether to
+           add Superlog alongside it or to replace it.
+         - Otherwise install @superlog/browser, and @superlog/react for React apps.
+           Follow https://docs.superlog.sh/guides/browser. Call init before the app
+           renders, with service, release, environment, the app's ingest key as
+           ingestKey, and the endpoint from list_ingest_keys as endpoint.
+         - Gaps to check: the React error boundary and router instrumentation for
+           React apps, and source map uploads in the build with @superlog/sourcemaps
+           and SUPERLOG_API_KEY, using the same release value as init. If the
+           endpoint is on us.superlog.sh, set the upload url to
+           https://us.superlog.sh.
+
+      4. Verify
+         - If you changed code, run the project's checks. Then ask me to deploy, or
+           to run the app locally with the settings, and open it.
+         - Confirm each app with list_services, query_traces, and query_logs.
+
+      Finish with a table of every app and ingest key, marked as already in place,
+      added, or suggested, and a list of anything you could not set up and why.
+      ```
+    </Accordion>
   </Step>
 
   <Step title="Connect requests across services">
     Pass W3C trace context (`traceparent`) on every call between services, including from the browser to your API and through queues and background jobs. Then one user action shows up as one trace. If your app has a request ID, add it to spans and logs.
 
     See [Traces](/telemetry/traces) and [Browser and React](/guides/browser).
+
+    <Accordion title="Prompt: connect requests across services">
+      ```text
+      Connect requests across the services in this repository so one user action shows
+      up as one trace in Superlog, from the browser through every service it reaches.
+      You have the Superlog MCP server.
+
+      This may already be partly or fully set up. Check each link and fix only the
+      ones that break. Keep what works. Never remove existing instrumentation. If you
+      think something that works should change, list the change and wait for my
+      approval. Running this prompt again on a finished setup should change nothing.
+
+      1. Inventory
+         - Map how the services call each other: HTTP and gRPC calls, queues and
+           topics, background jobs, and calls from the browser to the backend.
+         - Read list_services. If a service sends no telemetry yet, list it and move
+           on.
+
+      2. Check each link
+         - Use W3C trace context (traceparent and tracestate) everywhere.
+         - Browser to backend: tracePropagationTargets in the browser SDK lists the
+           app's API origins, and the API's CORS settings allow the traceparent and
+           tracestate headers.
+         - Service to service: every outgoing HTTP and gRPC client sends
+           traceparent, every server continues it, and proxies, gateways, and load
+           balancers pass the headers through.
+         - Queues and background jobs: the trace context is injected into each
+           message's headers or attributes when it is sent and extracted when it is
+           processed, so the job's spans join the trace that enqueued it. Use the
+           instrumentation library for the queue if there is one.
+         - Request IDs: if the app has a request ID, it is on the active span as an
+           attribute and on every log record, and the response returns the trace ID
+           in a header so support can find a user's request.
+
+      3. Verify
+         - If you changed code, run the project's checks. Then ask me to deploy, or
+           to run the services locally, and send some traffic.
+         - Find a trace for a user action that crosses services with query_traces,
+           open it with get_trace, and confirm it has spans from the browser and
+           every service involved.
+
+      Finish with a table of every link, marked as already working, fixed, or
+      suggested, and a list of anything you could not connect and why.
+      ```
+    </Accordion>
   </Step>
 
   <Step title="Connect Slack">
     Slack is where alerts, error notifications, and synthetic check failures go.
 
     See [Slack](/integrations/slack).
+
+    <Accordion title="Prompt: connect Slack">
+      ```text
+      Connect Slack to Superlog. You have the Superlog MCP server.
+
+      Slack may already be connected. Keep an existing connection as it is. Running
+      this prompt again on a finished setup should change nothing.
+
+      1. Call list_integrations. If Slack is connected, skip to step 3.
+      2. Call start_integration_connection for Slack and wait for me to approve it.
+         Then confirm the connection with list_integrations.
+      3. Call list_slack_channels. If a channel I need is missing, call
+         refresh_integrations and list them again. For a private channel, ask me to
+         invite the Superlog app first.
+
+      Finish by saying whether Slack was already connected or is newly connected, and
+      which channels Superlog can post to.
+      ```
+    </Accordion>
   </Step>
 
   <Step title="Turn on error notifications">
     Superlog groups exceptions into issues on its own. Turn on notifications so a Slack channel hears about each new error and each regression. Resolve or silence issues from the Slack message.
 
     See [Errors](/telemetry/errors#slack-notifications).
+
+    <Accordion title="Prompt: turn on error notifications">
+      ```text
+      Turn on Superlog error notifications, so a Slack channel hears about each new
+      error and each regression. You have the Superlog MCP server. This needs a
+      workspace owner or admin. If the tools refuse, tell me and stop.
+
+      These may already be on. Keep the current channel. If you think it should
+      change, tell me and wait for my approval. Running this prompt again on a
+      finished setup should change nothing.
+
+      1. Call get_error_notifications. If notifications are on, skip to step 4.
+      2. Call list_integrations. If Slack is not connected, call
+         start_integration_connection for Slack and wait for me to approve it.
+      3. Call list_slack_channels and ask me which channel to use. For a private
+         channel, ask me to invite the Superlog app first. Then turn notifications on
+         with update_error_notifications.
+      4. Confirm with get_error_notifications.
+
+      Finish by saying whether notifications were already on or are newly on, and
+      which channel they post to.
+      ```
+    </Accordion>
   </Step>
 
   <Step title="Add alerts">
     Add an alert for each signal that means users are affected, such as a spike in error logs or slow requests on a key endpoint. Preview each alert before you save it.
 
     See [Alerts](/telemetry/alerts).
+
+    <Accordion title="Prompt: add alerts">
+      ```text
+      Add Superlog alerts for the failures in this workspace that someone should act
+      on. You have the Superlog MCP server.
+
+      This may already be partly or fully set up. Check what exists first. Keep what
+      works and add only what is missing. Never delete, rename, or replace an existing
+      alert. If you think one should change, list the change and wait for my approval.
+      Running this prompt again on a finished setup should change nothing.
+
+      1. Read the workspace
+         - Call list_services, list_alerts, and list_integrations. Read each alert
+           with get_alert.
+         - Query traces, logs, and metrics for each service, and note the real metric
+           names, routes, and attribute names. Build alerts from data you have seen,
+           not from guesses. If a service sends no data, list it and move on.
+
+      2. Choose a channel
+         - Use the channel the existing alerts post to. If there are none, ask me
+           which channel to use.
+         - If Slack is not connected, call start_integration_connection for Slack and
+           wait for me to approve it. Take the channel from list_slack_channels.
+
+      3. Find what is missing
+         - Only alerts someone should act on. Each alert name says what is broken.
+           Superlog alerts compare one value with a threshold. They cannot divide two
+           values, so use counts and percentiles.
+         - For each service, these are the cases to cover where they apply:
+           a. Down: span count below 1 over 10 minutes, for services with steady
+              traffic.
+           b. Failing requests: error span count above a threshold.
+           c. Slow: p95 span duration above a threshold on the main routes.
+           d. Crashes: fatal logs above 0.
+           e. Backlog: queue depth or job lag metrics above a threshold, if the
+              service has them.
+         - A case is covered when an existing alert watches the same service and the
+           same kind of failure, even with a different threshold or name. Skip
+           covered cases.
+
+      4. Add alerts
+         - For uncovered cases, set the threshold from the last 7 days of data so it
+           does not fire on normal peaks. Check each new alert with preview_alert,
+           show me the rule, threshold, and preview, and wait for my approval before
+           create_alert.
+         - If an existing alert looks too noisy or too quiet, suggest a change with
+           its preview. Don't change it without my approval.
+
+      Finish with a table of every service and case, marked as already in place,
+      added, or suggested, and a list of anything you could not set up and why.
+      ```
+    </Accordion>
   </Step>
 
   <Step title="Add synthetic checks">
     Add a check for each public endpoint and health route. Superlog requests it on a schedule and posts to Slack when it fails.
 
     See [Synthetic checks](/telemetry/synthetics).
+
+    <Accordion title="Prompt: add synthetic checks">
+      ```text
+      Add Superlog synthetic checks for the public endpoints of this application. You
+      have the Superlog MCP server.
+
+      This may already be partly or fully set up. Check what exists first. Keep what
+      works and add only what is missing. Never delete, rename, or replace an existing
+      check. If you think one should change, list the change and wait for my approval.
+      Running this prompt again on a finished setup should change nothing.
+
+      1. Inventory
+         - Find each public health endpoint and main page in the repository. Ask me
+           for any public URL you can't tell from the code.
+         - Call list_synthetic_checks. Skip URLs that already have a check.
+
+      2. Choose a channel
+         - Use the channel the existing checks post to. If there are no checks,
+           use the channel from list_alerts. If there are no alerts either, ask
+           me which channel to use.
+         - If Slack is not connected, call start_integration_connection for Slack and
+           wait for me to approve it. Take the channel from list_slack_channels.
+
+      3. Add checks
+         - For each URL without a check, create one with create_synthetic_check:
+           every minute, retry once, alert after 2 failed runs. Assert a 2xx status
+           and a response time, a JSON status field if the health endpoint returns
+           one, and a TLS certificate that expires in more than 14 days.
+         - Confirm each new check has run with get_synthetic_check. If one fails, tell
+           me what it got.
+
+      Finish with a table of every URL and check, marked as already in place, added,
+      or suggested, and a list of anything you could not set up and why.
+      ```
+    </Accordion>
   </Step>
 
   <Step title="Build a service dashboard">
     Chart request rate, errors, and latency for the service. Add a variable for the environment so one dashboard covers all of them.
 
     See [Dashboards](/telemetry/dashboards).
+
+    <Accordion title="Prompt: build dashboards">
+      ```text
+      Build Superlog dashboards for the services in this workspace. You have the
+      Superlog MCP server.
+
+      This may already be partly or fully set up. Check what exists first. Keep what
+      works and add only what is missing. Never delete, rename, or replace an existing
+      dashboard or widget. If you think one should change, list the change and wait
+      for my approval. Running this prompt again on a finished setup should change
+      nothing.
+
+      1. Read the workspace
+         - Call list_services and list_dashboards. Read each dashboard with
+           get_dashboard. Treat a dashboard as covering a service if its name or its
+           widgets are about that service.
+         - Query traces, logs, and metrics for each service, and note the real metric
+           names, routes, and attribute names. Build charts from data you have seen,
+           not from guesses. If a service sends no data, list it and move on.
+
+      2. Add what is missing
+         - If no dashboard covers the whole system, create a "Service health"
+           dashboard: requests per service, error spans per service, p95 latency per
+           service, a list of recent error logs, and a list of recent error traces,
+           with a dashboard variable for deployment.environment.name.
+         - For each service with no dashboard, create one: throughput, errors, and
+           p50, p95, and p99 latency by route; the slowest routes as a table;
+           database and outgoing call latency; runtime metrics such as memory and
+           CPU if the service sends them; and a list of its error logs.
+         - For dashboards that already exist, list the charts they are missing as
+           suggestions. Don't add them without my approval.
+         - Query each widget's data before you add it. Arrange new dashboards with
+           update_dashboard_layout so the most important charts are at the top.
+
+      Finish with a table of every dashboard with its link, marked as already in
+      place, added, or suggested, and a list of anything you could not set up and why.
+      ```
+    </Accordion>
   </Step>
 </Steps>
 
 If you already manage infrastructure with Terraform, you can keep your alerts, dashboards, and synthetic checks there too. See [Terraform provider](/developer/terraform).
+
+<Accordion title="Prompt: move Superlog into Terraform">
+  ```text
+  Keep this workspace's Superlog alerts, dashboards, and synthetic checks in this
+  repository's Terraform. You have the Superlog MCP server. A workspace API key
+  may be in SUPERLOG_API_KEY. Never commit a key.
+
+  This may already be partly or fully set up. Check what exists first. Keep what
+  works and add only what is missing. Don't run apply without my approval. Running
+  this prompt again on a finished setup should change nothing.
+
+  1. Inventory
+     - If the repository doesn't use Terraform or OpenTofu, ask me whether to add
+       it before you continue.
+     - Find the superloglabs/superlog provider and every superlog_alert,
+       superlog_dashboard, and superlog_synthetic_check resource.
+     - Call list_alerts, list_dashboards, and list_synthetic_checks. Compare them
+       with the resources to find the objects Terraform doesn't manage yet.
+
+  2. Add what is missing
+     - If the provider is not configured, add it. Set endpoint to
+       https://superlog.sh, or https://us.superlog.sh if the endpoint from
+       list_ingest_keys is on us.superlog.sh. Read the key from SUPERLOG_API_KEY.
+     - Call export_terraform with the IDs of the unmanaged objects, and add the
+       output next to the existing configuration. Its import blocks adopt the
+       existing objects instead of creating copies.
+     - Tell me which sensitive variables to set for secret headers on synthetic
+       checks.
+     - Tell me that widgets added to a Terraform-managed dashboard in Superlog
+       are removed on the next apply.
+
+  3. Verify
+     - Run plan and show me the result. It should only import objects. If it
+       would change or destroy one, stop and explain why.
+     - Wait for my approval before you apply.
+
+  Finish with a table of every alert, dashboard, and synthetic check, marked as
+  already managed, added, or suggested, and a list of anything you could not add
+  and why.
+  ```
+</Accordion>
