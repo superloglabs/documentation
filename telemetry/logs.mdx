@@ -75,4 +75,4 @@ When the log is at `ERROR` level or above and belongs to an error issue, **Open 
 
 ## Query logs from an agent
 
-The [MCP server](/api-reference/mcp) has a `query_logs` tool, and the [management API](/api-reference/introduction) has `POST /telemetry/logs/search`. Use them to let an agent search logs with the same filters.
+The [MCP server](/api-reference/mcp) has a `query_logs` tool, and the [management API](/api-reference/introduction) has `POST /telemetry/logs/search`. Use them to let an agent search logs with the same filters. To follow logs as they arrive, the MCP server's `watch_logs` checks about every 30 seconds and tells the agent's conversation when new logs match, and the agent reads them with `query_logs`.

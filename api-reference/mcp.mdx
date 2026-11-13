@@ -86,11 +86,11 @@ For clients without OAuth, create an API key under **Settings → API keys** and
 | Models | `list_included_models`, `list_model_credentials`, `list_model_credential_models`, `test_model_credential`, `delete_model_credential` |
 | Secrets | `list_secrets` |
 | API keys | `list_api_keys`, `revoke_api_key` |
-| Telemetry | `list_services`, `query_logs`, `query_traces`, `query_metrics`, `get_trace`, `list_ingest_keys`, `create_ingest_key` |
-| Errors | `list_error_issues`, `get_error_issue`, `update_error_issue`, `get_error_notifications`, `update_error_notifications` |
+| Telemetry | `list_services`, `query_logs`, `query_traces`, `query_metrics`, `get_trace`, `list_ingest_keys`, `create_ingest_key`, `watch_logs` |
+| Errors | `list_error_issues`, `get_error_issue`, `update_error_issue`, `get_error_notifications`, `update_error_notifications`, `watch_error_issues` |
 | Dashboards | `list_dashboards`, `get_dashboard`, `create_dashboard`, `update_dashboard`, `delete_dashboard`, `add_dashboard_widget`, `update_dashboard_widget`, `delete_dashboard_widget`, `update_dashboard_layout` |
-| Alerts | `list_alerts`, `get_alert`, `preview_alert`, `create_alert`, `update_alert`, `delete_alert`, `list_slack_channels` |
-| Synthetics | `list_synthetic_checks`, `get_synthetic_check`, `create_synthetic_check`, `update_synthetic_check`, `delete_synthetic_check` |
+| Alerts | `list_alerts`, `get_alert`, `preview_alert`, `create_alert`, `update_alert`, `delete_alert`, `list_slack_channels`, `watch_alert` |
+| Synthetics | `list_synthetic_checks`, `get_synthetic_check`, `create_synthetic_check`, `update_synthetic_check`, `delete_synthetic_check`, `watch_synthetic_check` |
 | Terraform | `export_terraform` |
 
 Each tool takes the same fields as its API endpoint. Read-only tools are marked as read-only. `update_automation`, `cancel_automation_run`, `update_tag_mode`, `revoke_api_key`, and `delete_model_credential` are marked as destructive, so clients can ask before running them.
@@ -98,6 +98,19 @@ Each tool takes the same fields as its API endpoint. Read-only tools are marked 
 `start_integration_connection` returns a consent link for the person to open in their browser. Integrations that need a credential return a secure setup link instead, so the credential is entered in Superlog and not in the conversation.
 
 The telemetry, error, dashboard, alert, synthetic, and Terraform tools need telemetry, which is in early access. `create_ingest_key` returns the new key once, with the OpenTelemetry settings for it. `get_error_notifications` and `update_error_notifications` are for workspace owners and admins.
+
+The `watch_` tools tell the conversation that called them when something happens, so the agent doesn't have to query again. They are MCP only and have no API endpoint. Superlog delivers these notifications through [Wakeshift](https://wakeshift.ai).
+
+- `watch_alert` reports each time the alert, or one of its groups, starts firing or recovers.
+- `watch_synthetic_check` reports each time the check starts failing or recovers.
+- `watch_error_issues` reports each new error, and each resolved one that comes back.
+- `watch_logs` checks about every 30 seconds for new logs that match its filters, about 30 seconds behind real time. When some match, it reports how many (up to 20), their time window, and the newest line. Read them with `query_logs` over that window, with the same filters.
+
+Set `once` on the first three to stop after the first change. `watch_logs` needs at least one filter. It runs for 60 minutes unless you set `minutes`, from 5 to 1,440. A workspace can run 5 log watches at once.
+
+`list_subscriptions` lists the conversation's watches, and `unsubscribe_events` ends one. Wakeshift adds both tools. Ending a log watch frees its slot within a few minutes.
+
+If the client can't be told, the tool returns an error. The agent can check with the other tools instead.
 
 Adding a workspace secret or a model API key is not available as a tool, so those values never pass through a model. Use the app or the [API](/api-reference/introduction) for them.
 
@@ -107,3 +120,4 @@ Adding a workspace secret or a model API key is not available as a tool, so thos
 - "Turn off the weekly dependency review."
 - "Why did the last run of the triage automation fail?"
 - "Let tag mode read the `acme/web` repository."
+- "Watch the checkout alert and tell me when it fires."

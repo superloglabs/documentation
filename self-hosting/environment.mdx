@@ -286,6 +286,16 @@ OAuth callback: `{RESPONDER_PUBLIC_URL}/api/integrations/gcp/callback`
 
 ---
 
+## Agent watches (optional)
+
+The MCP server tells an agent's conversation when something it is watching happens, through [Wakeshift](https://wakeshift.ai): an alert or synthetic check changes, an error issue opens, or matching logs arrive (the `watch_` tools), a run it started finishes, or an integration it started connecting is connected. Without a key, the `watch_` tools return an error, the other tools work as before, and nothing is sent to Wakeshift.
+
+<ParamField path="WAKESHIFT_KEY" type="string">
+  A Wakeshift app key, from the [Wakeshift console](https://app.wakeshift.ai). Configure it on both the control plane and the worker.
+</ParamField>
+
+---
+
 ## Billing (Optional)
 
 Billing meters each workspace's monthly usage allowance through [Autumn](https://useautumn.com). Without it, usage is not metered or limited.
