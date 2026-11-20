@@ -1,49 +1,75 @@
 ---
 title: "Integrations"
 sidebarTitle: "Overview"
-description: "Connect your alerts, code, and cloud to Superlog, and see which integrations automations and tag mode can use."
+description: "Connect your telemetry, code, and team tools to Superlog. See what each integration reads and what it is used for."
 ---
 
-Integrations connect Superlog to the tools you already use. Connect them once per workspace, then use them as automation triggers, as automation connectors, or as context for tag mode.
+Integrations connect Superlog to the tools you already use. Connect each tool once per workspace. Credentials are encrypted before storage and scoped to your workspace.
 
 ## Connect an integration
 
-Click **Integrations** in the sidebar. Find the tool under **Marketplace** and click **Add**. Depending on the tool, you approve access in the provider's sign-in page, paste an API key, or deploy a template in your cloud account. Connected tools move to **Connected integrations**, where **Manage** opens their settings.
+- **During setup.** The telemetry sources, GitHub, Slack, and Linear connect from [setup](/findings/quickstart), and later from **Setup → Sources**.
+- **From Integrations.** Open **Integrations**, find the tool under **Marketplace**, and click **Add**. Connected tools move to **Connected integrations**, where **Manage** opens their settings.
 
-You can also connect a tool from the automation editor. Click **Connect** on a trigger or in the connector picker. Your draft stays open while you approve access.
+Depending on the tool, you approve access on the provider's site, paste an API key, or create a stack in your cloud account.
 
-Credentials are encrypted before storage and scoped to your workspace.
+## What each integration is used for
 
-## What each integration does
+**Findings source**: Superlog finds problems in this tool's data. **Investigation context**: Superlog reads it while it investigates. **Automations**: it can start or help [automations](/automations/overview).
 
-| Integration | Automation trigger | Automation connector | Tag mode |
+### Errors and observability
+
+| Integration | Findings source | Investigation context | Automations |
 |---|---|---|---|
-| [GitHub](/integrations/github) | — | Repositories, pull requests | Read-only code |
-| [Slack](/integrations/slack) | Messages and mentions | Read and post messages | Where questions are asked |
-| [Sentry](/integrations/sentry) | New issues and regressions | Read | Read |
-| [Datadog](/integrations/datadog) | Through Slack alerts | Read | Read |
-| [Linear](/integrations/linear) | — | Read, create issues | Read |
-| [Discord](/integrations/discord) | `/automate` command | — | — |
-| [Custom MCP](/integrations/custom-mcp) | — | All server tools | Read |
-| [AWS](/integrations/cloud#aws) | Through Slack alerts | — | Read |
-| [Google Cloud](/integrations/cloud#google-cloud) | — | — | Read |
-| [Dash0](/integrations/more#dash0) | — | — | Read |
-| [PostHog](/integrations/more#posthog) | Through Slack alerts | — | Read |
-| [Grafana](/integrations/more#grafana) | Through Slack alerts | — | Read |
-| [Axiom](/integrations/more#axiom) | — | — | Read |
-| [ClickStack / HyperDX](/integrations/more#clickstack) | — | — | Read |
-| [Langfuse](/integrations/more#langfuse) | — | — | Read |
-| [Upstash](/integrations/more#upstash) | — | — | Read |
-| [Supabase](/integrations/more#supabase) | — | — | Configurable |
-| [Vercel](/integrations/more#vercel) | — | — | Read |
+| [Sentry](/integrations/sentry) | Yes | Yes | Trigger, connector |
+| [Datadog](/integrations/datadog) | Sweeps | Yes | Connector, Slack alerts |
+| [Grafana](/integrations/grafana) | Sweeps | Yes | Slack alerts |
+| [PostHog](/integrations/posthog) | Error logs, sweeps | Yes | Slack alerts |
+| [Dash0](/integrations/dash0) | — | Yes | — |
+| [Axiom](/integrations/axiom) | Sweeps | Yes | Trigger |
+| [Honeycomb](/integrations/honeycomb) | Sweeps | Yes | Trigger |
+| [SigNoz](/integrations/signoz) | — | — | Trigger |
+| [Better Stack](/integrations/better-stack) | — | — | Trigger |
+| [ClickStack](/integrations/clickstack) | — | Yes | — |
 
-"Through Slack alerts" means the tool posts alerts to a Slack channel, and a Slack **New message in channel** trigger on that channel starts the run.
+### Cloud and deploys
+
+| Integration | Findings source | Investigation context | Automations |
+|---|---|---|---|
+| [AWS](/integrations/aws) | CloudWatch error logs | Yes | Slack alerts |
+| [Google Cloud](/integrations/google-cloud) | Cloud Logging | Yes | — |
+| [Cloudflare](/integrations/cloudflare) | — | Yes | — |
+| [Vercel](/integrations/vercel) | Drains | Yes | — |
+| [Railway](/integrations/railway) | Runtime logs | Yes | — |
+
+### Data and AI
+
+| Integration | Findings source | Investigation context | Automations |
+|---|---|---|---|
+| [Supabase](/integrations/supabase) | — | Yes | — |
+| [Upstash](/integrations/upstash) | — | Yes | — |
+| [Langfuse](/integrations/langfuse) | Sweeps | Yes | — |
+
+### Code and collaboration
+
+| Integration | Used for |
+|---|---|
+| [GitHub](/integrations/github) | Code Superlog reads to find the cause. Issues and pull requests that show a problem is known. Automations open pull requests. |
+| [Slack](/integrations/slack) | The findings channel. Channels Superlog searches for known issues. Automation triggers and tag mode. |
+| [Linear](/integrations/linear) | Issues that show a problem is already tracked. Automations create issues. |
+| [Discord](/integrations/discord) | The `/automate` command starts automations. |
+| [DevRev](/integrations/devrev) | New tickets start automations. |
+| [Custom MCP](/integrations/custom-mcp) | Tools from your own MCP server for automations and tag mode. |
+
+"Sweeps" means Superlog checks the tool on a schedule only when none of your telemetry reaches Superlog. See [How findings work](/findings/how-it-works#where-problems-come-from).
+
+"Slack alerts" means the tool posts alerts to a Slack channel, and a Slack **New message in channel** trigger on that channel starts the automation.
 
 ## How access is limited
 
-- Most built-in integrations expose only read-only tools, plus the write actions listed above.
-- Datadog and custom MCP servers pass their tools through without filtering. Supabase allows writes only if you choose **Full database SQL access**. Scope the credentials you give them.
-- Provider credentials stay outside the agent's sandbox. Superlog calls the provider on the agent's behalf.
-- If an integration cannot be reached during a run, the agent gets a reconnect tool with the error and decides whether to retry. The run continues.
+- Investigations only read. Superlog offers them only the read-only tools of each connection, including connections that allow writes for automations.
+- Provider credentials stay outside the sandbox that reads your code. Superlog calls the provider for the agent.
+- In automations, Datadog and custom MCP servers can pass through tools that write. Scope the credentials you give them.
+- Supabase allows writes only with **Full database SQL access**, and only for automations.
 
 See [Security](/security) for more detail.

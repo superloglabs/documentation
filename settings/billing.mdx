@@ -1,40 +1,62 @@
 ---
 title: "Plans and billing"
 sidebarTitle: "Plans and billing"
-description: "Superlog plans, what counts toward your usage quota, and what happens when you reach it."
+description: "Superlog plans, what counts as a finding, extra findings, telemetry storage, and how to change your plan."
 ---
 
-Superlog plans differ by usage quota. Start free and move up as your automations grow. See current prices on the [pricing page](https://superlog.sh/pricing).
+Superlog plans are priced by findings. Only findings posted to Slack count.
 
-| Plan | Price | For |
+| Plan | Price | Seats | Findings | Support |
+|---|---|---|---|---|
+| **Pro** | $100 / month | 1 seat. Teammates need Team. | 50 included a month, then $2.50 per extra finding | Email |
+| **Team** | $200 / month | Unlimited | 100 included a month, then $2.50 per extra finding | Email |
+| **Enterprise** | Custom | Unlimited | Custom limits | Support SLA |
+
+Enterprise adds SSO and SAML, audit logs, and invoice billing. [Talk to us](https://cal.com/superlog/yc).
+
+There is no free plan. Workspaces created on the earlier automations product keep their existing plan in **Settings → Billing**.
+
+## What counts as a finding
+
+A finding counts when Superlog posts it to your Slack channel. These do not count:
+
+- Investigations and sweeps.
+- Problems Superlog dismissed.
+- Findings below your minimum severity, which stay on the **Findings** page.
+
+Each finding counts once.
+
+## Extra findings
+
+Superlog keeps investigating and posting after you use your included findings. Each extra finding costs $2.50 on Pro and Team. Extra findings are billed at the end of the billing month. Included findings reset at the start of each billing month.
+
+To limit how many investigations run in a day, set **Investigations per day** in [Finding settings](/findings/settings#general).
+
+## Seats
+
+Pro has one seat. To invite teammates, switch to Team. Team has unlimited seats, so everyone on your team can see findings and change settings.
+
+## Telemetry storage
+
+Superlog stores logs, traces, and metrics for 30 days. Every plan includes, each month:
+
+| Data | Included | Beyond the included amount |
 |---|---|---|
-| **Free** | $0 / month | Teams getting started. A light usage quota, no card required. |
-| **Pro** | $100 / month | Teams running automations daily. |
-| **Max** | $200 / month | Teams with the highest demand. |
-| **Enterprise** | Custom | Organizations that need a custom quota, terms, and support. [Talk to us](https://cal.com/superlog/yc). |
+| Spans | 1M | $0.60 per million |
+| Logs | 5M | $0.50 per million |
+| Metric points | 10M | $0.20 per million |
 
-## What counts toward your quota
+You can also keep your telemetry in the tools you already use. Superlog reads it there.
 
-Two things:
+## Check usage
 
-- **AI inference** that runs on Superlog's included usage. Runs that use your own API key or ChatGPT subscription are billed by your provider and do not count here.
-- **Sandbox compute**, the time each run's sandbox is running. This counts for every run, including runs on your own key.
-
-Automation runs and tag mode questions both draw on the quota.
-
-## Check your usage
-
-Go to **Settings → Billing**. The **Included usage this month** card shows how much of the quota you have used, split into AI inference and sandbox compute, and when it resets.
-
-## When you reach your quota
-
-A banner appears in the app and Superlog sends a notice to Slack. Work that is already running finishes. New runs and tag mode questions do not start until the quota resets at the start of the next billing period or you upgrade.
+Open **Setup → Plan**. It shows your plan, how many findings you used this month, any extra findings, and when the count resets. **Usage** in the sidebar shows findings per day.
 
 ## Change plans
 
-In **Settings → Billing**, choose a plan:
+In **Setup → Plan**:
 
-- **Upgrades** take effect immediately. Superlog charges the saved card for the prorated difference after you confirm.
-- **Downgrades** and returning to Free take effect at the end of the current billing period.
+- Click **Switch to Team** to move from Pro to Team at any time.
+- Click **Manage billing** to change the payment method, see invoices, or cancel the plan.
 
-Click **Manage billing** to update your payment method or see invoices.
+The first plan is chosen in the last step of [setup](/findings/quickstart). Superlog turns on when checkout finishes.

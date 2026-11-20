@@ -1,0 +1,36 @@
+---
+title: "Supabase"
+description: "Connect a Supabase project so Superlog can read its logs and schema, and run SQL at the access level you choose."
+---
+
+Superlog reads Supabase project logs, and, at higher access levels, the schema and SQL query results.
+
+## Connect Supabase
+
+<Steps>
+  <Step title="Choose the access level">
+    In **Integrations**, click **Add** on Supabase. Choose the **Agent access**, click **Continue with Supabase**, and approve access for your Supabase organization.
+  </Step>
+  <Step title="Choose a project">
+    Back in Superlog, choose the **Supabase project** and click **Connect project**.
+  </Step>
+</Steps>
+
+| Access level | What it allows |
+|---|---|
+| **Logs only** | Project logs. No database tools. |
+| **Logs and read-only data** | Adds schema metadata and read-only SQL. Supabase enforces read-only mode. |
+| **Full database SQL access** | SQL that can change data or schema. Use only for development or test projects. |
+
+Each project and access level is a separate connection.
+
+## How Superlog uses Supabase
+
+- **Investigations.** Superlog reads project logs and, when allowed, queries the database for evidence. Investigations open every Supabase connection read-only, including **Full database SQL access**.
+- **Tag mode** can read Supabase when you turn it on in **Tag mode**.
+
+Supabase is not a source of new problems or a trigger.
+
+## Access
+
+Only **Full database SQL access** can change data, and only outside investigations. Migrations, Edge Function tools, and Supabase administration and platform configuration tools are blocked at every level.

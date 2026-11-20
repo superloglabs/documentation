@@ -1,0 +1,56 @@
+---
+title: "Grafana"
+description: "Connect Grafana Cloud or self-hosted Grafana so Superlog can read your dashboards, alerts, and Prometheus, Loki, Tempo, and Pyroscope data."
+---
+
+Superlog reads Grafana to find problems and to explain them. It never changes anything in Grafana.
+
+## What Superlog reads
+
+- Dashboards, alert rules, and annotations.
+- Queries to your data sources, such as Prometheus, Loki, Tempo, and Pyroscope.
+- OnCall and incidents.
+
+Write, admin, and provisioning tools are turned off.
+
+## Connect Grafana
+
+Open **Setup → Sources**, click **Add source**, and choose **Grafana**. Or, in **Integrations**, click **Add** on Grafana. Then choose your deployment.
+
+<Tabs>
+  <Tab title="Grafana Cloud">
+    <Steps>
+      <Step title="Enter your stack">
+        Enter the **Stack URL**. Your stack name or any URL on it works, for example `acme` or `acme.grafana.net`.
+      </Step>
+      <Step title="Approve access">
+        Click **Continue with Grafana Cloud** and approve access. There is no token to copy.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Self-hosted">
+    <Steps>
+      <Step title="Create a service account">
+        In Grafana, open **Administration → Users and access → Service accounts**. Add a service account with the **Viewer** role, then add a token to it.
+      </Step>
+      <Step title="Connect">
+        Enter the **Grafana URL** and paste the **Service account token**. Click **Connect Grafana**.
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+## How findings use Grafana
+
+- **Sweeps.** If none of your telemetry reaches Superlog, Superlog checks Grafana every 15 minutes for new problems. It looks at firing alerts first, then logs, traces, and metrics. See [How findings work](/findings/how-it-works#where-problems-come-from).
+- **Investigations.** Superlog queries Grafana for evidence and impact while it investigates any problem.
+- **Known problems.** A problem that a firing Grafana alert already covers is not raised by a sweep.
+
+## Automations
+
+Send Grafana alerts to a Slack channel. Then add a Slack **New message in channel** trigger on that channel. See [Slack](/integrations/slack).
+
+## Limits
+
+- A self-hosted Grafana URL must be reachable over public HTTPS.
+- The token is stored encrypted and used only to read and query.

@@ -1,0 +1,47 @@
+---
+title: "PostHog"
+description: "Connect PostHog so Superlog can read your error logs and error tracking, and use product usage to measure impact."
+---
+
+Superlog reads PostHog logs and errors, and uses product usage to tell how many customers a problem affects.
+
+## What Superlog reads
+
+- Logs, error tracking, and session replays.
+- Insights, dashboards, and events.
+
+## Connect PostHog
+
+<Steps>
+  <Step title="Open the PostHog page">
+    Open **Setup → Sources**, click **Add source**, and choose **PostHog**.
+  </Step>
+  <Step title="Approve access">
+    Click **Continue to PostHog** and approve access. The connection is read-only. Nothing in PostHog can be changed.
+  </Step>
+  <Step title="Choose projects">
+    Back in Superlog, under **Telemetry from**, click **Add project** and choose the projects whose error logs Superlog reads.
+  </Step>
+</Steps>
+
+In **Integrations**, **Add** on PostHog asks for the access automations get:
+
+| Access | What it allows |
+|---|---|
+| **Read only** | Insights, dashboards, events, logs, errors, and replays. Nothing can be changed. |
+| **Read and write** | Automations can also create and change insights, dashboards, alerts, feature flags, annotations, cohorts, experiments, notebooks, and surveys. Investigations, tag mode, and scans still only read. |
+
+## How findings use PostHog
+
+- **Error logs.** Every minute, Superlog reads the `error` and `fatal` log lines of the projects you chose. They become error issues, and Superlog investigates new and regressed ones. Lower levels stay in PostHog for investigations to read.
+- **Sweeps.** If you chose no project, or your projects send no logs, Superlog sweeps PostHog error tracking and logs every 15 minutes. See [How findings work](/findings/how-it-works#where-problems-come-from).
+- **Investigations.** Superlog reads events and replays to count the customers a problem affects.
+
+## Automations
+
+Send PostHog alerts to a Slack channel. Then add a Slack **New message in channel** trigger on that channel. Resolved and recovered notifications are ignored.
+
+## Limits
+
+- A chosen project counts as sending while it has any log line in the last 10 minutes.
+- Error logs need PostHog logs. Error tracking alone is read only by sweeps and investigations.

@@ -1,13 +1,21 @@
 ---
 title: "Slack"
-description: "Connect Slack to start automations from messages and mentions, let agents post and reply, and use tag mode."
+description: "Connect Slack to receive findings, skip problems your team already discussed, start automations, and use tag mode."
 ---
 
-Slack is where most teams talk to Superlog. Messages and mentions start automations, agents reply in threads and post to channels, and tag mode answers questions when someone mentions Superlog.
+Slack is where Superlog posts findings. Messages and mentions can also start automations, and tag mode answers questions when someone mentions Superlog.
 
 ## Connect Slack
 
-In **Integrations**, click **Add** on Slack and approve the app in your Slack workspace. To watch or post in a private channel, invite the Superlog app to that channel first.
+In [setup](/findings/quickstart), or in **Integrations** with **Add** on Slack, approve the app in your Slack workspace. To watch or post in a private channel, invite the Superlog app to that channel first.
+
+## Findings
+
+- **Findings channel.** Choose it in setup, or later in **Setup → Notifications**. Every posted finding goes there. The thread reply has the root cause, impact, and suggested fix. See [How findings work](/findings/how-it-works#posting-to-slack).
+- **Known issues.** Turn on **Scan Slack to exclude known issues** and choose channels, in setup or under **Setup → Sources**. Superlog searches those channels and skips problems your team already discussed or investigated. It is off until you turn it on.
+- **Buttons.** **Copy prompt**, **Helpful**, and **Not helpful** on a finding work from Slack.
+
+If Slack refuses a post, for example because the app is not in the channel or the channel is archived, workspace owners and admins get an email.
 
 ## Start automations from Slack
 

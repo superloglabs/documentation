@@ -1,76 +1,63 @@
 ---
 title: "Superlog"
 sidebarTitle: "Home"
-description: "Reliability for the AI era"
-"og:title": "Superlog — Reliability for the AI era"
+description: "Superlog scans your logs, finds the production issues your alerts miss, and posts each to Slack with its impact, root cause, and a suggested fix."
+"og:title": "Superlog — Find the production issues your alerts miss"
 ---
 
-We're building the world's cheapest, most performant monitoring system, designed to be easy for agents to install and configure.
+Superlog scans your logs, finds the production issues your alerts miss, and posts each to Slack with its impact, root cause, and a suggested fix.
 
-Superlog helps teams build self-healing systems by connecting their agents to telemetry and running automations that detect and remediate issues at machine speed.
+It reads telemetry from the tools you connect, such as OpenTelemetry, Sentry, Datadog, Grafana, AWS CloudWatch, Google Cloud, and PostHog. It investigates each new or growing error. When real users are affected, it posts a **finding** to the Slack channel you choose.
+
+- It reads the GitHub repositories you select to find the cause. It never changes them.
+- It skips problems already tracked in Linear, GitHub, Slack, or your Superlog alerts.
+- Only posted findings count toward your plan.
 
 ## Get started
 
 <CardGroup cols={2}>
-  <Card title="Instrument your app" icon="satellite-dish" href="/guides/instrument-your-app">
-    Send logs, traces, and metrics with OpenTelemetry.
+  <Card title="Set up Superlog" icon="rocket" href="/findings/quickstart">
+    Connect your telemetry, choose repositories and a Slack channel, and choose a plan.
   </Card>
-  <Card title="Browser and React" icon="window" href="/guides/browser">
-    Capture errors, traces, and Web Vitals from the browser.
+  <Card title="How findings work" icon="magnifying-glass" href="/findings/how-it-works">
+    What Superlog reads, what it reports, and what it skips.
   </Card>
-  <Card title="Install Superlog MCP" icon="plug" href="/assistants/claude">
-    Manage your workspace from Claude, Cursor, or Codex.
+  <Card title="Integrations" icon="plug" href="/integrations/overview">
+    Setup guides for Sentry, Datadog, Grafana, AWS, PostHog, and 19 more tools.
   </Card>
-  <Card title="Automations" icon="robot" href="/automations/overview">
-    See what automations can do with your code and tools.
-  </Card>
-</CardGroup>
-
-## What teams automate
-
-<CardGroup cols={2}>
-  <Card title="Bug triage" icon="bug" href="/automations/templates#bug-triage">
-    Rate new Sentry issues, trace them to the commit that caused them, and open a pull request when the fix is small.
-  </Card>
-  <Card title="Internal support" icon="comments" href="/automations/templates#support">
-    Answer "is this a bug?" and "can we do this?" questions in Slack from the code and docs, so engineers are not interrupted.
-  </Card>
-  <Card title="Reliability checks" icon="heart-pulse" href="/automations/templates#scans">
-    Compare the last hour against the past week in Sentry and Datadog, and post to Slack only when something is out of range.
-  </Card>
-  <Card title="Observability and performance reviews" icon="gauge" href="/automations/templates#scans">
-    Find code paths with poor telemetry and slow endpoints each week, and open pull requests that fix them.
+  <Card title="Plans and billing" icon="receipt" href="/settings/billing">
+    Pro, Team, and Enterprise. What counts as a finding.
   </Card>
 </CardGroup>
 
-## Telemetry
+## What a finding contains
 
-Superlog also stores your OpenTelemetry logs, traces, and metrics. You can search them, build dashboards, group exceptions into issues, and alert on them. Automations and agents read the same data. Telemetry is in early access.
+| Part | What it says |
+|---|---|
+| Severity | SEV-1, SEV-2, or SEV-3 |
+| Title and summary | What is broken, and who is affected |
+| Impact | Affected users and requests, with counts |
+| Root cause | Why it happens, from telemetry and your code |
+| Suggested fix | A change to make, when Superlog has one |
+| Evidence | The logs, traces, metrics, and code Superlog read |
 
-- [Collect telemetry](/collect-telemetry/overview) from your code, a Collector, Vercel, AWS, or Google Cloud.
-- [Make your application reliable](/reliability/checklist) with error notifications, alerts, synthetic checks, dashboards, and automations.
+Each finding has **Copy prompt**, which gives you a prompt to paste into your coding agent to fix it.
 
-## Move from another tool
+## Store telemetry in Superlog
 
-<CardGroup cols={3}>
-  <Card title="Datadog" href="/guides/migrate/datadog">
-    Send the same data to both, then recreate monitors and dashboards.
-  </Card>
-  <Card title="New Relic" href="/guides/migrate/new-relic">
-    Move OpenTelemetry data and rebuild alerts.
-  </Card>
-  <Card title="Dynatrace" href="/guides/migrate/dynatrace">
-    Move OpenTelemetry data and rebuild alerts.
-  </Card>
-</CardGroup>
+Superlog can also store your logs, traces, and metrics for 30 days. Send them with OpenTelemetry, or connect Vercel, AWS CloudWatch, Google Cloud, Railway, or PostHog. Superlog finds new errors in this data as it arrives.
 
-## Bring your own inference
+- [Instrument your app](/guides/instrument-your-app) with OpenTelemetry.
+- [Collect telemetry](/collect-telemetry/overview) from a Collector, Vercel, AWS, or Google Cloud.
+- [Make your application reliable](/reliability/checklist) with error notifications, alerts, synthetic checks, and dashboards.
 
-Every automation picks a model from OpenAI, Anthropic, Google Gemini, xAI, Mistral, or DeepSeek, and runs it in the Codex, Claude Agent SDK, or OpenCode harness. Add an API key or connect a ChatGPT subscription and runs use it. Without one, runs use the usage included in your plan. See [Models and harnesses](/automations/models).
+## Automations and tag mode
+
+Workspaces can also run [automations](/automations/overview), which run a coding agent on a trigger and can open pull requests, and [tag mode](/tag-mode), which answers questions when someone mentions Superlog in Slack.
 
 ## Open source
 
-Superlog is open source under the Apache License 2.0. The code is at [superloglabs/responder-oss](https://github.com/superloglabs/responder-oss). Use the hosted service at [superlog.sh](https://superlog.sh), or [run it yourself](/self-hosting/overview).
+Telemetry, automations, tag mode, and integrations are open source under the Apache License 2.0. The code is at [superloglabs/responder-oss](https://github.com/superloglabs/responder-oss). Findings run on the hosted service at [superlog.sh](https://superlog.sh). You can [run the open-source application yourself](/self-hosting/overview).
 
 ## Get help
 

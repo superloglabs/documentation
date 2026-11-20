@@ -14,10 +14,12 @@
 ## Terminology
 
 - The product is **Superlog**. The open-source repository is `superloglabs/responder-oss`; use the name Responder only when referring to that repository or to identifiers in it.
+- A **finding** is a confirmed production problem that Superlog posts to Slack. Do not call the findings product by an internal name.
 - An **automation** has **triggers**, **agent instructions**, **repositories**, **connectors**, a **model**, and a **harness**. One execution is a **run**.
 - **Tag mode** answers Slack mentions. It is separate from automations.
 - Use "workspace" for the tenant and "integration" for a connected tool.
-- Positioning follows the landing page at superlog.sh: automate routine engineering tasks; choose your model and harness; bring your own tokens and subscriptions.
+- Positioning follows the landing page at superlog.sh: "Superlog scans your logs, finds the production issues your alerts miss, and posts each to Slack with its impact, root cause, and a suggested fix."
+- Prices follow the pricing page at superlog.sh/pricing.
 
 ## Style preferences
 
@@ -31,4 +33,4 @@
 ## Content boundaries
 
 - Document what the current code does. Check claims against `superloglabs/responder-oss` before publishing.
-- Document the automations product that hosted workspaces get. Do not document internal admin features.
+- Lead with findings. Document automations and tag mode as well. Do not document internal admin features.

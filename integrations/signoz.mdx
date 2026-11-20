@@ -1,0 +1,39 @@
+---
+title: "SigNoz"
+description: "Connect SigNoz Cloud so automations can query its logs, metrics, and traces, and start when a SigNoz alert fires."
+---
+
+SigNoz starts automations when an alert fires, and gives automations its logs, metrics, and traces.
+
+## Connect SigNoz
+
+<Steps>
+  <Step title="Create a service account">
+    In SigNoz, open **Settings → Service Accounts** and create a service account. Give it the **Viewer** role to read telemetry, or **Editor** to let runs change alerts and dashboards.
+  </Step>
+  <Step title="Create an API key">
+    Create an API key for the service account.
+  </Step>
+  <Step title="Connect">
+    In Superlog, open **Integrations** and click **Add** on SigNoz. Enter the **Instance URL**, for example `https://acme.us.signoz.cloud`, paste the **API key**, and click **Connect SigNoz**.
+  </Step>
+</Steps>
+
+## Start automations from SigNoz alerts
+
+<Steps>
+  <Step title="Add the trigger">
+    In the automation editor, click **Add trigger** and choose **SigNoz → Alert fired**. Click **Set up SigNoz channel**.
+  </Step>
+  <Step title="Create a webhook channel">
+    In SigNoz, open **Settings → Alert Channels** and create a **Webhook** channel with the webhook URL from Superlog. Leave **Username** empty and paste the token from Superlog as the **Password**.
+  </Step>
+  <Step title="Use the channel">
+    Select the channel in the alert rules that should start the automation. Each alert starts a run.
+  </Step>
+</Steps>
+
+## Limits
+
+- SigNoz Cloud only.
+- Findings do not read SigNoz. To have Superlog find problems in the same data, also send it to Superlog with [OpenTelemetry](/guides/instrument-your-app).

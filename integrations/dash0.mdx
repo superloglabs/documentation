@@ -1,0 +1,28 @@
+---
+title: "Dash0"
+description: "Connect Dash0 so Superlog can read your logs, metrics, and traces while it investigates."
+---
+
+Superlog reads your Dash0 logs, metrics, and traces through your organization's Dash0 MCP server.
+
+## Connect Dash0
+
+<Steps>
+  <Step title="Copy the MCP endpoint">
+    In Dash0, open **Organization settings → Endpoints → MCP** and copy the MCP endpoint URL for your region.
+  </Step>
+  <Step title="Connect">
+    In Superlog, open **Integrations** and click **Add** on Dash0. Paste the **MCP endpoint URL**, click **Continue to Dash0**, and approve access.
+  </Step>
+</Steps>
+
+## How Superlog uses Dash0
+
+- **Investigations.** Superlog queries Dash0 for evidence while it investigates a problem.
+- **Tag mode** can read Dash0 when you turn it on in **Tag mode**.
+
+Dash0 is not a source of new problems. To have Superlog find problems in the same data, also send it to Superlog with [OpenTelemetry](/guides/instrument-your-app).
+
+## Access
+
+Superlog uses only the Dash0 tools marked read-only. It blocks Agent0 delegation, so it does not use your Agent0 credits.

@@ -1,0 +1,66 @@
+---
+title: "Set up Superlog"
+sidebarTitle: "Quickstart"
+description: "Connect your telemetry, choose the repositories Superlog reads, choose a Slack channel for findings, and choose a plan."
+---
+
+Setup has five steps. It opens when you sign in to a new workspace, and stays under **Setup** in the sidebar.
+
+<Steps>
+  <Step title="Connect your telemetry">
+    Connect at least one source Superlog reads to find problems:
+
+    | Source | How it connects |
+    |---|---|
+    | OpenTelemetry | Paste a prompt into your coding agent. It adds Superlog as an exporter with a new ingest key. |
+    | [Sentry](/integrations/sentry) | OAuth |
+    | [Datadog](/integrations/datadog) | API key and application key |
+    | [Grafana](/integrations/grafana) | OAuth for Grafana Cloud, or a service account token |
+    | [Axiom](/integrations/axiom) | OAuth |
+    | [AWS CloudWatch](/integrations/aws) | One CloudFormation stack |
+    | [Google Cloud](/integrations/google-cloud) | Google sign-in |
+    | [Railway](/integrations/railway) | OAuth |
+    | [Vercel](/integrations/vercel) | Vercel integration |
+    | [PostHog](/integrations/posthog) | OAuth |
+    | [Langfuse](/integrations/langfuse) | Public and secret key |
+
+    Click a source to open its connect page. The OpenTelemetry page shows each service as data arrives.
+  </Step>
+  <Step title="Connect GitHub and select repositories">
+    Click **Connect GitHub** and install the Superlog GitHub App. Then select the repositories Superlog may read to find the cause of a problem. Superlog never changes them.
+
+    You can skip this step. Without code, Superlog explains problems from telemetry alone.
+  </Step>
+  <Step title="Connect Slack">
+    Connect your Slack workspace and choose the **Findings channel**. Every finding is posted there. To post in a private channel, invite the Superlog app to it first.
+  </Step>
+  <Step title="Add more context">
+    Connect [Linear](/integrations/linear) so Superlog skips problems your team already tracks.
+
+    Turn on **Scan Slack to exclude known issues** and choose channels. Superlog then skips problems your team already discussed there.
+
+    This step is optional.
+  </Step>
+  <Step title="Choose your plan">
+    Choose **Pro** or **Team** and pay in checkout. You need a findings channel first. Superlog turns on when checkout finishes and opens **Findings**. See [Plans and billing](/settings/billing).
+  </Step>
+</Steps>
+
+## After setup
+
+- **Findings** lists every finding, with its severity and when it was found.
+- **Usage** shows findings per day, and how many your team accepted.
+- **Setup** holds the same settings in four sections: **General**, **Sources**, **Notifications**, and **Plan**. See [Finding settings](/findings/settings).
+
+Superlog posts a finding only when it confirms a problem. Until then, **Findings** is empty.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="How findings work" icon="magnifying-glass" href="/findings/how-it-works">
+    What Superlog reads, reports, and skips.
+  </Card>
+  <Card title="Finding settings" icon="sliders" href="/findings/settings">
+    Minimum severity, daily limit, skipped services, and notes.
+  </Card>
+</CardGroup>

@@ -1,18 +1,21 @@
 ---
 title: "Datadog"
-description: "Connect Datadog with API and application keys so agents can read logs, metrics, monitors, and traces."
+description: "Connect Datadog with API and application keys so Superlog can read your monitors, logs, traces, and metrics."
 ---
 
-Datadog gives agents your logs, metrics, monitors, and traces. Datadog alerts can start automations through a Slack channel.
+Superlog reads your Datadog monitors, logs, traces, and metrics. Datadog alerts can start automations through a Slack channel.
 
 ## Connect Datadog
 
 <Steps>
-  <Step title="Create keys in Datadog">
-    In Datadog, create an API key and an application key. Scope the application key to the data you want Superlog to read.
+  <Step title="Open the Datadog page">
+    Open **Setup → Sources**, click **Add source**, and choose **Datadog**. Or, in **Integrations**, click **Add** on Datadog. Choose your **Datadog site**.
   </Step>
-  <Step title="Add Datadog in Superlog">
-    In **Integrations**, click **Add** on Datadog. Choose your Datadog site, paste the **API key** and **Application key**, and click **Connect Datadog**.
+  <Step title="Create keys in Datadog">
+    In Datadog, open **API Keys** and create or copy a key. Then open **Application Keys** and create a scoped key owned by you or a service account. Datadog shows the application key only once.
+  </Step>
+  <Step title="Connect">
+    Paste the **API key** and **Application key**, and click **Connect Datadog**. Both keys are stored encrypted.
   </Step>
 </Steps>
 
@@ -28,9 +31,14 @@ Datadog gives agents your logs, metrics, monitors, and traces. Datadog alerts ca
 
 Choose the site your account uses. A wrong site means queries find no data.
 
+## How findings use Datadog
+
+- **Sweeps.** If none of your telemetry reaches Superlog, Superlog checks Datadog every 15 minutes for new problems. It looks at monitors first, then error-tracking issues, log patterns, traces, and metrics. A problem that a firing monitor already covers is not raised. See [How findings work](/findings/how-it-works#where-problems-come-from).
+- **Investigations.** Superlog queries Datadog for evidence and impact while it investigates any problem. Investigations use only Datadog's read-only tools.
+
 ## Let agents read Datadog
 
-Add Datadog as a connector. The agent uses Datadog's MCP server for your site. Superlog passes its tools through without filtering, so the application key's scope is the limit on what the agent can do.
+Add Datadog as a connector. The agent uses Datadog's MCP server for your site. In automations, Superlog passes its tools through without filtering, so the application key's scope is the limit on what the agent can do.
 
 The **Reliability check**, **Review observability**, **Review performance**, and **Fix regressions** templates use Datadog. See [Templates](/automations/templates).
 

@@ -1,0 +1,67 @@
+---
+title: "AWS"
+description: "Connect an AWS account with one CloudFormation stack so Superlog can read CloudWatch and receive new errors from your log groups."
+---
+
+Superlog connects to AWS through IAM roles you create with one CloudFormation stack. It uses short-lived credentials from STS. No AWS keys are stored.
+
+## What Superlog reads
+
+The read-only role uses the AWS-managed `AIOpsAssistantPolicy`. It covers read access across the account, including:
+
+- CloudWatch alarms, alarm history, metrics, and Logs Insights.
+- Lambda configuration, SQS queues, and other resources.
+
+An explicit deny blocks reading Secrets Manager values and SSM parameters, and decrypting with KMS.
+
+## Connect AWS
+
+<Steps>
+  <Step title="Open the AWS page">
+    Open **Setup → Sources**, click **Add source**, and choose **AWS CloudWatch**.
+  </Step>
+  <Step title="Launch the stack">
+    Click **Launch stack in AWS** and sign in to the account you want to connect. The stack opens with everything filled in. To review it first, click **Download the template**.
+  </Step>
+  <Step title="Create the stack">
+    Check the box to allow IAM resources, then click **Create stack**. It usually finishes in about a minute.
+  </Step>
+  <Step title="Come back to Superlog">
+    The page updates on its own. Superlog assumes the role once to check it works, then shows the account as connected.
+  </Step>
+</Steps>
+
+In **Integrations**, **Add** on AWS asks for your 12-digit **AWS account ID**, opens the same template in CloudFormation, and connects when you click **Verify connection**.
+
+## What the stack creates
+
+The stack creates IAM roles and nothing else:
+
+| Role | Access |
+|---|---|
+| `ResponderInvestigationRole` | Read-only access through `AIOpsAssistantPolicy`, with the deny above |
+| `ResponderLogSubscriptionRole` | Creates and removes account-level CloudWatch Logs subscription policies that send error lines to Superlog. It cannot add log-group subscription filters, change data protection or retention, or read log data. |
+
+The stack has no Lambda functions, Firehose streams, or buckets. It costs nothing beyond the CloudWatch ingestion you already pay.
+
+## Send new errors to Superlog
+
+After the account connects, choose the regions to read under **Telemetry from**. For each region, Superlog creates one account-level subscription policy, `superlog-<region>`, that sends error lines from every log group to Superlog. Superlog then sees each new error as it arrives.
+
+Without a region, Superlog reads CloudWatch only while it investigates. Removing a region or the connection deletes its policy.
+
+## How findings use AWS
+
+- **New errors.** Error lines from your chosen regions become error issues, and Superlog investigates new and regressed ones.
+- **Investigations.** Superlog reads CloudWatch logs, metrics, and alarms, and resource configuration, for evidence.
+
+## Automations
+
+AWS does not send webhooks to Superlog. Send CloudWatch alarms to a Slack channel with Amazon Q Developer in chat applications. Then add a Slack **New message in channel** trigger on that channel, or mention Superlog in the alarm's thread for [tag mode](/tag-mode). Superlog acts only on `ALARM` notifications.
+
+## Limits
+
+- `AIOpsAssistantPolicy` grants read access in every region of the account. Review the template before you create the stack.
+- CloudWatch Logs allows one account-level subscription policy per account and region. If a region already has one, Superlog cannot add its own there.
+- Only the commercial AWS partition is supported.
+- To stream CloudWatch metrics and all logs to Superlog for storage, see [AWS CloudWatch telemetry](/collect-telemetry/aws).

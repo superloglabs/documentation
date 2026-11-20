@@ -1,13 +1,17 @@
 ---
 title: "Linear"
-description: "Connect Linear so agents can read issues and projects and create assigned issues."
+description: "Connect Linear so Superlog skips problems your team already tracks, and so automations can create issues."
 ---
 
-Linear lets agents check existing work before acting and file issues for what they find.
+Superlog checks Linear before it posts a finding, so it skips problems your team already tracks. Automations can also file issues.
 
 ## Connect Linear
 
-In **Integrations**, click **Add** on Linear and approve access for your Linear workspace.
+In [setup](/findings/quickstart), on the **Add more context** step, click Linear and **Continue to Linear**. Or, in **Integrations**, click **Add** on Linear. Approve access for your Linear workspace.
+
+## How findings use Linear
+
+Superlog searches Linear for issues about a problem before it posts. A problem that is already tracked or being fixed is not posted. Findings read issues, projects, cycles, teams, labels, and priorities. They never create or change issues.
 
 ## Let agents use Linear
 

@@ -1,0 +1,45 @@
+---
+title: "Railway"
+description: "Connect Railway so Superlog can read deployments, logs, and metrics, and find new errors in the environments you choose."
+---
+
+Superlog reads your Railway projects, deployments, logs, and metrics. Railway has no log drains, so Superlog reads the logs of the environments you choose every minute.
+
+## What Superlog reads
+
+- Projects and deployments.
+- Runtime, build, and HTTP logs.
+- Resource and HTTP metrics.
+
+Superlog cannot read environment variables.
+
+## Connect Railway
+
+<Steps>
+  <Step title="Open the Railway page">
+    Open **Setup → Sources**, click **Add source**, and choose **Railway**.
+  </Step>
+  <Step title="Approve access">
+    Click **Continue to Railway** and approve access. This connection is read-only.
+  </Step>
+  <Step title="Choose environments">
+    Back in Superlog, under **Telemetry from**, click **Add environment** and choose the environments whose logs Superlog reads.
+  </Step>
+</Steps>
+
+In **Integrations**, **Add** on Railway asks for the access agents get:
+
+| Access | What it allows |
+|---|---|
+| **Read only** | Projects, deployments, logs, and metrics. Nothing can be changed. |
+| **Read and redeploy** | Tag mode and automations can also redeploy and restart deployments when asked. Alert investigations still only read. |
+
+## How findings use Railway
+
+- **New errors.** Every minute, Superlog reads the runtime logs of the environments you chose and stores them. Error lines become error issues, and Superlog investigates new and regressed ones. Railway's own build logs are left out.
+- **Investigations.** Superlog reads deployments, logs, and metrics for evidence, for example to match an error to a deployment.
+
+## Limits
+
+- Railway marks every line written to stderr as an error. When a line names a lower level, such as `INFO` or `WARN`, Superlog uses that level instead.
+- Railway makes a log readable a few seconds after it is written, so new errors arrive with a short delay.

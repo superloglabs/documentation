@@ -1,0 +1,40 @@
+---
+title: "Honeycomb"
+description: "Connect Honeycomb with a management key so Superlog can read your events and traces, and start automations from triggers and SLO burn alerts."
+---
+
+Superlog reads your Honeycomb events and traces through Honeycomb's MCP server.
+
+## Connect Honeycomb
+
+<Steps>
+  <Step title="Create a management key">
+    In Honeycomb, open **Team Settings → API Keys → Management Keys** and create a key. Only team owners can. Give it read access to **Model Context Protocol** and **Environments**.
+  </Step>
+  <Step title="Connect">
+    In Superlog, open **Integrations** and click **Add** on Honeycomb. Choose the **Region**, **US** or **EU**, paste the **Key ID** and **Key secret**, and click **Connect Honeycomb**.
+  </Step>
+</Steps>
+
+## How findings use Honeycomb
+
+- **Sweeps.** If none of your telemetry reaches Superlog, Superlog checks Honeycomb every 15 minutes for new problems. See [How findings work](/findings/how-it-works#where-problems-come-from).
+- **Investigations.** Superlog queries Honeycomb for evidence and impact while it investigates any problem.
+
+## Start automations from Honeycomb
+
+<Steps>
+  <Step title="Add the trigger">
+    In the automation editor, click **Add trigger** and choose **Honeycomb → Trigger or SLO alert**. Click **Set up Honeycomb webhook**.
+  </Step>
+  <Step title="Add the webhook">
+    In Honeycomb, open **Team Settings → Integrations** and add a **Webhook**. Use the webhook URL and shared secret from Superlog, and keep the default payload.
+  </Step>
+  <Step title="Add it as a recipient">
+    Add the webhook as a recipient on the triggers and burn alerts that should start the automation. Each alert starts a run.
+  </Step>
+</Steps>
+
+## Access
+
+What Superlog can do is limited to the scopes on your key. Investigations use only read-only tools.

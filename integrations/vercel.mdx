@@ -1,0 +1,40 @@
+---
+title: "Vercel"
+description: "Connect Vercel so Superlog can read projects, deployments, and logs, and receive traces and logs through drains."
+---
+
+Superlog reads your Vercel projects, deployments, and logs. When you connect from setup, it also creates drains that send traces and logs to Superlog.
+
+## What Superlog reads
+
+- Projects, deployments, deployment checks, and domains.
+- Logs.
+
+Superlog does not request write access to deployments or access to environment variables, tokens, or secrets.
+
+## Connect Vercel
+
+<Steps>
+  <Step title="Open the Vercel page">
+    Open **Setup → Sources**, click **Add source**, and choose **Vercel**.
+  </Step>
+  <Step title="Install the integration">
+    Click **Continue to Vercel** and install the Superlog integration on your team. Share the projects Superlog should read.
+  </Step>
+  <Step title="Check the drains">
+    Back in Superlog, the page lists the drains under **Telemetry from**. A new drain shows **Waiting for data** until Vercel's first delivery.
+  </Step>
+</Steps>
+
+In **Integrations**, **Add** on Vercel installs the same integration without drains. To add drains later, see [Vercel telemetry](/collect-telemetry/vercel).
+
+## How findings use Vercel
+
+- **New errors.** Drains send your deployments' traces and logs to Superlog. Errors in them become error issues, and Superlog investigates new and regressed ones.
+- **Investigations.** Superlog reads deployments and logs for evidence, for example to match an error to a deployment.
+
+## Limits
+
+- Drains need a Vercel Pro or Enterprise team.
+- Drains cover the projects you share with the integration.
+- Environment variables are not readable.

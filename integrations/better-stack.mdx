@@ -1,0 +1,38 @@
+---
+title: "Better Stack"
+description: "Connect Better Stack so automations can read incidents, monitors, logs, and errors, and start when an incident begins."
+---
+
+Better Stack starts automations when an incident starts, and gives automations its incidents, monitors, on-call schedules, logs, metrics, and errors.
+
+## Connect Better Stack
+
+<Steps>
+  <Step title="Create a token">
+    In Better Stack, open [API tokens](https://betterstack.com/settings/global-api-tokens) and create a token under **Global API tokens**. Read-only access is enough for investigations.
+  </Step>
+  <Step title="Connect">
+    In Superlog, open **Integrations** and click **Add** on Better Stack. Paste the **API token** and click **Connect Better Stack**.
+  </Step>
+</Steps>
+
+## Start automations from incidents
+
+<Steps>
+  <Step title="Add the trigger">
+    In the automation editor, click **Add trigger** and choose **Better Stack → Incident started**. Click **Set up Better Stack webhook**.
+  </Step>
+  <Step title="Add the webhook">
+    In Better Stack, open **Integrations → Exporting data** and add an **Incident webhook** under outgoing webhooks. Use the webhook URL from Superlog and turn on the **Incident started** event.
+  </Step>
+  <Step title="Set authentication">
+    Set basic authentication to the username and password from Superlog. Keep the default request body.
+  </Step>
+</Steps>
+
+Each new incident starts the automation once. Acknowledged and resolved incidents are ignored.
+
+## Limits
+
+- What automations can do is limited to the permissions on your token.
+- Findings do not read Better Stack.
