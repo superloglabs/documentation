@@ -4,7 +4,7 @@ sidebarTitle: "How findings work"
 description: "What Superlog reads, how it investigates, what it reports as a finding, and how it skips duplicates and problems you already track."
 ---
 
-Superlog watches your telemetry for new problems, investigates each one, and posts a finding to Slack when real users are affected. It only reads your tools and code. The only thing it writes is the finding.
+Superlog watches your telemetry for new problems, investigates each one, and posts a finding to Slack when real users are affected. It only reads your tools and code. It writes only the finding: its Slack message and thread reply, emails about it, and the feedback you give.
 
 ## What a finding is
 
@@ -63,7 +63,7 @@ Superlog does not report a problem that is already known. It dismisses a problem
 
 ## Posting to Slack
 
-Every finding at or above your minimum severity is posted to your findings channel. The message shows the severity, title, summary, service, and when it was found, with three buttons:
+Every finding at or above the severity you choose in **Post findings from** is posted to your findings channel. The message shows the severity, title, summary, service, and when it was found, with three buttons:
 
 - **Copy prompt** replies with a prompt only you can see. Paste it into your coding agent to fix the problem.
 - **Helpful** marks the finding accepted.
@@ -71,7 +71,7 @@ Every finding at or above your minimum severity is posted to your findings chann
 
 A reply in the thread gives the root cause, the impact, and the suggested fix. The full finding, with its evidence, opens from the severity link.
 
-Findings below your minimum severity are kept on the **Findings** page. They are not posted and do not count toward your plan.
+Findings below that severity are kept on the **Findings** page. They are not posted and do not count toward your plan.
 
 ## Emails
 
@@ -85,7 +85,7 @@ Every email has an unsubscribe link for its kind of email.
 
 ## What counts toward your plan
 
-Only posted findings count. Investigations, dismissals, sweeps, and findings below your minimum severity do not. Each finding is counted once. See [Plans and billing](/settings/billing).
+Only posted findings count. Investigations, dismissals, sweeps, and findings below the **Post findings from** severity do not. Each finding is counted once. See [Plans and billing](/settings/billing).
 
 ## Untrusted data
 

@@ -42,7 +42,7 @@ The stack creates IAM roles and nothing else:
 | `ResponderInvestigationRole` | Read-only access through `AIOpsAssistantPolicy`, with the deny above |
 | `ResponderLogSubscriptionRole` | Creates and removes account-level CloudWatch Logs subscription policies that send error lines to Superlog. It cannot add log-group subscription filters, change data protection or retention, or read log data. |
 
-The stack has no Lambda functions, Firehose streams, or buckets. It costs nothing beyond the CloudWatch ingestion you already pay.
+The stack has no Lambda functions, Firehose streams, or buckets, so it creates nothing that AWS bills. AWS bills the queries Superlog runs, such as Logs Insights queries, at its usual rates.
 
 ## Send new errors to Superlog
 

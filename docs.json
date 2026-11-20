@@ -434,7 +434,7 @@
     },
     {
       "source": "/integrations/cloud",
-      "destination": "/integrations/aws"
+      "destination": "/integrations/overview"
     },
     {
       "source": "/integrations/more",

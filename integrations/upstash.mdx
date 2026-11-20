@@ -14,7 +14,7 @@ Superlog reads your Upstash resources through Upstash's management API.
 
 <Steps>
   <Step title="Create a key">
-    In the Upstash Console, open **Account → API Keys** and create a developer API key for Superlog.
+    In the Upstash Console, create a developer API key for Superlog. Give it the narrowest permission Upstash offers. Superlog only reads.
   </Step>
   <Step title="Connect">
     In Superlog, open **Integrations** and click **Add** on Upstash. Enter the **Account email** and paste the **Developer API key**. Upstash needs both for its management API. Click **Connect Upstash**.
@@ -24,7 +24,7 @@ Superlog reads your Upstash resources through Upstash's management API.
 ## How Superlog uses Upstash
 
 - **Investigations.** Superlog checks queues, failed messages, and Redis state for evidence while it investigates a problem.
-- **Tag mode** can read Upstash when you turn it on in **Tag mode**.
+- [Tag mode](/tag-mode) can read Upstash when you turn it on for tag mode.
 
 Upstash is not a source of new problems or a trigger.
 

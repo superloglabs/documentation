@@ -29,7 +29,7 @@ SigNoz starts automations when an alert fires, and gives automations its logs, m
     In SigNoz, open **Settings → Alert Channels** and create a **Webhook** channel with the webhook URL from Superlog. Leave **Username** empty and paste the token from Superlog as the **Password**.
   </Step>
   <Step title="Use the channel">
-    Select the channel in the alert rules that should start the automation. Each alert starts a run.
+    Select the channel in the alert rules that should start the automation. Each firing alert starts a run. Resolved notifications are ignored.
   </Step>
 </Steps>
 

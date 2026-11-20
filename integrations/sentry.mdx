@@ -1,13 +1,13 @@
 ---
 title: "Sentry"
-description: "Connect Sentry so Superlog investigates new, regressed, and escalating issues, and so automations can start on them."
+description: "Connect Sentry so Superlog investigates new, regressed, and escalating issues, and so automations can start on new issues and regressions."
 ---
 
 Superlog reads your Sentry errors and issues to find what broke and who it affects. It never changes issues, alerts, or settings in Sentry.
 
 ## What Superlog reads
 
-- Issues, events, and stack traces.
+- Issues, events, stack traces, and traces.
 - Projects, releases, and environments.
 
 ## Connect Sentry
@@ -23,7 +23,7 @@ Superlog reads Sentry in every workspace that connects it, whether or not other 
 - Every minute, Superlog lists your organization's unresolved errors with events since the last read. The first read takes the 25 busiest issues of the last week.
 - An issue Sentry marks new, regressed, or escalating is a problem to investigate. Info and debug messages and performance issues are left out.
 - A Sentry issue is already one problem, so Superlog does not group it further. Its Sentry project is the service name you can skip in [Finding settings](/findings/settings#general).
-- A dismissed issue is looked at again when Sentry marks it regressed or escalating, when its events grow, or when it still has events after the cooldown.
+- A dismissed issue is looked at again when Sentry marks it regressed or escalating, when its hourly count reaches three times the count at dismissal and at least 10 an hour, or when it still has events after the cooldown.
 
 During investigations, Superlog reads events, stack traces, and traces from Sentry for evidence.
 

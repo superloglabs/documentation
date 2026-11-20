@@ -18,7 +18,7 @@ Connectors are the tools an automation's agent can use during a run. Add them un
 | **Sentry** | Issues, events, traces, and projects through Sentry's MCP server. | — |
 | **Datadog** | Logs, metrics, monitors, and traces through Datadog's MCP server. | Any tool the Datadog MCP server exposes. |
 | **Linear** | Teams, projects, and issues through Linear's read-only MCP server. | Create issues, with assignee, labels, priority, project, state, and parent. |
-| **Custom MCP** | Every tool your server exposes. | Every tool your server exposes. |
+| **Custom MCP** | The tools you allow on the server. | The tools you allow on the server. |
 | **Workspace secrets** | — | Call your own APIs with a secret the agent never sees. See [Workspace secrets](/settings/workspace-secrets). |
 
 If a tool is not connected yet, the picker shows **Connect** next to it. Click **Manage** on a connector to change its connection in settings.
@@ -41,7 +41,7 @@ The agent can read Linear and create issues. Each created issue appears on the r
 
 ## Custom MCP servers
 
-Add one from the picker with **Add custom MCP server**, or from **Integrations**. Superlog passes every tool the server exposes to the agent without filtering. Expose only the tools you want the agent to use. See [Custom MCP servers](/integrations/custom-mcp).
+Add one from the picker with **Add custom MCP server**, or from **Integrations**. By default the agent can use every tool the server exposes. To limit it, choose the allowed tools under **Tools** on the server in **Integrations**. Superlog refuses calls to other tools. See [Custom MCP servers](/integrations/custom-mcp#tool-access).
 
 ## Workspace secrets
 
@@ -49,4 +49,4 @@ Pick up to 20 secrets under **Workspace secrets** in the connector picker. Each 
 
 ## Other integrations
 
-AWS, Google Cloud, PostHog, Grafana, Axiom, ClickStack, Langfuse, Upstash, Supabase, and Vercel are available in [Tag mode](/tag-mode). To use another tool from an automation, connect it as a [custom MCP server](/integrations/custom-mcp) or call its API with a [workspace secret](/settings/workspace-secrets).
+The picker also lists Axiom, SigNoz, Honeycomb, Better Stack, Grafana, AWS, Google Cloud, Cloudflare, Railway, Supabase, Vercel, and PostHog. Each integration page describes its access. ClickStack, Langfuse, and Upstash are available in [tag mode](/tag-mode) only. To use another tool from an automation, connect it as a [custom MCP server](/integrations/custom-mcp) or call its API with a [workspace secret](/settings/workspace-secrets).

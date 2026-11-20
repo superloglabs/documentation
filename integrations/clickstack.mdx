@@ -16,7 +16,7 @@ In **Integrations**, click **Add** on **ClickStack / HyperDX** and choose your d
         In ClickHouse Cloud, open your ClickStack service. Open **Connect → MCP** and copy its service ID.
       </Step>
       <Step title="Connect">
-        In Superlog, enter the **MCP URL** and **ClickHouse service ID**. Click **Continue with ClickHouse Cloud** and approve access.
+        In Superlog, the **MCP URL** is filled in. Enter the **ClickHouse service ID**, click **Continue with ClickHouse Cloud**, and approve access.
       </Step>
     </Steps>
   </Tab>
@@ -35,7 +35,7 @@ In **Integrations**, click **Add** on **ClickStack / HyperDX** and choose your d
 ## How Superlog uses ClickStack
 
 - **Investigations.** Superlog queries ClickStack for evidence while it investigates a problem.
-- **Tag mode** can read ClickStack when you turn it on in **Tag mode**.
+- [Tag mode](/tag-mode) can read ClickStack when you turn it on for tag mode.
 
 ClickStack is not a source of new problems or a trigger. To have Superlog find problems in the same data, also send it to Superlog with [OpenTelemetry](/guides/instrument-your-app).
 

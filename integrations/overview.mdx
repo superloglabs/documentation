@@ -4,7 +4,7 @@ sidebarTitle: "Overview"
 description: "Connect your telemetry, code, and team tools to Superlog. See what each integration reads and what it is used for."
 ---
 
-Integrations connect Superlog to the tools you already use. Connect each tool once per workspace. Credentials are encrypted before storage and scoped to your workspace.
+Integrations connect Superlog to the tools you already use. Connections belong to the workspace. Some tools take one connection per project, account, or access level, such as Langfuse, Supabase, Google Cloud, and AWS. Credentials are encrypted before storage and scoped to your workspace.
 
 ## Connect an integration
 
@@ -15,7 +15,7 @@ Depending on the tool, you approve access on the provider's site, paste an API k
 
 ## What each integration is used for
 
-**Findings source**: Superlog finds problems in this tool's data. **Investigation context**: Superlog reads it while it investigates. **Automations**: it can start or help [automations](/automations/overview).
+**Findings source**: Superlog finds problems in this tool's data. **Investigation context**: Superlog reads it while it investigates. **Automations**: it can start [automations](/automations/overview) as a trigger, or give them tools as a [connector](/automations/connectors).
 
 ### Errors and observability
 
@@ -23,29 +23,29 @@ Depending on the tool, you approve access on the provider's site, paste an API k
 |---|---|---|---|
 | [Sentry](/integrations/sentry) | Yes | Yes | Trigger, connector |
 | [Datadog](/integrations/datadog) | Sweeps | Yes | Connector, Slack alerts |
-| [Grafana](/integrations/grafana) | Sweeps | Yes | Slack alerts |
-| [PostHog](/integrations/posthog) | Error logs, sweeps | Yes | Slack alerts |
-| [Axiom](/integrations/axiom) | Sweeps | Yes | Trigger |
-| [Honeycomb](/integrations/honeycomb) | Sweeps | Yes | Trigger |
-| [SigNoz](/integrations/signoz) | — | — | Trigger |
-| [Better Stack](/integrations/better-stack) | — | — | Trigger |
+| [Grafana](/integrations/grafana) | Sweeps | Yes | Connector, Slack alerts |
+| [PostHog](/integrations/posthog) | Error logs, sweeps | Yes | Connector, Slack alerts |
+| [Axiom](/integrations/axiom) | Sweeps | Yes | Trigger, connector |
+| [Honeycomb](/integrations/honeycomb) | Sweeps | Yes | Trigger, connector |
+| [SigNoz](/integrations/signoz) | — | — | Trigger, connector |
+| [Better Stack](/integrations/better-stack) | — | — | Trigger, connector |
 | [ClickStack](/integrations/clickstack) | — | Yes | — |
 
 ### Cloud and deploys
 
 | Integration | Findings source | Investigation context | Automations |
 |---|---|---|---|
-| [AWS](/integrations/aws) | CloudWatch error logs | Yes | Slack alerts |
-| [Google Cloud](/integrations/google-cloud) | Cloud Logging | Yes | — |
-| [Cloudflare](/integrations/cloudflare) | — | Yes | — |
-| [Vercel](/integrations/vercel) | Drains | Yes | — |
-| [Railway](/integrations/railway) | Runtime logs | Yes | — |
+| [AWS](/integrations/aws) | CloudWatch error logs | Yes | Connector, Slack alerts |
+| [Google Cloud](/integrations/google-cloud) | Cloud Logging | Yes | Connector |
+| [Cloudflare](/integrations/cloudflare) | — | Yes | Connector |
+| [Vercel](/integrations/vercel) | Drains | Yes | Connector |
+| [Railway](/integrations/railway) | Runtime logs | Yes | Connector |
 
 ### Data and AI
 
 | Integration | Findings source | Investigation context | Automations |
 |---|---|---|---|
-| [Supabase](/integrations/supabase) | — | Yes | — |
+| [Supabase](/integrations/supabase) | — | Yes | Connector |
 | [Upstash](/integrations/upstash) | — | Yes | — |
 | [Langfuse](/integrations/langfuse) | Sweeps | Yes | — |
 
@@ -69,6 +69,6 @@ Depending on the tool, you approve access on the provider's site, paste an API k
 - Investigations only read. Superlog offers them only the read-only tools of each connection, including connections that allow writes for automations.
 - Provider credentials stay outside the sandbox that reads your code. Superlog calls the provider for the agent.
 - In automations, Datadog and custom MCP servers can pass through tools that write. Scope the credentials you give them.
-- Supabase allows writes only with **Full database SQL access**, and only for automations.
+- Supabase allows writes only with **Full database SQL access**, and never in investigations.
 
 See [Security](/security) for more detail.

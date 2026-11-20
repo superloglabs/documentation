@@ -34,7 +34,7 @@ In **Integrations**, **Add** on PostHog asks for the access automations get:
 ## How findings use PostHog
 
 - **Error logs.** Every minute, Superlog reads the `error` and `fatal` log lines of the projects you chose. They become error issues, and Superlog investigates new and regressed ones. Lower levels stay in PostHog for investigations to read.
-- **Sweeps.** If you chose no project, or your projects send no logs, Superlog sweeps PostHog error tracking and logs every 15 minutes. See [How findings work](/findings/how-it-works#where-problems-come-from).
+- **Sweeps.** If you chose no project, or your projects send no logs, and no other telemetry reaches Superlog, Superlog sweeps PostHog error tracking and logs every 15 minutes. See [How findings work](/findings/how-it-works#where-problems-come-from).
 - **Investigations.** Superlog reads events and replays to count the customers a problem affects.
 
 ## Automations

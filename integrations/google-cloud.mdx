@@ -37,9 +37,9 @@ Superlog uses your Google sign-in only for setup and revokes it when setup finis
 
 ## Send logs and metrics to Superlog
 
-The connection lets Superlog read a project while it investigates. To have Superlog find new errors as they happen, also read the project's logs and metrics into Superlog. On the Google Cloud page in **Setup → Sources**, choose the project and click **Start reading**.
+The connection lets Superlog read a project while it investigates. To have Superlog find new errors as they happen, also read the project's logs and metrics into Superlog. On the Google Cloud page in **Setup → Sources**, choose the project and click **Start reading**. In workspaces with **Overview** in the sidebar, follow [Google Cloud telemetry](/collect-telemetry/google-cloud) instead.
 
-Superlog then reads Cloud Logging every minute and metrics every five minutes. See [Google Cloud telemetry](/collect-telemetry/google-cloud).
+Superlog then reads Cloud Logging every minute and metrics every five minutes.
 
 ## How findings use Google Cloud
 
@@ -48,4 +48,4 @@ Superlog then reads Cloud Logging every minute and metrics every five minutes. S
 
 ## Remove a project
 
-**Remove** disconnects a project from Superlog. It does not delete the service account or IAM bindings in your project.
+**Remove** disconnects a project from Superlog. It does not change your project. To remove Superlog's access in Google Cloud, delete the `responder-investigation` service account and the `responder` workload identity pool in the project.
