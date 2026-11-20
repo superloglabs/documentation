@@ -57,7 +57,6 @@
                   "integrations/datadog",
                   "integrations/grafana",
                   "integrations/posthog",
-                  "integrations/dash0",
                   "integrations/axiom",
                   "integrations/honeycomb",
                   "integrations/signoz",
@@ -439,6 +438,10 @@
     },
     {
       "source": "/integrations/more",
+      "destination": "/integrations/overview"
+    },
+    {
+      "source": "/integrations/dash0",
       "destination": "/integrations/overview"
     }
   ],
