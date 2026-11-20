@@ -1,0 +1,33 @@
+---
+title: "Upstash"
+description: "Connect Upstash so Superlog can inspect Redis, Vector, Search, QStash, and Workflow resources, logs, and dead-letter queues."
+---
+
+Superlog reads your Upstash resources through Upstash's management API.
+
+## What Superlog reads
+
+- Redis, Vector, and Search resources.
+- QStash and Workflow logs and dead-letter queues.
+
+## Connect Upstash
+
+<Steps>
+  <Step title="Create a key">
+    In the Upstash Console, create a developer API key for Superlog. Give it the narrowest permission Upstash offers. Superlog only reads.
+  </Step>
+  <Step title="Connect">
+    In Superlog, open **Integrations** and click **Add** on Upstash. Enter the **Account email** and paste the **Developer API key**. Upstash needs both for its management API. Click **Connect Upstash**.
+  </Step>
+</Steps>
+
+## How Superlog uses Upstash
+
+- **Investigations.** Superlog checks queues, failed messages, and Redis state for evidence while it investigates a problem.
+- [Tag mode](/tag-mode) can read Upstash when you turn it on for tag mode.
+
+Upstash is not a source of new problems or a trigger.
+
+## Access
+
+Read-only. Superlog blocks write operations even if the key can write, and checks Redis commands against a read-only allowlist.

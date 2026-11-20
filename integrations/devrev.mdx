@@ -1,0 +1,29 @@
+---
+title: "DevRev"
+description: "Connect DevRev so a new support ticket starts an automation that looks into it and posts an internal comment."
+---
+
+DevRev starts automations when a new ticket arrives. The automation reads the ticket and posts its result as an internal comment.
+
+## Connect DevRev
+
+<Steps>
+  <Step title="Create a token">
+    Sign in to DevRev as an admin of the organization. Open **Settings → Account → Personal access token** and create a token.
+  </Step>
+  <Step title="Connect">
+    In Superlog, open **Integrations** and click **Add** on DevRev. Paste the **Personal access token** and click **Connect DevRev**.
+  </Step>
+</Steps>
+
+Superlog registers a webhook for new tickets in your DevRev organization.
+
+## Start automations from tickets
+
+In the automation editor, click **Add trigger** and choose **DevRev → New ticket**. Each new ticket starts a run.
+
+## What Superlog writes
+
+The automation posts an internal comment on the ticket. The customer who opened the ticket does not see it. Comments are posted as the person who created the token.
+
+DevRev is used by automations only. Findings do not read it.

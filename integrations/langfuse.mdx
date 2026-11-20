@@ -1,0 +1,36 @@
+---
+title: "Langfuse"
+description: "Connect a Langfuse project so Superlog can investigate LLM failures with its traces, observations, scores, and metrics."
+---
+
+Superlog reads your LLM traces, observations, scores, metrics, prompts, and alerts. It never changes anything in Langfuse.
+
+## Connect Langfuse
+
+<Steps>
+  <Step title="Create a key pair">
+    In Langfuse, open the project Superlog should read, then **Settings → API Keys**. Create a key pair. Langfuse shows the secret key only once.
+  </Step>
+  <Step title="Connect">
+    Open **Setup → Sources**, click **Add source**, and choose **Langfuse**. Or, in **Integrations**, click **Add** on Langfuse. Choose the **Deployment**, paste the **Public key** and **Secret key**, and click **Connect Langfuse**.
+  </Step>
+</Steps>
+
+| Deployment | URL |
+|---|---|
+| Langfuse Cloud (EU) | `cloud.langfuse.com` |
+| Langfuse Cloud (US) | `us.cloud.langfuse.com` |
+| Langfuse Cloud (Japan) | `jp.cloud.langfuse.com` |
+| Langfuse Cloud (HIPAA US) | `hipaa.cloud.langfuse.com` |
+| Self-hosted | Your Langfuse URL. Version 4 or later. |
+
+Each key pair belongs to one Langfuse project. Connect each project separately.
+
+## How findings use Langfuse
+
+- **Sweeps.** If none of your telemetry reaches Superlog, Superlog checks Langfuse observations and scores every 15 minutes for new problems. See [How findings work](/findings/how-it-works#where-problems-come-from).
+- **Investigations.** Superlog reads LLM traces and scores for evidence while it investigates any problem.
+
+## Access
+
+Read-only. Superlog uses an allowlist of read-only tools. The keys are stored encrypted.

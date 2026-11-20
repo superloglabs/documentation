@@ -1,0 +1,39 @@
+---
+title: "Axiom"
+description: "Connect Axiom so Superlog can query your datasets and monitors, and start automations from Axiom monitors."
+---
+
+Superlog queries your Axiom datasets, metrics, and monitors. Investigations never change anything in Axiom.
+
+## What Superlog reads
+
+- Logs and traces in your datasets.
+- Metrics, monitors, monitor history, and dashboards.
+
+## Connect Axiom
+
+Open **Setup → Sources**, click **Add source**, choose **Axiom**, and click **Continue to Axiom**. Or, in **Integrations**, click **Add** on Axiom. Approve access in Axiom.
+
+## How findings use Axiom
+
+- **Sweeps.** If none of your telemetry reaches Superlog, Superlog checks Axiom every 15 minutes for new problems. A problem that a firing Axiom monitor already covers is not raised. See [How findings work](/findings/how-it-works#where-problems-come-from).
+- **Investigations.** Superlog queries Axiom for evidence and impact while it investigates any problem.
+
+## Start automations from Axiom monitors
+
+<Steps>
+  <Step title="Add the trigger">
+    In the automation editor, click **Add trigger** and choose **Axiom → Monitor alert**. Click **Set up Axiom notifier**.
+  </Step>
+  <Step title="Create the notifier">
+    In Axiom, open **Monitors → Notifiers** and create a **Custom webhook** notifier. Use the webhook URL from Superlog, add a header named **Authorization** with the value from Superlog, and replace the body with the template Superlog shows.
+  </Step>
+  <Step title="Attach it to monitors">
+    Add the notifier to the monitors that should start the automation. Each alert starts a run.
+  </Step>
+</Steps>
+
+## Access and limits
+
+- Investigations only read. Automations, and requests from Slack or Linear, can change datasets and monitors. Alert investigations stay read-only.
+- Axiom's hosted MCP server routes query results through US infrastructure. Check Axiom's data routing and query cost settings before you connect sensitive or large datasets.

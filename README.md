@@ -2,7 +2,7 @@
 
 Source for [docs.superlog.sh](https://docs.superlog.sh), built with [Mintlify](https://mintlify.com).
 
-Superlog automates routine engineering tasks: it triages alerts, answers support questions, and reviews performance and observability in your code and infrastructure. The application code is at [superloglabs/responder-oss](https://github.com/superloglabs/responder-oss).
+Superlog scans your logs, finds the production issues your alerts miss, and posts each to Slack with its impact, root cause, and a suggested fix. The open-source application code is at [superloglabs/responder-oss](https://github.com/superloglabs/responder-oss).
 
 ## Preview locally
 

@@ -1,0 +1,44 @@
+---
+title: "ClickStack"
+description: "Connect ClickStack or HyperDX so Superlog can query your logs, traces, and metrics."
+---
+
+Superlog queries logs, traces, metrics, and services in ClickStack Cloud or a self-hosted ClickStack or HyperDX.
+
+## Connect ClickStack
+
+In **Integrations**, click **Add** on **ClickStack / HyperDX** and choose your deployment.
+
+<Tabs>
+  <Tab title="ClickStack Cloud">
+    <Steps>
+      <Step title="Find the service ID">
+        In ClickHouse Cloud, open your ClickStack service. Open **Connect → MCP** and copy its service ID.
+      </Step>
+      <Step title="Connect">
+        In Superlog, the **MCP URL** is filled in. Enter the **ClickHouse service ID**, click **Continue with ClickHouse Cloud**, and approve access.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Self-hosted">
+    <Steps>
+      <Step title="Copy your key">
+        In ClickStack, open **Team Settings → API Keys**. Copy your Personal API Access Key and the full MCP URL, which usually ends in `/api/mcp`.
+      </Step>
+      <Step title="Connect">
+        In Superlog, paste the **MCP URL** and **Personal API Access Key**. Click **Connect ClickStack / HyperDX**.
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+## How Superlog uses ClickStack
+
+- **Investigations.** Superlog queries ClickStack for evidence while it investigates a problem.
+- [Tag mode](/tag-mode) can read ClickStack when you turn it on for tag mode.
+
+ClickStack is not a source of new problems or a trigger. To have Superlog find problems in the same data, also send it to Superlog with [OpenTelemetry](/guides/instrument-your-app).
+
+## Access
+
+Read-only.

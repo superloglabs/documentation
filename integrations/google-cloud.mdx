@@ -1,0 +1,51 @@
+---
+title: "Google Cloud"
+description: "Connect Google Cloud projects with Google sign-in so Superlog can read Cloud Logging, Cloud Monitoring, and Cloud Asset Inventory without service account keys."
+---
+
+Superlog connects to Google Cloud with Workload Identity Federation. It gets short-lived, read-only tokens. No service account keys are created or stored.
+
+## What Superlog reads
+
+Setup creates a `responder-investigation` service account in each project with these roles:
+
+| Role | Access |
+|---|---|
+| Logs Viewer | Query Cloud Logging |
+| Monitoring Viewer | Read Cloud Monitoring |
+| Cloud Asset Viewer | Read Cloud Asset Inventory |
+| MCP Tool User | Use Google's managed MCP servers |
+| Service Usage Consumer | Check which APIs are enabled |
+
+Superlog uses only tools that Google's managed MCP servers mark as read-only.
+
+## Connect Google Cloud
+
+<Steps>
+  <Step title="Sign in with Google">
+    Open **Setup → Sources**, click **Add source**, choose **Google Cloud**, and click **Continue with Google**. Use an account that owns the project, or that can enable APIs, create service accounts and workload identity pools, and change project IAM.
+  </Step>
+  <Step title="Choose projects">
+    Select the projects Superlog should read and click **Set up project**.
+  </Step>
+  <Step title="Wait for setup">
+    Setup enables the required APIs, creates the service account, and configures Workload Identity Federation. It can take up to 15 minutes. You can leave the page. Setup continues, and **Integrations** shows its progress.
+  </Step>
+</Steps>
+
+Superlog uses your Google sign-in only for setup and revokes it when setup finishes. You can also connect from **Integrations** with **Add** on Google Cloud.
+
+## Send logs and metrics to Superlog
+
+The connection lets Superlog read a project while it investigates. To have Superlog find new errors as they happen, also read the project's logs and metrics into Superlog. On the Google Cloud page in **Setup → Sources**, choose the project and click **Start reading**. In workspaces with **Overview** in the sidebar, follow [Google Cloud telemetry](/collect-telemetry/google-cloud) instead.
+
+Superlog then reads Cloud Logging every minute and metrics every five minutes.
+
+## How findings use Google Cloud
+
+- **New errors.** Errors in the logs Superlog reads become error issues, and Superlog investigates new and regressed ones.
+- **Investigations.** Superlog queries Cloud Logging, Cloud Monitoring, and Cloud Asset Inventory for evidence.
+
+## Remove a project
+
+**Remove** disconnects a project from Superlog. It does not change your project. To remove Superlog's access in Google Cloud, delete the `responder-investigation` service account and the `responder` workload identity pool in the project.

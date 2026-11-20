@@ -1,0 +1,41 @@
+---
+title: "Finding settings"
+sidebarTitle: "Settings"
+description: "Turn Superlog on or off, choose which findings are posted, limit investigations, and change sources, the findings channel, and your plan."
+---
+
+Open **Setup** in the sidebar. Settings are in four sections. Changes save as you make them.
+
+## General
+
+| Setting | What it does |
+|---|---|
+| **Investigate and post findings** | Turns Superlog on or off. Turning it off keeps your setup and past findings. Turning it on needs a plan. |
+| **Post findings from** | **SEV-1**, **SEV-2 and up**, or **All**. Lower severities are kept on the **Findings** page and do not count toward your plan. |
+| **Investigations per day** | A daily ceiling on investigations. |
+| **Look again at dismissed problems** | After 6 hours, 1 day, 3 days, or 7 days. Superlog looks sooner if the problem regresses, or if its hourly count reaches three times the count at dismissal and at least 10 an hour. |
+| **Skip these services** | Superlog does not investigate errors from these services. End a name with `*` to match a prefix, such as `staging-*`. Up to 50. |
+| **Notes** | Up to 2,000 characters that Superlog reads before every investigation. Tell it what matters and what to ignore, for example: "Checkout and sign-in matter most. Ignore 404s from crawlers." |
+
+## Sources
+
+- **Telemetry** lists the connected sources. Click **Manage** to see what a source reads, choose what it sends to Superlog, reconnect it, or disconnect it. Click **Add source** to connect another.
+- **Code** shows the GitHub repositories Superlog reads. Click **Edit** to change them.
+- **Context** lists Linear and the Slack channels Superlog searches for known issues. Click **Add context** to connect Linear.
+
+See [How findings work](/findings/how-it-works) for what each kind of source does.
+
+## Notifications
+
+Choose the Slack **Findings channel**. Every posted finding goes there. If Slack refuses a post, for example because the app was removed from the channel, owners and admins get an email. The next successful post or a new channel clears the problem.
+
+## Plan
+
+Shows your plan, the findings used this month, and when they reset. Click **Switch to** the other plan, or click **Manage billing** to change the payment method, see invoices, or cancel. See [Plans and billing](/settings/billing).
+
+## Finding actions
+
+On a finding's page:
+
+- **Copy prompt** copies a prompt for your coding agent. It contains the finding and its evidence, and asks the agent to check the evidence against the code before it changes anything.
+- **Mark as irrelevant** tells Superlog the finding was not useful. Later investigations read irrelevant findings. **Restore finding** undoes it.

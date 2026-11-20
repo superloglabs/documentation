@@ -1,0 +1,29 @@
+---
+title: "Cloudflare"
+description: "Connect Cloudflare with read-only OAuth so Superlog can read Workers logs and analytics, deployments, and account and zone configuration."
+---
+
+Superlog reads your Cloudflare account through Cloudflare's API MCP server.
+
+## What Superlog reads
+
+- Workers logs and analytics.
+- Deployments.
+- Account and zone configuration.
+
+## Connect Cloudflare
+
+In **Integrations**, click **Add** on Cloudflare and approve access. Cloudflare's consent screen preselects its read-only permissions. Keep them.
+
+Superlog checks the granted permissions after every sign-in and token refresh. If any granted permission can change resources, Superlog refuses the connection.
+
+## How Superlog uses Cloudflare
+
+- **Investigations.** Superlog reads Workers logs, analytics, and configuration for evidence while it investigates a problem.
+- [Tag mode](/tag-mode) can read Cloudflare when you turn it on for tag mode.
+
+Cloudflare is not a source of new problems or a trigger.
+
+## Access
+
+Read-only. The read-only grant is what limits the API calls Superlog can make.

@@ -1,0 +1,92 @@
+---
+title: "How findings work"
+sidebarTitle: "How findings work"
+description: "What Superlog reads, how it investigates, what it reports as a finding, and how it skips duplicates and problems you already track."
+---
+
+Superlog watches your telemetry for new problems, investigates each one, and posts a finding to Slack when real users are affected. It only reads your tools and code. It writes only the finding: its Slack message and thread reply, emails about it, and the feedback you give.
+
+## What a finding is
+
+A finding is a problem that prevents real users from doing what they came to do, and that will not get better unless someone acts. A job that fails on every scheduled run counts, even between runs.
+
+Superlog reports these problems at any severity:
+
+| Severity | Meaning |
+|---|---|
+| SEV-1 | A broad outage, data loss, or a security breach |
+| SEV-2 | A feature broken or badly degraded for real users |
+| SEV-3 | Anything smaller |
+
+Each finding has a title, a one-line summary of who is affected, the affected service, the impact with counts, the root cause, a suggested fix when Superlog has one, and evidence. The evidence cites the logs, traces, metrics, provider results, and code that Superlog read.
+
+## Where problems come from
+
+Superlog looks at three kinds of sources.
+
+**Errors in telemetry that reaches Superlog.** This covers OpenTelemetry, the AWS CloudWatch log stream, Vercel drains, Google Cloud, Railway, and PostHog error logs. Superlog groups exceptions into error issues. A new or regressed error issue is a problem to look at.
+
+Errors without a stack trace are grouped by their error statement: the part of the line that says what failed, with values replaced. For example, `Payment for order <*> failed: card declined`. One statement is one problem, however many order IDs it prints.
+
+**Sentry.** Superlog reads your Sentry organization's unresolved errors every minute. An issue Sentry marks new, regressed, or escalating is a problem to look at. Info and debug messages and performance issues are left out. See [Sentry](/integrations/sentry).
+
+**Sweeps.** If none of your telemetry reaches Superlog, and it is only in Datadog, Grafana, Axiom, Honeycomb, PostHog, or Langfuse, Superlog sweeps those tools every 15 minutes. A sweep checks monitors and alerts, new error-tracking issues, log patterns, traces and metrics, and Langfuse observations and scores. It raises at most 5 problems at a time. When telemetry reaches Superlog again, sweeps stop and these tools are read only during investigations.
+
+## How Superlog investigates
+
+Each problem gets one investigation. Superlog:
+
+- Queries the telemetry in Superlog and in your connected tools, with read-only access.
+- Reads the repositories you selected in a sandbox. The sandbox gets a copy of each repository's default branch and has no network access after the copy. GitHub credentials never enter it.
+- Counts affected users and requests.
+- Checks whether the problem is already known.
+- Ends with a finding or a dismissal.
+
+Your notes and skipped services apply to every investigation. See [Finding settings](/findings/settings).
+
+## Problems you already know about
+
+Superlog does not report a problem that is already known. It dismisses a problem when:
+
+- A [Superlog alert](/telemetry/alerts) is firing for it.
+- A [Linear](/integrations/linear) issue tracks it.
+- An issue or pull request in your selected [GitHub](/integrations/github) repositories reports it or fixes it.
+- Your team discussed it in a Slack channel you chose under **Scan Slack to exclude known issues**.
+- During a sweep, a firing monitor or alert in the provider already covers it.
+
+## Duplicates and dismissed problems
+
+- A problem has at most one investigation running at a time.
+- A finding is posted once. A later problem that matches a posted finding is linked to it and not posted again.
+- A dismissed problem is skipped for the cooldown you choose, 1 day by default. Each later dismissal of the same problem skips it for longer: 3, 7, and then 30 times the cooldown.
+- A dismissed problem comes back sooner if it regresses, or if its hourly count reaches three times the count at dismissal and at least 10 an hour.
+
+## Posting to Slack
+
+Every finding at or above the severity you choose in **Post findings from** is posted to your findings channel. The message shows the severity, title, summary, service, and when it was found, with three buttons:
+
+- **Copy prompt** replies with a prompt only you can see. Paste it into your coding agent to fix the problem.
+- **Helpful** marks the finding accepted.
+- **Not helpful** marks it irrelevant. Later investigations read your irrelevant findings.
+
+A reply in the thread gives the root cause, the impact, and the suggested fix. The full finding, with its evidence, opens from the severity link.
+
+Findings below that severity are kept on the **Findings** page. They are not posted and do not count toward your plan.
+
+## Emails
+
+Workspace owners and admins get email for:
+
+- A new SEV-1 or SEV-2 finding posted to Slack.
+- A weekly digest on Mondays, for the week before. It is skipped when there were no investigations.
+- A Slack problem that stops Superlog from posting, such as a removed app or an archived channel.
+
+Every email has an unsubscribe link for its kind of email.
+
+## What counts toward your plan
+
+Only posted findings count. Investigations, dismissals, sweeps, and findings below the **Post findings from** severity do not. Each finding is counted once. See [Plans and billing](/settings/billing).
+
+## Untrusted data
+
+Logs, traces, Sentry events, tickets, and Slack messages can contain text written by anyone. Superlog treats them as data, not instructions. Every tool it uses reads. Superlog builds the Slack message itself from the finding's fields, and removes links, mentions such as `@channel`, and Slack formatting from text the model wrote.

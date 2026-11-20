@@ -1,9 +1,9 @@
 ---
 title: "GitHub"
-description: "Install the Superlog GitHub App so automations can check out your repositories and open pull requests."
+description: "Install the Superlog GitHub App so Superlog can read your code to find the cause of a problem, and so automations can open pull requests."
 ---
 
-GitHub gives automations their code. Every automation checks out at least one repository, and with GitHub connected the agent can read pull requests, commits, and issues, and open pull requests with its changes.
+GitHub gives Superlog your code. Findings read the repositories you select to find the cause of a problem and never change them. Automations check out repositories and can open pull requests.
 
 ## Connect GitHub
 
@@ -18,6 +18,15 @@ GitHub gives automations their code. Every automation checks out at least one re
     Back in Superlog, the granted repositories appear in **Add repository**. To grant more, change the app's repository access in GitHub.
   </Step>
 </Steps>
+
+## How findings use GitHub
+
+In [setup](/findings/quickstart), click **Connect GitHub**, install the app, and select the repositories Superlog may read. Change them later in **Setup → Sources** under **Code** with **Edit**.
+
+- **Code.** For each investigation, Superlog copies each selected repository's default branch into a sandbox and reads it to find the cause. The sandbox has no network access after the copy and never holds GitHub credentials.
+- **Known problems.** Superlog searches issues and pull requests in the selected repositories. A problem that is already reported, or has a fix open or merged, is not posted.
+
+Findings never push, comment, or open pull requests.
 
 ## What automations can do
 

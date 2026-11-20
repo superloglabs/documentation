@@ -36,7 +36,14 @@ On a self-hosted deployment, use your own public URL instead.
 
 ## Tool access
 
-Superlog passes every tool the server exposes to the agent. It does not filter them to read-only, so the agent can call write tools if the server has them. Expose only the tools you want agents to use, and write clear tool descriptions so the agent knows when to call them.
+By default, agents can use every tool the server exposes, including tools it adds later. To limit them, open **Manage** on **Custom MCP** in **Integrations** and click **Tools** next to the server:
+
+- **All tools** allows every tool, including tools the server adds later.
+- **Selected tools** allows only the tools you check. Tools the server adds later stay off. **Read-only only** selects the tools the server marks as read-only.
+
+Agents do not see tools that are off, and Superlog refuses calls to them. Write clear tool descriptions so the agent knows when to call each tool.
+
+Findings do not use custom MCP servers.
 
 Your server receives every call the agent makes. Use its logs to audit what agents did.
 
