@@ -80,4 +80,4 @@ A failure message starts automations that watch its Slack channel with **New mes
 
 ## Manage checks from an agent
 
-The [MCP server](/api-reference/mcp) offers `create_synthetic_check`, `update_synthetic_check`, `get_synthetic_check`, `list_synthetic_checks`, and `delete_synthetic_check`. Use `list_slack_channels` for the channel and integration IDs. The same operations are in the [REST API](/api-reference/introduction).
+The [MCP server](/api-reference/mcp) offers `create_synthetic_check`, `update_synthetic_check`, `get_synthetic_check`, `list_synthetic_checks`, and `delete_synthetic_check`. Use `list_slack_channels` for the channel and integration IDs. The same operations are in the [REST API](/api-reference/introduction). On the MCP server, `watch_synthetic_check` tells the agent's conversation each time the check starts failing or recovers.
